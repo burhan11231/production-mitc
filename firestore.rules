@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isOwner(userId);
+      // Users can write their own profile
+      allow write: if isOwner(userId) && !request.resource.data.role;
+      // Admin can read all users
+      allow read: if isAdmin();
+      // Only admins can create/update role field
+      allow write: if isAdmin();
+    }
+
+    // Leads collection
+    match /leads/{document=**} {
+      // Authenticated users can create leads
+      allow create: if request.auth != null;
+      // Only admins can read leads
+      allow read, delete: if isAdmin();
+      // Only admins can update leads
+      allow update: if isAdmin();
+    }
+
+    // Reviews collection
+    match /reviews/{document=**} {
+      // Anyone can read reviews
+      allow read: if true;
+      // Authenticated users can create their own review
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Users can update their own review
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Users can delete their own review
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Admins can delete any review
+      allow delete: if isAdmin();
+    }
+
+    // Site visits collection
+    match /siteVisits/{document=**} {
+      // Anyone can create visit records
+      allow create: if true;
+      // Only admins can read visits
+      allow read: if isAdmin();
+    }
+
+    // Instagram posts collection
+    match /instagramPosts/{document=**} {
+      // Anyone can read posts
+      allow read: if true;
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+
+    // Site settings collection
+    match /siteSettings/{document=**} {
+      // Anyone can read settings
+      allow read: if true;
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
