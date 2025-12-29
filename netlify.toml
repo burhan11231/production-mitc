@@ -6,7 +6,7 @@
   command = "npm run build"
   
   # Node.js version
-  node_version = "22"
+  node_version = "18"
 
 # Netlify Next.js Runtime Plugin
 # This automatically handles routing, ISR, SSR, and static generation
