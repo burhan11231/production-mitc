@@ -5,11 +5,12 @@ import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
-interface UserData extends User {
-  role?: 'user' | 'admin';
-  name?: string;
-  phone?: string;
-  // photoURL must match Firebase User type: string | null (not string | undefined)
+interface UserData extends Partial<User> {
+  uid: string;
+  role: 'user' | 'admin';
+  name: string;
+  email: string;
+  phone: string;
   photoURL: string | null;
 }
 
@@ -31,18 +32,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const userDocRef = doc(db, 'users', authUser.uid);
           const userDocSnap = await getDoc(userDocRef);
-          const userData = userDocSnap.data();
           
-          setUser({
-            ...authUser,
-            role: userData?.role || 'user',
-            name: userData?.name || authUser.displayName || '',
-            phone: userData?.phone || '',
-            photoURL: userData?.photoURL || authUser.photoURL || null,
-          });
+          if (userDocSnap.exists()) {
+            const dbData = userDocSnap.data();
+            setUser({
+              ...authUser,
+              uid: authUser.uid,
+              role: dbData.role || 'user',
+              name: dbData.name || authUser.displayName || 'User',
+              email: dbData.email || authUser.email || '',
+              phone: dbData.phone || '',
+              photoURL: dbData.photoURL || authUser.photoURL || null,
+            });
+          } else {
+            // Fallback if doc hasn't been created yet
+            setUser({
+              uid: authUser.uid,
+              role: 'user',
+              name: authUser.displayName || 'User',
+              email: authUser.email || '',
+              phone: '',
+              photoURL: authUser.photoURL || null,
+            } as UserData);
+          }
         } catch (error) {
           console.error('Error fetching user data:', error);
-          setUser(authUser as UserData);
         }
       } else {
         setUser(null);
@@ -67,8 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
