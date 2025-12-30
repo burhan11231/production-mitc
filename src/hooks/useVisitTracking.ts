@@ -11,7 +11,9 @@ const trackedPaths = new Set<string>();
 
 export function useVisitTracking() {
   const pathname = usePathname();
-  const visitTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  // FIX: Initialize with null and use ReturnType for cross-environment compatibility
+  const visitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // Don't track:
