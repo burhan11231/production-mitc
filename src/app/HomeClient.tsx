@@ -22,7 +22,7 @@ export default function HomeClient() {
       {/* HERO SECTION */}
       <section
         id="home"
-        className="relative pt-6 lg:pt-12 min-h-[70vh] lg:min-h-screen overflow-hidden"
+        className="relative pt-0 lg:pt-0 min-h-[70vh] lg:min-h-screen overflow-hidden"
       >
         <div className="absolute inset-0">
           <img
