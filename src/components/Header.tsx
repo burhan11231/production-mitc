@@ -84,8 +84,8 @@ export default function Header() {
           ))}
         </div>
 
-        {/* RIGHT: Auth Icons Only (Laptop) */}
-        <div className="flex items-center gap-2 lg:gap-5">
+        {/* RIGHT: PC Actions */}
+        <div className="flex items-center gap-2 lg:gap-4">
           {isLoading ? (
             <div className="h-5 w-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
           ) : user ? (
@@ -96,7 +96,7 @@ export default function Header() {
                 </Link>
               )}
               
-              {/* Profile Pic replaces Logout Text */}
+              {/* Profile Pic linked to /profile */}
               <Link href="/profile" className="relative group">
                 {user.photoURL ? (
                   <div className="relative h-9 w-9 overflow-hidden rounded-full border-2 border-transparent group-hover:border-blue-500 transition-all">
@@ -114,17 +114,21 @@ export default function Header() {
                 )}
               </Link>
 
-              {/* Icon Only Logout for Desktop */}
-              <Link href="/auth/logout" title="Logout" className="hidden lg:flex p-2 text-gray-500 hover:text-red-600 transition">
+              {/* Laptop Logout Icon */}
+              <Link href="/auth/logout" title="Logout" className="hidden lg:flex p-2 text-gray-400 hover:text-red-600 transition">
                 <IconLogout />
               </Link>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            /* Logged Out State with Icon / Icon */
+            <div className="flex items-center">
               <Link href="/login" title="Login" className="p-2 text-gray-600 hover:text-blue-600 transition">
                 <IconLogin />
               </Link>
-              <Link href="/signup" title="Sign Up" className="hidden lg:flex p-2 text-gray-600 hover:text-blue-600 transition">
+              
+              <span className="text-gray-300 mx-0.5 font-light">/</span>
+              
+              <Link href="/signup" title="Sign Up" className="p-2 text-gray-600 hover:text-blue-600 transition">
                 <IconUserPlus />
               </Link>
             </div>
@@ -141,7 +145,6 @@ export default function Header() {
             <div className="absolute inset-0 overflow-hidden">
               <DialogPanel transition className="absolute left-0 top-0 h-full w-[86%] max-w-[340px] bg-white border-r shadow-2xl duration-300 data-[closed]:-translate-x-full">
                 
-                {/* Header of Drawer */}
                 <div className="h-16 px-6 flex items-center justify-between border-b border-gray-100">
                   <span className="text-sm font-bold uppercase tracking-widest text-gray-400">Navigation</span>
                   <button onClick={() => setMenuOpen(false)} className="p-2 -mr-2 text-gray-500 hover:text-black">
@@ -150,7 +153,6 @@ export default function Header() {
                 </div>
 
                 <div className="p-4 flex flex-col h-[calc(100%-64px)]">
-                  {/* Nav Links */}
                   <div className="flex flex-col gap-1">
                     {navItems.map((item) => (
                       <Link
@@ -164,10 +166,11 @@ export default function Header() {
                     ))}
                   </div>
 
-                  {/* Auth Actions (Bottom of Mobile Menu) */}
+                  {/* Mobile Footer Actions */}
                   <div className="mt-auto pb-6 pt-4 border-t border-gray-100">
                     {user ? (
                       <div className="space-y-2">
+                        {/* Logout replaces text in mobile */}
                         <Link
                           href="/profile"
                           onClick={() => setMenuOpen(false)}
@@ -181,21 +184,10 @@ export default function Header() {
                            Profile
                         </Link>
 
-                        {user.role === 'admin' && (
-                          <Link
-                            href="/dashboard"
-                            onClick={() => setMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 text-blue-700 font-bold hover:bg-blue-50 rounded-xl"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                            Admin Dashboard
-                          </Link>
-                        )}
-
                         <Link
                           href="/auth/logout"
                           onClick={() => setMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-red-600 font-bold hover:bg-red-50 rounded-xl"
+                          className="flex items-center gap-3 px-4 py-3 text-red-600 font-bold hover:bg-red-50 rounded-xl transition"
                         >
                           <IconLogout />
                           Logout
@@ -215,7 +207,7 @@ export default function Header() {
                           onClick={() => setMenuOpen(false)}
                           className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg shadow-gray-200"
                         >
-                          <IconUserPlus /> Sign Up
+                          <IconUserPlus /> Signup
                         </Link>
                       </div>
                     )}
