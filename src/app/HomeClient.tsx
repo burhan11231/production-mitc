@@ -22,7 +22,7 @@ export default function HomeClient() {
       {/* HERO SECTION */}
       <section
         id="home"
-        className="relative pt-0 lg:pt-0 min-h-[70vh] lg:min-h-screen overflow-hidden"
+        className="relative pt-0 lg:pt-0 min-h-[60vh] lg:min-h-screen overflow-hidden"
       >
         <div className="absolute inset-0">
           <img
@@ -47,7 +47,7 @@ export default function HomeClient() {
             <h1 className="mt-8 text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05]">
               Premium laptops, built for
               <span className="block mt-2">
-                <span className="inline-flex items-baseline px-[0.6rem] py-[0.15rem] rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                <span className="inline-flex items-baseline rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
                   <span className="relative text-white whitespace-nowrap border-r-2 border-white/80 pr-1.5 transition-opacity duration-150">
                     {currentWord}
                   </span>
