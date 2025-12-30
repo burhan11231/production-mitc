@@ -84,14 +84,14 @@ export default function Header() {
           ))}
         </div>
 
-        {/* RIGHT: PC Actions */}
-        <div className="flex items-center gap-2 lg:gap-4">
+        {/* RIGHT: PC Actions (Hidden on Mobile to prevent errors) */}
+        <div className="hidden lg:flex items-center gap-2 lg:gap-4">
           {isLoading ? (
             <div className="h-5 w-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
           ) : user ? (
             <div className="flex items-center gap-3">
               {user.role === 'admin' && (
-                <Link href="/dashboard" className="hidden lg:block text-[11px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700">
+                <Link href="/dashboard" className="text-[11px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700">
                   Dashboard
                 </Link>
               )}
@@ -105,6 +105,7 @@ export default function Header() {
                       alt="Profile" 
                       fill 
                       className="object-cover"
+                      unoptimized // Added to handle external Google URLs better
                     />
                   </div>
                 ) : (
@@ -114,29 +115,30 @@ export default function Header() {
                 )}
               </Link>
 
-              {/* Laptop Logout Icon */}
-              <Link href="/auth/logout" title="Logout" className="hidden lg:flex p-2 text-gray-400 hover:text-red-600 transition">
+              <Link href="/auth/logout" title="Logout" className="p-2 text-gray-400 hover:text-red-600 transition">
                 <IconLogout />
               </Link>
             </div>
           ) : (
-            /* Logged Out State with Icon / Icon */
             <div className="flex items-center">
               <Link href="/login" title="Login" className="p-2 text-gray-600 hover:text-blue-600 transition">
                 <IconLogin />
               </Link>
-              
               <span className="text-gray-300 mx-0.5 font-light">/</span>
-              
               <Link href="/signup" title="Sign Up" className="p-2 text-gray-600 hover:text-blue-600 transition">
                 <IconUserPlus />
               </Link>
             </div>
           )}
         </div>
+        
+        {/* RIGHT MOBILE: Loading state only (optional) */}
+        {isLoading && (
+          <div className="lg:hidden h-5 w-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
+        )}
       </nav>
 
-      {/* MOBILE DRAWER */}
+      {/* MOBILE DRAWER (Profile picture works here) */}
       <Transition show={menuOpen} as={Fragment}>
         <Dialog open={menuOpen} onClose={setMenuOpen} className="relative z-[60] lg:hidden">
           <DialogBackdrop transition className="fixed inset-0 bg-black/40 backdrop-blur-sm duration-200 data-[closed]:opacity-0" />
@@ -166,22 +168,23 @@ export default function Header() {
                     ))}
                   </div>
 
-                  {/* Mobile Footer Actions */}
                   <div className="mt-auto pb-6 pt-4 border-t border-gray-100">
                     {user ? (
                       <div className="space-y-2">
-                        {/* Logout replaces text in mobile */}
                         <Link
                           href="/profile"
                           onClick={() => setMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 text-gray-900 font-bold"
                         >
                            {user.photoURL ? (
-                             <img src={user.photoURL} className="w-6 h-6 rounded-full" alt="" />
+                             <img src={user.photoURL} className="w-8 h-8 rounded-full border border-gray-200 shadow-sm" alt="Profile" />
                            ) : (
-                             <div className="w-6 h-6 rounded-full bg-gray-200" />
+                             <div className="w-8 h-8 rounded-full bg-gray-200" />
                            )}
-                           Profile
+                           <div className="flex flex-col">
+                             <span className="text-sm">Profile</span>
+                             <span className="text-[10px] text-gray-500 font-normal truncate max-w-[150px]">{user.email}</span>
+                           </div>
                         </Link>
 
                         <Link
