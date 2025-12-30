@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { useEffect, useState } from 'react';
 
 export const metadata: Metadata = {
   title: 'MITC | Mateen IT Corp – Premium Laptop & IT Solutions Srinagar',
@@ -7,38 +8,93 @@ export const metadata: Metadata = {
     "Kashmir's Tech Authority Since 2013. Professional laptop sales, repairs, and technical services in Srinagar.",
 };
 
+const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
+
 export default function Home() {
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const currentWord = heroWords[currentWordIndex];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentWordIndex((prev) => (prev + 1) % heroWords.length);
+    }, 1800);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <main className="overflow-x-hidden">
+      {/* HERO (from HTML version, adapted to JSX) */}
+      <section
+        id="home"
+        className="relative pt-24 lg:pt-32 min-h-[70vh] lg:min-h-screen overflow-hidden"
+      >
+        {/* Background image + overlays */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2400"
+            alt="MITC premium laptops and service"
+            className="h-full w-full object-cover object-center"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-white/10" />
+          <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
+        </div>
 
-      {/* HERO */}
-      <section className="relative pt-28 lg:pt-36 pb-20 px-6 bg-gradient-to-b from-blue-50 to-white">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white border mb-8 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-blue-600 mr-2 animate-pulse" />
-            <span className="text-xs font-bold tracking-widest uppercase text-gray-800">
-              Kashmir&apos;s Tech Authority Since 2013
-            </span>
-          </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="max-w-4xl pt-10 lg:pt-16">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm">
+              <span className="flex h-2 w-2 rounded-full bg-[#0071e3] animate-pulse" />
+              <span className="text-[10px] lg:text-[11px] font-bold text-white/90 tracking-widest uppercase">
+                Kashmir&apos;s Tech Authority Since 2013
+              </span>
+            </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
-            Quality Laptops.
-            <br />
-            <span className="text-gray-500">Local Service.</span>
-          </h1>
+            {/* Heading with dynamic word */}
+            <h1 className="mt-8 text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05]">
+              Premium laptops, built for
+              <span className="block mt-2">
+                <span className="inline-flex items-baseline px-[0.6rem] py-[0.15rem] rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                  <span className="relative text-white whitespace-nowrap border-r-2 border-white/80 pr-1.5 transition-opacity duration-150">
+                    {currentWord}
+                  </span>
+                </span>
+              </span>
+            </h1>
 
-          <p className="max-w-2xl mx-auto text-base lg:text-xl text-gray-600 mb-10">
-            From students to businesses, MITC delivers tested laptops, practical pricing,
-            and reliable technical support across Srinagar.
-          </p>
+            {/* Lower card */}
+            <div className="mt-12 lg:mt-16">
+              <div className="rounded-[1.75rem] lg:rounded-[2.5rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
+                <div className="grid lg:grid-cols-3">
+                  <div className="lg:col-span-2 p-6 lg:p-10">
+                    <p className="text-white/70 text-xs lg:text-sm font-bold uppercase tracking-[0.25em]">
+                      What you get
+                    </p>
+                    <p className="mt-3 text-white text-xl lg:text-3xl font-bold tracking-tight">
+                      Clean devices. Clear guidance. Confident purchase.
+                    </p>
+                    <p className="mt-3 text-white/75 text-sm lg:text-base leading-relaxed">
+                      Commercial laptops, accessories, and upgrades—plus straightforward service
+                      timelines for advanced repairs.
+                    </p>
+                  </div>
 
-          <div className="flex justify-center">
-            <Link
-              href="/services"
-              className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition"
-            >
-              Explore Inventory
-            </Link>
+                  <div className="relative h-44 sm:h-56 lg:h-auto">
+                    <img
+                      src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=1600"
+                      alt="Laptop workspace"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 to-transparent" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Spacer so hero does not collide with next section on mobile */}
+            <div className="h-10 lg:h-16" />
           </div>
         </div>
       </section>
