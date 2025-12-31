@@ -307,7 +307,65 @@ export default function HomeClient() {
 
 
         
-      {/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + CLEAN / NO GRADIENTS) */}
+      
+      
+      {/* 3. WHY CHOOSE US / TRUST PILLARS */}
+<section className="relative py-28 px-6 bg-white">
+  <div className="max-w-7xl mx-auto">
+    {/* Section Header */}
+    <div className="max-w-3xl mb-20">
+      <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
+        Why Choose MITC
+      </p>
+      <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.05]">
+        Trusted by design.<br className="hidden sm:block" />
+        Proven in practice.
+      </h2>
+    </div>
+
+    {/* Pillars */}
+    <div className="grid gap-8 lg:grid-cols-3">
+      {/* Pillar 1 – Warranty */}
+<div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
+  <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-900 text-white">
+    <FaShieldAlt className="text-xl" />
+  </div>
+
+  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
+    15-Day Replacement Warranty
+  </h3>
+
+  <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
+    Every laptop is covered with a 15-day replacement warranty. Basic
+    diagnostics and functionality checks are performed transparently in
+    front of the customer before delivery.
+  </p>
+</div>
+
+
+      {/* Pillar 2 */}
+      <div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
+        <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-100 text-gray-900 text-xl font-bold">
+          ₹
+        </div>
+        <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
+          Fair Market Pricing
+        </h3>
+        <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
+          Pricing is aligned with real-time market conditions. We focus on value,
+          not inflated margins—ensuring competitive rates across imported,
+          open-box, and commercial-grade devices.
+        </p>
+      </div>
+
+      
+    </div>
+  </div>
+</section>
+
+
+
+{/* 4. ABOUT SECTION (MOVED ABOVE INVENTORY + CLEAN / NO GRADIENTS) */}
 <section
   id="about"
   className="relative py-28 px-6 bg-white overflow-hidden"
@@ -412,65 +470,7 @@ export default function HomeClient() {
 </section>
 
 
-
       
-
-      
-      
-      {/* 4. WHY CHOOSE US / TRUST PILLARS */}
-<section className="relative py-28 px-6 bg-white">
-  <div className="max-w-7xl mx-auto">
-    {/* Section Header */}
-    <div className="max-w-3xl mb-20">
-      <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
-        Why Choose MITC
-      </p>
-      <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.05]">
-        Trusted by design.<br className="hidden sm:block" />
-        Proven in practice.
-      </h2>
-    </div>
-
-    {/* Pillars */}
-    <div className="grid gap-8 lg:grid-cols-3">
-      {/* Pillar 1 – Warranty */}
-<div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
-  <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-900 text-white">
-    <FaShieldAlt className="text-xl" />
-  </div>
-
-  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
-    15-Day Replacement Warranty
-  </h3>
-
-  <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
-    Every laptop is covered with a 15-day replacement warranty. Basic
-    diagnostics and functionality checks are performed transparently in
-    front of the customer before delivery.
-  </p>
-</div>
-
-
-      {/* Pillar 2 */}
-      <div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
-        <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-100 text-gray-900 text-xl font-bold">
-          ₹
-        </div>
-        <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
-          Fair Market Pricing
-        </h3>
-        <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
-          Pricing is aligned with real-time market conditions. We focus on value,
-          not inflated margins—ensuring competitive rates across imported,
-          open-box, and commercial-grade devices.
-        </p>
-      </div>
-
-      
-    </div>
-  </div>
-</section>
-
 
       {/* 5. LOCATION / SHOWROOM SECTION */}
 <section
