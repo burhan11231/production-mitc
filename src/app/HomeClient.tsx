@@ -21,7 +21,7 @@ export default function HomeClient() {
       setCurrentWordIndex((prev) => (prev + 1) % heroWords.length);
     }, 1800);
 
-    // Fetch Rating Stats
+    // Fetch Rating Stats from Firebase
     const fetchStats = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'reviews'));
@@ -47,7 +47,7 @@ export default function HomeClient() {
 
   return (
     <main className="overflow-x-hidden">
-      {/* HERO SECTION */}
+      {/* 1. HERO SECTION */}
       <section
         id="home"
         className="relative pt-0 lg:pt-0 min-h-[60vh] lg:min-h-screen overflow-hidden"
@@ -110,12 +110,11 @@ export default function HomeClient() {
                 </div>
               </div>
             </div>
-            <div className="h-10 lg:h-16" />
           </div>
         </div>
       </section>
 
-      {/* RATINGS BADGE SECTION */}
+      {/* 2. RATINGS BADGE SECTION (Right after Hero) */}
       {!isStatsLoading && (
         <section className="flex justify-center -mt-8 relative z-20 px-6">
           <div className="group inline-flex flex-wrap items-center justify-center rounded-3xl lg:rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_10px_30px_rgba(15,23,42,0.10)] px-5 py-3 gap-4">
@@ -145,7 +144,7 @@ export default function HomeClient() {
         </section>
       )}
 
-      {/* SERVICES */}
+      {/* 3. SERVICES SECTION */}
       <section id="services" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl lg:text-6xl font-bold mb-16">
@@ -180,7 +179,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* ABOUT */}
+      {/* 4. ABOUT SECTION */}
       <section id="about" className="py-28 bg-white px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div>
@@ -211,7 +210,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* TRUST PILLARS (Moved to below About) */}
+      {/* 5. TRUST PILLARS SECTION (Below About) */}
       <section className="py-20 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
           {[
@@ -236,10 +235,28 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* LOCATION */}
+      {/* 6. LOCATION SECTION */}
       <section id="location" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden border shadow-xl grid lg:grid-cols-2">
           <div className="p-12 flex flex-col justify-center">
             <h2 className="text-3xl font-bold mb-8">Visit Our Showroom</h2>
             <p className="text-gray-600 mb-4">Gaw Kadal, Maisuma, Srinagar, J&amp;K 190001</p>
-            <p className="font-bold text-lg mb
+            <p className="font-bold text-lg mb-8">+91 80827 54459</p>
+            <a
+              href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
+              target="_blank"
+              className="inline-block px-8 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition"
+            >
+              Open in Google Maps
+            </a>
+          </div>
+          <iframe
+            className="w-full h-[400px] lg:h-full border-0 grayscale hover:grayscale-0 transition"
+            loading="lazy"
+            src="https://www.google.com/maps?q=Gaw%20Kadal%20Maisuma%20Srinagar&output=embed"
+          />
+        </div>
+      </section>
+    </main>
+  );
+}
