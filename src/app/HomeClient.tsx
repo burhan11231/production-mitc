@@ -3,7 +3,18 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { FaStar } from 'react-icons/fa';
+import {
+  FaTools,
+  FaMicrochip,
+  FaDesktop,
+  FaBatteryHalf,
+  FaWindows,
+  FaServer,
+  FaMemory,
+  FaStar,
+} from 'react-icons/fa';
+
+import { MdStorage } from 'react-icons/md';
 import Link from 'next/link';
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
@@ -150,81 +161,85 @@ export default function HomeClient() {
       </section>
 
 
-{/* 2. REPAIR & UPGRADE CAPABILITIES STRIP */}
-<section className="relative bg-white py-20 overflow-hidden">
+{/* 2. TECHNICAL CAPABILITIES STRIP */}
+<section className="relative bg-white py-20 overflow-hidden border-t">
   <div className="max-w-7xl mx-auto px-6">
 
-    {/* Section Heading */}
+    {/* Heading */}
     <div className="mb-14">
       <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
-        In-house Expertise
+        Technical Capabilities
       </p>
       <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-        Advanced repair & upgrade capabilities
+        Precision service. Proven expertise.
       </h2>
     </div>
 
     {/* Animated Track */}
     <div className="relative overflow-hidden">
       <div
-        className="
-          flex gap-6
-          animate-[scroll-left_30s_linear_infinite]
-          will-change-transform
-        "
+        className="flex gap-6 animate-[scroll-left_32s_linear_infinite] will-change-transform"
       >
-
         {[
-          'Diagnostics',
-          'Chip-Level Repair',
-          'Screen Replacement',
-          'Battery Replacement',
-          'OS Installation',
-          'BIOS Update',
-          'RAM Upgrade',
-          'SSD Upgrade',
-        ].concat([
-          'Diagnostics',
-          'Chip-Level Repair',
-          'Screen Replacement',
-          'Battery Replacement',
-          'OS Installation',
-          'BIOS Update',
-          'RAM Upgrade',
-          'SSD Upgrade',
-        ]).map((item, i) => (
-          <div
-            key={i}
-            className="
-              shrink-0
-              w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
-              h-[180px] lg:h-[220px]
-              rounded-3xl
-              border border-gray-200
-              bg-white
-              shadow-sm
-              hover:shadow-xl
-              transition-all duration-300
-              flex items-center justify-center
-            "
-          >
-            <div className="text-center px-6">
-              <div className="mx-auto mb-6 h-12 w-12 rounded-xl bg-gray-900/5 flex items-center justify-center">
-                <div className="h-4 w-4 rounded-full bg-gray-900" />
-              </div>
-              <p className="text-base lg:text-lg font-semibold text-gray-900">
-                {item}
-              </p>
-            </div>
-          </div>
-        ))}
+          { label: 'Diagnostics', icon: FaTools },
+          { label: 'Chip-Level Repair', icon: FaMicrochip },
+          { label: 'Screen Replacement', icon: FaDesktop },
+          { label: 'Battery Replacement', icon: FaBatteryHalf },
+          { label: 'OS Installation', icon: FaWindows },
+          { label: 'BIOS Update', icon: FaServer },
+          { label: 'RAM Upgrade', icon: FaMemory },
+          { label: 'SSD Upgrade', icon: MdStorage },
+        ]
+          .concat([
+            { label: 'Diagnostics', icon: FaTools },
+            { label: 'Chip-Level Repair', icon: FaMicrochip },
+            { label: 'Screen Replacement', icon: FaDesktop },
+            { label: 'Battery Replacement', icon: FaBatteryHalf },
+            { label: 'OS Installation', icon: FaWindows },
+            { label: 'BIOS Update', icon: FaServer },
+            { label: 'RAM Upgrade', icon: FaMemory },
+            { label: 'SSD Upgrade', icon: MdStorage },
+          ])
+          .map(({ label, icon: Icon }, index) => (
+            <div
+              key={index}
+              className="
+                shrink-0
+                w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
+                h-[180px] lg:h-[220px]
+                rounded-3xl
+                border border-gray-200
+                bg-white
+                shadow-sm
+                hover:shadow-xl
+                transition-all duration-300
+                flex items-center justify-center
+              "
+            >
+              <div className="text-center px-6">
+                {/* Icon */}
+                <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                  <Icon className="text-gray-900 text-2xl" />
+                </div>
 
+                {/* Label */}
+                <p className="text-base lg:text-lg font-semibold text-gray-900">
+                  {label}
+                </p>
+
+                {/* Subtle confidence cue */}
+                <p className="mt-1 text-xs text-gray-500 font-medium">
+                  In-house service
+                </p>
+              </div>
+            </div>
+          ))}
       </div>
     </div>
 
   </div>
 
-  {/* Animation keyframes */}
+  {/* Animation */}
   <style jsx>{`
     @keyframes scroll-left {
       from {
@@ -236,7 +251,6 @@ export default function HomeClient() {
     }
   `}</style>
 </section>
-
       
       
       {/* 2. SERVICES SECTION */}
