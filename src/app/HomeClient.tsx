@@ -173,17 +173,24 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 2. INVENTORY STATEMENT SECTION (UPDATED BACKGROUND + SPACING) */}
-      <section className="relative py-24 lg:py-28 px-6 overflow-hidden bg-gradient-to-b from-[#071425] via-[#0a1b33] to-white">
-        {/* subtle blue glow like hero end */}
-        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.18),transparent_60%)]" />
-        {/* soft fade to white towards the bottom */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white" />
+      {/* 2. INVENTORY SECTION (MATCH HERO END) */}
+      <section
+        className="
+          relative overflow-hidden px-6
+          pt-24 pb-24 lg:pt-28 lg:pb-28
+          bg-linear-to-b from-[#071425] via-[#081a2f] to-white
+        "
+      >
+        {/* blue glow top-left like hero */}
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.35),transparent_60%)]" />
+        {/* purple glow bottom-left like screenshot vibe */}
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_10%_95%,rgba(147,51,234,0.35),transparent_60%)]" />
+        {/* ensure lower half becomes clean white */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/15 to-white" />
 
         <div className="relative max-w-7xl mx-auto">
-          {/* match heading spacing with marquee section */}
           <div className="mb-14">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/65">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
               Inventory
             </p>
             <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white">
@@ -227,7 +234,6 @@ export default function HomeClient() {
       {/* 3. TECHNICAL CAPABILITIES STRIP (MOVED BELOW INVENTORY) */}
       <section className="relative bg-white py-20 overflow-hidden border-t">
         <div className="max-w-7xl mx-auto px-6">
-          {/* keep heading spacing equal to inventory heading block */}
           <div className="mb-14">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
               Technical Capabilities
@@ -237,7 +243,6 @@ export default function HomeClient() {
             </h2>
           </div>
 
-          {/* Marquee */}
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
@@ -261,7 +266,7 @@ export default function HomeClient() {
                 {capabilities.map(({ label, icon: Icon }) => (
                   <div key={`b-${label}`} className="cap-card">
                     <div className="text-center px-4 sm:px-6">
-                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-content-center">
                         <Icon className="text-gray-900 text-xl sm:text-2xl" />
                       </div>
                       <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">{label}</p>
@@ -282,13 +287,11 @@ export default function HomeClient() {
             animation: cap-scroll 18s linear infinite;
             will-change: transform;
           }
-
           .cap-track {
             display: flex;
             gap: 1rem;
             padding-right: 1rem;
           }
-
           .cap-card {
             flex: 0 0 auto;
             width: 56vw;
@@ -303,12 +306,10 @@ export default function HomeClient() {
             align-items: center;
             justify-content: center;
           }
-
           .cap-card:hover {
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
             transform: translateY(-2px);
           }
-
           @keyframes cap-scroll {
             from {
               transform: translateX(0);
@@ -317,12 +318,9 @@ export default function HomeClient() {
               transform: translateX(-100%);
             }
           }
-
-          /* Uses CSS animation-play-state to pause on hover */
           .pause-marquee {
             animation-play-state: paused;
           }
-
           @media (min-width: 640px) {
             .cap-card {
               width: 44vw;
@@ -330,7 +328,6 @@ export default function HomeClient() {
               height: 180px;
             }
           }
-
           @media (min-width: 768px) {
             .cap-card {
               width: 30vw;
@@ -338,7 +335,6 @@ export default function HomeClient() {
               height: 200px;
             }
           }
-
           @media (min-width: 1024px) {
             .cap-marquee {
               animation-duration: 22s;
@@ -432,4 +428,4 @@ export default function HomeClient() {
       </section>
     </main>
   );
-        }
+}
