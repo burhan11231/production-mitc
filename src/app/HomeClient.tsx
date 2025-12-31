@@ -70,7 +70,7 @@ export default function HomeClient() {
       {/* 1. HERO SECTION */}
       <section
         id="home"
-        className="relative pt-0 lg:pt-0 min-h-[60vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
+        className="relative mb-6 min-h-[60vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
       >
         <div className="absolute inset-0">
           <img
