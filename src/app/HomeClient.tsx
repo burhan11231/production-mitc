@@ -199,8 +199,8 @@ export default function HomeClient() {
               <div className="cap-track">
                 {capabilities.map(({ label, icon: Icon }) => (
                   <div key={`a-${label}`} className="cap-card">
-                    <div className="text-center px-4 sm:px-6">
-                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                    <div className="text-center px-3 sm:px-6">
+                      <div className="mx-auto mb-3 sm:mb-6 h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
                         <Icon className="text-gray-900 text-xl sm:text-2xl" />
                       </div>
                       <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">{label}</p>
@@ -233,7 +233,7 @@ export default function HomeClient() {
             display: flex;
             width: max-content;
             gap: 1rem;
-            animation: cap-scroll 9s linear infinite;
+            animation: cap-scroll 18s linear infinite;
             will-change: transform;
           }
 
@@ -247,9 +247,9 @@ export default function HomeClient() {
           /* card sizing: smaller on mobile */
           .cap-card {
             flex: 0 0 auto;
-            width: 78vw;           /* mobile smaller than your 70% + better fit */
-            max-width: 340px;
-            height: 150px;         /* smaller on mobile */
+            width: 56vw;           /* mobile smaller than your 70% + better fit */
+            max-width: 260px;
+            height: 120px;         /* smaller on mobile */
             border-radius: 1.5rem;
             border: 1px solid rgb(229 231 235);
             background: white;
@@ -299,7 +299,7 @@ export default function HomeClient() {
 
           @media (min-width: 1024px) {
             .cap-marquee {
-              animation-duration: 10s; /* slightly calmer on large screens */
+              animation-duration: 22s; /* slightly calmer on large screens */
             }
             .cap-card {
               width: 23vw;
