@@ -130,50 +130,140 @@ export default function HomeClient() {
               </div>
             </div>
 
-            {/* RATINGS BADGE */}
-            {!isStatsLoading && (
-              <div className="mt-10 lg:mt-12 flex flex-wrap items-center gap-5 lg:gap-8">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <FaStar
-                        key={star}
-                        className={star <= Math.round(ratingStats.avg) ? 'text-yellow-400' : 'text-white/20'}
-                        size={18}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-white">{ratingStats.avg}</span>
-                    <span className="text-sm text-white/50 font-medium">({ratingStats.count} reviews)</span>
-                  </div>
-                </div>
-
-                <div className="h-4 w-px bg-white/20 hidden sm:block" />
-
-                <Link
-                  href="/ratings"
-                  className="group flex items-center gap-2 text-white/90 hover:text-white transition-colors"
-                >
-                  <span className="text-xs font-bold uppercase tracking-wider border-b border-white/30 group-hover:border-white pb-0.5">
-                    Write a review
-                  </span>
-                  <svg
-                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </div>
-            )}
+            
           </div>
         </div>
       </section>
 
-      {/* 2. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
+
+
+
+      {/* 2. TECHNICAL CAPABILITIES STRIP (ANIMATION) */}
+      <section className="relative bg-white py-20 overflow-hidden border-t">
+        <div className="max-w-7xl mx-auto px-6">
+         
+
+          {/* Marquee */}
+          <div className="relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
+
+            <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
+              <div className="cap-track">
+                {capabilities.map(({ label, icon: Icon }) => (
+                  <div key={`a-${label}`} className="cap-card">
+                    <div className="text-center px-3 sm:px-6">
+                      <div className="mx-auto mb-3 sm:mb-6 h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                        <Icon className="text-gray-900 text-xl sm:text-2xl" />
+                      </div>
+                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                        {label}
+                      </p>
+                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">
+                        In-house service
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cap-track" aria-hidden="true">
+                {capabilities.map(({ label, icon: Icon }) => (
+                  <div key={`b-${label}`} className="cap-card">
+                    <div className="text-center px-4 sm:px-6">
+                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                        <Icon className="text-gray-900 text-xl sm:text-2xl" />
+                      </div>
+                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                        {label}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style jsx>{`
+          .cap-marquee {
+            display: flex;
+            width: max-content;
+            gap: 1rem;
+            animation: cap-scroll 18s linear infinite;
+            will-change: transform;
+          }
+
+          .cap-track {
+            display: flex;
+            gap: 1rem;
+            padding-right: 1rem;
+          }
+
+          .cap-card {
+            flex: 0 0 auto;
+            width: 56vw;
+            max-width: 260px;
+            height: 120px;
+            border-radius: 1.5rem;
+            border: 1px solid rgb(229 231 235);
+            background: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: transform 250ms ease, box-shadow 250ms ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .cap-card:hover {
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+          }
+
+          @keyframes cap-scroll {
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(-100%);
+            }
+          }
+
+          .pause-marquee {
+            animation-play-state: paused;
+          }
+
+          @media (min-width: 640px) {
+            .cap-card {
+              width: 44vw;
+              max-width: 360px;
+              height: 180px;
+            }
+          }
+
+          @media (min-width: 768px) {
+            .cap-card {
+              width: 30vw;
+              max-width: 360px;
+              height: 200px;
+            }
+          }
+
+          @media (min-width: 1024px) {
+            .cap-marquee {
+              animation-duration: 22s;
+            }
+            .cap-card {
+              width: 23vw;
+              max-width: 380px;
+              height: 220px;
+            }
+          }
+        `}</style>
+      </section>
+
+
+      {/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
       <section
         id="about"
         className="relative py-28 px-6 bg-white overflow-hidden"
@@ -322,140 +412,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. TECHNICAL CAPABILITIES STRIP (ANIMATION) */}
-      <section className="relative bg-white py-20 overflow-hidden border-t">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
-              Technical Capabilities
-            </p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-              Precision service. Proven expertise.
-            </h2>
-          </div>
-
-          {/* Marquee */}
-          <div className="relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
-
-            <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
-              <div className="cap-track">
-                {capabilities.map(({ label, icon: Icon }) => (
-                  <div key={`a-${label}`} className="cap-card">
-                    <div className="text-center px-3 sm:px-6">
-                      <div className="mx-auto mb-3 sm:mb-6 h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
-                        <Icon className="text-gray-900 text-xl sm:text-2xl" />
-                      </div>
-                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
-                        {label}
-                      </p>
-                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">
-                        In-house service
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="cap-track" aria-hidden="true">
-                {capabilities.map(({ label, icon: Icon }) => (
-                  <div key={`b-${label}`} className="cap-card">
-                    <div className="text-center px-4 sm:px-6">
-                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
-                        <Icon className="text-gray-900 text-xl sm:text-2xl" />
-                      </div>
-                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
-                        {label}
-                      </p>
-                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">
-                        In-house service
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .cap-marquee {
-            display: flex;
-            width: max-content;
-            gap: 1rem;
-            animation: cap-scroll 18s linear infinite;
-            will-change: transform;
-          }
-
-          .cap-track {
-            display: flex;
-            gap: 1rem;
-            padding-right: 1rem;
-          }
-
-          .cap-card {
-            flex: 0 0 auto;
-            width: 56vw;
-            max-width: 260px;
-            height: 120px;
-            border-radius: 1.5rem;
-            border: 1px solid rgb(229 231 235);
-            background: white;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            transition: transform 250ms ease, box-shadow 250ms ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .cap-card:hover {
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
-            transform: translateY(-2px);
-          }
-
-          @keyframes cap-scroll {
-            from {
-              transform: translateX(0);
-            }
-            to {
-              transform: translateX(-100%);
-            }
-          }
-
-          .pause-marquee {
-            animation-play-state: paused;
-          }
-
-          @media (min-width: 640px) {
-            .cap-card {
-              width: 44vw;
-              max-width: 360px;
-              height: 180px;
-            }
-          }
-
-          @media (min-width: 768px) {
-            .cap-card {
-              width: 30vw;
-              max-width: 360px;
-              height: 200px;
-            }
-          }
-
-          @media (min-width: 1024px) {
-            .cap-marquee {
-              animation-duration: 22s;
-            }
-            .cap-card {
-              width: 23vw;
-              max-width: 380px;
-              height: 220px;
-            }
-          }
-        `}</style>
-      </section>
-
+      
       {/* 5. TRUST PILLARS SECTION */}
       <section className="py-20 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
@@ -499,9 +456,50 @@ export default function HomeClient() {
           <iframe
             className="w-full h-[400px] lg:h-full border-0 grayscale hover:grayscale-0 transition"
             loading="lazy"
-            src="https://www.google.com/maps?q=Gaw%20Kadal%20Maisuma%20Srinagar&output=embed"
+            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3304.8450556905805!2d74.809277!3d34.073485999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzTCsDA0JzI0LjYiTiA3NMKwNDgnMzMuNCJF!5e0!3m2!1sen!2sin!4v1767205829652!5m2!1sen!2sin"
           />
         </div>
+
+{/* RATINGS BADGE */}
+            {!isStatsLoading && (
+              <div className="mt-10 lg:mt-12 flex flex-wrap items-center gap-5 lg:gap-8">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FaStar
+                        key={star}
+                        className={star <= Math.round(ratingStats.avg) ? 'text-yellow-400' : 'text-white/20'}
+                        size={16}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-baseline">
+                    <span className="text-sm font-bold text-white">{ratingStats.avg}</span>
+                    <span className="text-sm font-bold text-white">({ratingStats.count} reviews)</span>
+                  </div>
+                </div>
+
+                <div className="h-4 w-px bg-white/20 hidden sm:block" />
+
+                <Link
+                  href="/ratings"
+                  className="group flex items-center gap-2 text-white/90 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider border-b border-white/30 group-hover:border-white pb-0.5">
+                    Write a review
+                  </span>
+                  <svg
+                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+            )}
+        
       </section>
     </main>
   );
