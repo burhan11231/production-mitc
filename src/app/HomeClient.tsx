@@ -475,8 +475,8 @@ export default function HomeClient() {
                     ))}
                   </div>
                   <div className="flex items-baseline">
-                    <span className="text-sm font-bold text-white">{ratingStats.avg}</span>
-                    <span className="text-sm font-bold text-white">({ratingStats.count} reviews)</span>
+                    <span className="text-sm font-bold text-black">{ratingStats.avg}</span>
+                    <span className="text-sm font-bold text-black">({ratingStats.count} reviews)</span>
                   </div>
                 </div>
 
@@ -484,9 +484,9 @@ export default function HomeClient() {
 
                 <Link
                   href="/ratings"
-                  className="group flex items-center gap-2 text-white/90 hover:text-white transition-colors"
+                  className="group flex items-center gap-2 text-black hover:text-white transition-colors"
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider border-b border-white/30 group-hover:border-white pb-0.5">
+                  <span className="text-xs font-bold uppercase tracking-wider border-b border-black/30 group-hover:border-black pb-0.5">
                     Write a review
                   </span>
                   <svg
