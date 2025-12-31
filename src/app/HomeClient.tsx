@@ -19,6 +19,17 @@ import Link from 'next/link';
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
 
+const technicalCapabilities = [
+  { label: 'Diagnostics', icon: FaTools },
+  { label: 'Chip-Level Repair', icon: FaMicrochip },
+  { label: 'Screen Replacement', icon: FaDesktop },
+  { label: 'Battery Replacement', icon: FaBatteryHalf },
+  { label: 'OS Installation', icon: FaWindows },
+  { label: 'BIOS Update', icon: FaServer },
+  { label: 'RAM Upgrade', icon: FaMemory },
+  { label: 'SSD Upgrade', icon: MdStorage },
+];
+
 export default function HomeClient() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [ratingStats, setRatingStats] = useState({ avg: 0, count: 0 });
@@ -161,179 +172,134 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 2. TECHNICAL CAPABILITIES STRIP */}
-<section className="relative bg-white py-12 lg:py-20 overflow-hidden border-t">
-  <div className="max-w-7xl mx-auto px-6">
-    <div className="mb-10 lg:mb-14">
-      <p className="text-[10px] lg:text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
-        Technical Capabilities
-      </p>
-      <h2 className="mt-3 text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-        Precision service. Proven expertise.
-      </h2>
-    </div>
+      {/* 2. TECHNICAL CAPABILITIES STRIP - FIXED ANIMATION */}
+      <section className="relative bg-white py-12 lg:py-24 overflow-hidden border-t">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-10 lg:mb-16">
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
+              Technical Capabilities
+            </p>
+            <h2 className="mt-3 text-2xl lg:text-5xl font-bold tracking-tight text-gray-900">
+              Precision service. Proven expertise.
+            </h2>
+          </div>
 
-    {/* Animated Track Container */}
-    <div className="relative flex overflow-hidden group">
-      {/* 
-          ANIMATION EXPLANATION:
-          - We wrap the items in a div that animates.
-          - We duplicate the list (mapping twice) to create a seamless loop.
-          - 'hover:[animation-play-state:paused]' handles the pause.
-          - Duration changed from 14s to 10s for more speed.
-      */}
-      <div className="flex gap-4 lg:gap-6 animate-scroll whitespace-nowrap will-change-transform hover:[animation-play-state:paused]">
-        {/* Render the list twice for seamless looping */}
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="flex gap-4 lg:gap-6">
-            {[
-              { label: 'Diagnostics', icon: FaTools },
-              { label: 'Chip-Level Repair', icon: FaMicrochip },
-              { label: 'Screen Replacement', icon: FaDesktop },
-              { label: 'Battery Replacement', icon: FaBatteryHalf },
-              { label: 'OS Installation', icon: FaWindows },
-              { label: 'BIOS Update', icon: FaServer },
-              { label: 'RAM Upgrade', icon: FaMemory },
-              { label: 'SSD Upgrade', icon: MdStorage },
-            ].map((cap, index) => (
-              <div
-                key={index}
-                className="
-                  shrink-0  
-                  w-[140px] h-[140px]     /* Mobile Size (Smaller) */
-                  lg:w-[240px] lg:h-[200px] /* Desktop Size */
-                  rounded-2xl lg:rounded-3xl  
-                  border border-gray-100  
-                  bg-white shadow-sm  
-                  hover:shadow-md hover:border-blue-100
-                  transition-all duration-300  
-                  flex flex-col items-center justify-center
-                "
-              >
-                <div className="mb-3 lg:mb-6 h-10 w-10 lg:h-14 lg:w-14 rounded-xl lg:rounded-2xl bg-gray-50 flex items-center justify-center">
-                  <cap.icon className="text-gray-900 text-lg lg:text-2xl" />
+          <div className="relative flex overflow-hidden group">
+            {/* The Animated Track */}
+            <div className="flex gap-4 lg:gap-8 animate-scroll whitespace-nowrap will-change-transform hover:[animation-play-state:paused]">
+              {/* Render twice for seamless looping */}
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex gap-4 lg:gap-8">
+                  {technicalCapabilities.map((cap, index) => (
+                    <div
+                      key={index}
+                      className="
+                        shrink-0  
+                        w-[140px] h-[140px]        /* Smaller on Mobile */
+                        lg:w-[240px] lg:h-[220px]  /* Original on Desktop */
+                        rounded-2xl lg:rounded-[2.5rem]  
+                        border border-gray-100  
+                        bg-white shadow-sm  
+                        hover:shadow-xl hover:border-blue-50 hover:-translate-y-1
+                        transition-all duration-300  
+                        flex flex-col items-center justify-center
+                      "
+                    >
+                      <div className="mb-3 lg:mb-6 h-10 w-10 lg:h-16 lg:w-16 rounded-xl lg:rounded-2xl bg-gray-50 flex items-center justify-center">
+                        <cap.icon className="text-gray-900 text-lg lg:text-2xl" />
+                      </div>
+                      <p className="text-[13px] lg:text-lg font-bold text-gray-900 text-center px-2">
+                        {cap.label}
+                      </p>
+                      <p className="hidden lg:block mt-1 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                        In-house
+                      </p>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-xs lg:text-base font-bold text-gray-900 whitespace-normal text-center px-2">
-                  {cap.label}
-                </p>
-                <p className="hidden lg:block mt-1 text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
-                  In-house service
-                </p>
+              ))}
+            </div>
+
+            {/* Side Fades for smooth entry/exit */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 lg:w-32 bg-gradient-to-r from-white to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 lg:w-32 bg-gradient-to-l from-white to-transparent z-10" />
+          </div>
+        </div>
+
+        <style jsx>{`  
+          .animate-scroll {
+            display: flex;
+            width: max-content;
+            animation: scroll-left 10s linear infinite; /* Speed: 10s is fast, 15s is medium */
+          }
+
+          @keyframes scroll-left {  
+            0% { transform: translateX(0); }  
+            100% { transform: translateX(-50%); }  
+          }
+        `}</style>
+      </section>
+
+
+      {/* 3. INVENTORY STATEMENT SECTION */}
+      <section className="relative py-24 lg:py-36 px-6 overflow-hidden bg-white">
+        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="max-w-4xl mb-20 lg:mb-28">
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
+              Inventory
+            </p>
+            <h2 className="mt-6 text-4xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
+              Hardware that<br className="hidden sm:block" />
+              meets standards.
+            </h2>
+          </div>
+
+          <div className="space-y-16 lg:space-y-24">
+            {/* LAPTOPS */}
+            <div className="grid lg:grid-cols-5 gap-6 lg:gap-10 items-start">
+              <div className="text-xs lg:text-sm font-bold uppercase tracking-widest text-gray-400">
+                Laptops
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
+              <div className="lg:col-span-4 space-y-6 lg:space-y-8">
+                <div className="text-xl lg:text-3xl font-semibold">Dell Laptops</div>
+                <div className="text-xl lg:text-3xl font-semibold">HP Laptops</div>
+                <div className="text-xl lg:text-3xl font-semibold">Acer Laptops</div>
+                <div className="text-xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
+              </div>
+            </div>
 
-      {/* Edge Fades for a cleaner look */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
-    </div>
-  </div>
+            {/* SYSTEMS */}
+            <div className="grid lg:grid-cols-5 gap-6 lg:gap-10 items-start border-t pt-16">
+              <div className="text-xs lg:text-sm font-bold uppercase tracking-widest text-gray-400">
+                Systems
+              </div>
+              <div className="lg:col-span-4">
+                <div className="text-xl lg:text-3xl font-semibold">All-in-One PC</div>
+              </div>
+            </div>
 
-  <style jsx>{`  
-    .animate-scroll {
-      display: flex;
-      width: max-content;
-      animation: scroll-left 10s linear infinite; /* Adjusted speed to 10s */
-    }
-
-    @keyframes scroll-left {  
-      0% {  
-        transform: translateX(0);  
-      }  
-      100% {  
-        /* Moves exactly half of the doubled container */
-        transform: translateX(-50%);  
-      }  
-    }
-    
-    /* Ensure motion is smooth even on low power mode */
-    @media (prefers-reduced-motion: reduce) {
-      .animate-scroll {
-        animation: none;
-        overflow-x: auto;
-      }
-    }
-  `}</style>
-</section>
-
-
-      {/* INVENTORY STATEMENT SECTION */}
-<section className="relative py-36 px-6 overflow-hidden bg-white">
-
-  {/* Signature MITC glow */}
-  <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
-  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
-
-  <div className="relative max-w-7xl mx-auto">
-
-    {/* Headline */}
-    <div className="max-w-4xl mb-28">
-      <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
-        Inventory
-      </p>
-
-      <h2 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
-        Hardware that<br className="hidden sm:block" />
-        meets standards.
-      </h2>
-    </div>
-
-    {/* Inventory List */}
-    <div className="space-y-24">
-
-      {/* LAPTOPS */}
-      <div className="grid lg:grid-cols-5 gap-10 items-start">
-        <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
-          Laptops
-        </div>
-
-        <div className="lg:col-span-4 space-y-8">
-          <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
-          <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
-          <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
-          <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
-        </div>
-      </div>
-
-      {/* SYSTEMS */}
-      <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
-        <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
-          Systems
-        </div>
-
-        <div className="lg:col-span-4 space-y-8">
-          <div className="text-2xl lg:text-3xl font-semibold">
-            All-in-One PC
+            {/* ACCESSORIES */}
+            <div className="grid lg:grid-cols-5 gap-6 lg:gap-10 items-start border-t pt-16">
+              <div className="text-xs lg:text-sm font-bold uppercase tracking-widest text-gray-400">
+                Accessories
+              </div>
+              <div className="lg:col-span-4 space-y-6 lg:space-y-8">
+                <div className="text-lg lg:text-2xl font-medium">Keyboard</div>
+                <div className="text-lg lg:text-2xl font-medium">Mouse</div>
+                <div className="text-lg lg:text-2xl font-medium">HDMI Cable</div>
+                <div className="text-lg lg:text-2xl font-medium">Wi-Fi Dongle</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ACCESSORIES */}
-      <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
-        <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
-          Accessories
-        </div>
-
-        <div className="lg:col-span-4 space-y-8">
-          <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
-          <div className="text-xl lg:text-2xl font-medium">Mouse</div>
-          <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
-          <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-</section>
-      
-        
-
-      {/* 3. ABOUT SECTION */}
-      <section id="about" className="py-28 bg-white px-6">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+      {/* 4. ABOUT SECTION */}
+      <section id="about" className="py-20 lg:py-28 bg-white px-6">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
             <h2 className="text-4xl lg:text-6xl font-bold mb-8">
               Technical <span className="text-blue-600">Excellence.</span>
@@ -341,7 +307,7 @@ export default function HomeClient() {
             <p className="text-gray-600 text-lg mb-12">
               Since 2013, Mateen IT Corp has built a reputation for transparency, reliability, and uncompromising quality in hardware and services.
             </p>
-            <div className="flex gap-16 border-t pt-10">
+            <div className="flex gap-12 lg:gap-16 border-t pt-10">
               <div>
                 <div className="text-4xl font-bold">11+</div>
                 <div className="text-xs uppercase tracking-widest text-gray-500">Years Expertise</div>
@@ -356,13 +322,13 @@ export default function HomeClient() {
             <img
               src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1200"
               alt="MITC Interior"
-              className="w-full h-[420px] lg:h-[560px] object-cover"
+              className="w-full h-[320px] lg:h-[560px] object-cover"
             />
           </div>
         </div>
       </section>
 
-      {/* 4. TRUST PILLARS SECTION */}
+      {/* 5. TRUST PILLARS SECTION */}
       <section className="py-20 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
           {[
@@ -387,23 +353,23 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 5. LOCATION SECTION */}
+      {/* 6. LOCATION SECTION */}
       <section id="location" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden border shadow-xl grid lg:grid-cols-2">
-          <div className="p-12 flex flex-col justify-center">
+          <div className="p-8 lg:p-12 flex flex-col justify-center">
             <h2 className="text-3xl font-bold mb-8">Visit Our Showroom</h2>
             <p className="text-gray-600 mb-4">Gaw Kadal, Maisuma, Srinagar, J&amp;K 190001</p>
             <p className="font-bold text-lg mb-8">+91 80827 54459</p>
             <a
               href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
               target="_blank"
-              className="inline-block px-8 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition"
+              className="inline-block px-8 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition text-center"
             >
               Open in Google Maps
             </a>
           </div>
           <iframe
-            className="w-full h-[400px] lg:h-full border-0 grayscale hover:grayscale-0 transition"
+            className="w-full h-[300px] lg:h-full border-0 grayscale hover:grayscale-0 transition"
             loading="lazy"
             src="https://www.google.com/maps?q=Gaw%20Kadal%20Maisuma%20Srinagar&output=embed"
           />
@@ -411,4 +377,4 @@ export default function HomeClient() {
       </section>
     </main>
   );
-      }
+        }
