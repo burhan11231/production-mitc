@@ -95,12 +95,13 @@ export default function HomeClient() {
             <h1 className="mt-8 text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05]">
               Premium laptops, built for
               <span className="block mt-2">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
-                  <span className="relative text-white whitespace-nowrap border-r-2 border-white/80 pr-2">
-                    {currentWord}
-                  </span>
-                </span>
-              </span>
+  <span className="inline-grid place-items-center px-4 h-[1.25em] lg:h-[1.15em] rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+    <span className="flex items-center text-white whitespace-nowrap leading-none border-r-2 border-white/80 pr-2">
+      {currentWord}
+    </span>
+  </span>
+</span>
+
             </h1>
 
             <div className="mt-12 lg:mt-16 mb-6">
