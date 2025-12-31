@@ -324,7 +324,7 @@ export default function HomeClient() {
     </div>
 
     {/* Pillars */}
-    <div className="grid gap-8 lg:grid-cols-3">
+    <div className="grid gap-8 lg:grid-cols-2">
       {/* Pillar 1 – Warranty */}
 <div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
   <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-900 text-white">
