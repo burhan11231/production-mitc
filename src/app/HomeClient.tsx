@@ -115,34 +115,40 @@ export default function HomeClient() {
       </section>
 
       {/* 2. RATINGS BADGE SECTION (Right after Hero) */}
-      {!isStatsLoading && (
-        <section className="flex justify-center relative z-20 px-6">
-          <div className="group inline-flex flex-wrap items-center justify-center rounded-3xl lg:rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_10px_30px_rgba(15,23,42,0.10)] px-5 py-3 gap-4">
-            <div className="inline-flex items-center gap-2">
-              <div className="inline-flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <FaStar 
-                    key={star} 
-                    className={star <= Math.round(ratingStats.avg) ? "text-amber-400" : "text-gray-200"} 
-                    size={16} 
-                  />
-                ))}
-              </div>
-              <div className="inline-flex items-baseline gap-2 whitespace-nowrap">
-                <span className="text-sm font-bold text-slate-900">{ratingStats.avg}</span>
-                <span className="text-sm text-slate-500 font-medium">({ratingStats.count} reviews)</span>
-              </div>
-            </div>
-            <div className="hidden sm:block h-5 w-px bg-slate-200"></div>
-            <Link
-              href="/ratings"
-              className="inline-flex items-center justify-center rounded-full h-9 px-4 text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition-all border border-blue-100"
-            >
-              Write a review
-            </Link>
-          </div>
-        </section>
-      )}
+{!isStatsLoading && (
+  <section className="flex justify-center relative z-20 px-6 my-10 md:my-14 lg:my-16">
+    <div className="group inline-flex flex-wrap items-center justify-center rounded-3xl lg:rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_10px_30px_rgba(15,23,42,0.10)] px-5 py-3 gap-4">
+      
+      <div className="inline-flex items-center gap-2">
+        <div className="inline-flex items-center gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <FaStar
+              key={star}
+              className={star <= Math.round(ratingStats.avg) ? "text-amber-400" : "text-gray-200"}
+              size={16}
+            />
+          ))}
+        </div>
+
+        <div className="inline-flex items-baseline gap-2 whitespace-nowrap">
+          <span className="text-sm font-bold text-slate-900">{ratingStats.avg}</span>
+          <span className="text-sm text-slate-500 font-medium">
+            ({ratingStats.count} reviews)
+          </span>
+        </div>
+      </div>
+
+      <div className="hidden sm:block h-5 w-px bg-slate-200"></div>
+
+      <Link
+        href="/ratings"
+        className="inline-flex items-center justify-center rounded-full h-9 px-4 text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition-all border border-blue-100"
+      >
+        Write a review
+      </Link>
+    </div>
+  </section>
+)}
 
       {/* 3. SERVICES SECTION */}
       <section id="services" className="py-24 bg-gray-50 px-6">
