@@ -203,19 +203,19 @@ export default function HomeClient() {
           .map(({ label, icon: Icon }, index) => (
             <div
               key={index}
-              className="
-                shrink-0
-                w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
-                h-[180px] lg:h-[220px]
-                rounded-3xl
-                border border-gray-200
-                bg-white
-                shadow-sm
-                hover:shadow-xl
-                transition-all duration-300
-                flex items-center justify-center
-              "
-            >
+              className={`
+  shrink-0
+  w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
+  h-[180px] lg:h-[220px]
+  rounded-3xl
+  border border-gray-200
+  bg-white
+  shadow-sm
+  hover:shadow-xl
+  transition-all duration-300
+  flex items-center justify-center
+`}
+            
               <div className="text-center px-6">
                 {/* Icon */}
                 <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
