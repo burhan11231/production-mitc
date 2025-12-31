@@ -466,20 +466,7 @@ export default function HomeClient() {
         </p>
       </div>
 
-      {/* Pillar 3 */}
-      <div className="group relative rounded-3xl border border-gray-200 bg-gray-900 p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.25)]">
-        <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-white text-gray-900 text-xl font-bold">
-          11+
-        </div>
-        <h3 className="text-xl lg:text-2xl font-semibold text-white mb-4">
-          Experience & Trust
-        </h3>
-        <p className="text-white/80 leading-relaxed text-sm lg:text-base">
-          Operating since 2013 with a second branch added in 2025, MITC is trusted
-          by students, professionals, offices, and businesses across Kashmir for
-          consistency and reliability.
-        </p>
-      </div>
+      
     </div>
   </div>
 </section>
