@@ -1,19 +1,47 @@
-// src/app/HomeClient.tsx
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { FaStar } from 'react-icons/fa';
+import Link from 'next/link';
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
 
 export default function HomeClient() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [ratingStats, setRatingStats] = useState({ avg: 0, count: 0 });
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
+
   const currentWord = heroWords[currentWordIndex];
 
   useEffect(() => {
+    // Hero word rotation
     const interval = setInterval(() => {
       setCurrentWordIndex((prev) => (prev + 1) % heroWords.length);
     }, 1800);
 
+    // Fetch Rating Stats
+    const fetchStats = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'reviews'));
+        const reviews = querySnapshot.docs.map(doc => doc.data());
+        
+        if (reviews.length > 0) {
+          const sum = reviews.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+          setRatingStats({
+            avg: Math.round((sum / reviews.length) * 10) / 10,
+            count: reviews.length
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+      } finally {
+        setIsStatsLoading(false);
+      }
+    };
+
+    fetchStats();
     return () => clearInterval(interval);
   }, []);
 
@@ -47,12 +75,12 @@ export default function HomeClient() {
             <h1 className="mt-8 text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05]">
               Premium laptops, built for
               <span className="block mt-2">
-  <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
-    <span className="relative text-white whitespace-nowrap border-r-2 border-white/80 pr-2">
-      {currentWord}
-    </span>
-  </span>
-</span>
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                  <span className="relative text-white whitespace-nowrap border-r-2 border-white/80 pr-2">
+                    {currentWord}
+                  </span>
+                </span>
+              </span>
             </h1>
 
             <div className="mt-12 lg:mt-16">
@@ -87,30 +115,35 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* TRUST PILLARS */}
-      <section className="py-20 bg-white px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
-          {[
-            {
-              title: '15-Day Replacement Warranty',
-              text: 'Every laptop includes a 15-day replacement warranty with basic testing done in front of the customer.',
-            },
-            {
-              title: 'Fair Market Pricing',
-              text: 'Prices adjusted based on market conditions to ensure best value on imported and open-box laptops.',
-            },
-            {
-              title: 'Experience & Trust',
-              text: 'Established in 2013 and expanded with a second branch in 2025, trusted across Kashmir.',
-            },
-          ].map((item) => (
-            <div key={item.title} className="text-center">
-              <h3 className="font-bold text-lg mb-3">{item.title}</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">{item.text}</p>
+      {/* RATINGS BADGE SECTION */}
+      {!isStatsLoading && (
+        <section className="flex justify-center -mt-8 relative z-20 px-6">
+          <div className="group inline-flex flex-wrap items-center justify-center rounded-3xl lg:rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_10px_30px_rgba(15,23,42,0.10)] px-5 py-3 gap-4">
+            <div className="inline-flex items-center gap-2">
+              <div className="inline-flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <FaStar 
+                    key={star} 
+                    className={star <= Math.round(ratingStats.avg) ? "text-amber-400" : "text-gray-200"} 
+                    size={16} 
+                  />
+                ))}
+              </div>
+              <div className="inline-flex items-baseline gap-2 whitespace-nowrap">
+                <span className="text-sm font-bold text-slate-900">{ratingStats.avg}</span>
+                <span className="text-sm text-slate-500 font-medium">({ratingStats.count} reviews)</span>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="hidden sm:block h-5 w-px bg-slate-200"></div>
+            <Link
+              href="/ratings"
+              className="inline-flex items-center justify-center rounded-full h-9 px-4 text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition-all border border-blue-100"
+            >
+              Write a review
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* SERVICES */}
       <section id="services" className="py-24 bg-gray-50 px-6">
@@ -178,28 +211,35 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* TRUST PILLARS (Moved to below About) */}
+      <section className="py-20 bg-white px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
+          {[
+            {
+              title: '15-Day Replacement Warranty',
+              text: 'Every laptop includes a 15-day replacement warranty with basic testing done in front of the customer.',
+            },
+            {
+              title: 'Fair Market Pricing',
+              text: 'Prices adjusted based on market conditions to ensure best value on imported and open-box laptops.',
+            },
+            {
+              title: 'Experience & Trust',
+              text: 'Established in 2013 and expanded with a second branch in 2025, trusted across Kashmir.',
+            },
+          ].map((item) => (
+            <div key={item.title} className="text-center">
+              <h3 className="font-bold text-lg mb-3">{item.title}</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* LOCATION */}
       <section id="location" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden border shadow-xl grid lg:grid-cols-2">
           <div className="p-12 flex flex-col justify-center">
             <h2 className="text-3xl font-bold mb-8">Visit Our Showroom</h2>
             <p className="text-gray-600 mb-4">Gaw Kadal, Maisuma, Srinagar, J&amp;K 190001</p>
-            <p className="font-bold text-lg mb-8">+91 80827 54459</p>
-            <a
-              href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
-              target="_blank"
-              className="inline-block px-8 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition"
-            >
-              Open in Google Maps
-            </a>
-          </div>
-          <iframe
-            className="w-full h-[400px] lg:h-full border-0 grayscale hover:grayscale-0 transition"
-            loading="lazy"
-            src="https://www.google.com/maps?q=Gaw%20Kadal%20Maisuma%20Srinagar&output=embed"
-          />
-        </div>
-      </section>
-    </main>
-  );
-}
+            <p className="font-bold text-lg mb
