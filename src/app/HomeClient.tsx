@@ -175,7 +175,7 @@ export default function HomeClient() {
 
           {/* Animated Track - FIXED CLASSNAME HERE */}
           <div className="relative overflow-hidden">
-            <div className="flex gap-6 animate-[scroll-left_32s_linear_infinite] will-change-transform motion-reduce:animate-none">
+            <div className="flex gap-6 animate-[scroll-left_14s_linear_infinite] will-change-transform motion-reduce:animate-none">
               {[
                 { label: 'Diagnostics', icon: FaTools },
                 { label: 'Chip-Level Repair', icon: FaMicrochip },
@@ -238,40 +238,87 @@ export default function HomeClient() {
         `}</style>
       </section>
 
-      {/* 2. SERVICES SECTION */}
-      <section id="services" className="py-24 bg-gray-50 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl lg:text-6xl font-bold mb-16">
-            Sales, service, and performance.
-          </h2>
-          <div className="grid lg:grid-cols-2 gap-10">
-            <div className="bg-white p-10 rounded-3xl border hover:shadow-xl transition">
-              <h3 className="text-2xl font-bold mb-4">Laptop Inventory & Accessories</h3>
-              <p className="text-gray-600 mb-8">
-                Business-grade laptops and essential accessories for students, professionals, offices, and bulk buyers.
-              </p>
-              <ul className="grid grid-cols-2 gap-3 text-sm font-semibold">
-                <li>Dell Laptops</li>
-                <li>HP Laptops</li>
-                <li>Acer Laptops</li>
-                <li>Lenovo ThinkPad</li>
-              </ul>
-            </div>
-            <div className="bg-white p-10 rounded-3xl border hover:shadow-xl transition">
-              <h3 className="text-2xl font-bold mb-4">Repair, Service & Upgrades</h3>
-              <p className="text-gray-600 mb-8">
-                Diagnostics, repairs, SSD & RAM upgrades, and advanced logic-board servicing with 5–15 day turnaround.
-              </p>
-              <ul className="grid grid-cols-2 gap-3 text-sm font-semibold">
-                <li>Laptop Repair</li>
-                <li>SSD Upgrade</li>
-                <li>RAM Upgrade</li>
-                <li>Screen Replacement</li>
-              </ul>
-            </div>
-          </div>
+      {/* 3. SERVICES SECTION – SALES & TECHNICAL SERVICES */}
+<section
+  id="services"
+  className="relative bg-gray-50 py-28 px-6"
+>
+  <div className="max-w-7xl mx-auto">
+
+    {/* Section Header */}
+    <div className="max-w-3xl mb-20">
+      <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
+        What we offer
+      </p>
+      <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900">
+        Sales, service, and long-term reliability.
+      </h2>
+      <p className="mt-5 text-lg text-gray-600 leading-relaxed">
+        Carefully sourced hardware, transparent pricing, and in-house technical
+        expertise — built for students, professionals, and growing businesses.
+      </p>
+    </div>
+
+    {/* Services Grid */}
+    <div className="grid lg:grid-cols-2 gap-12">
+
+      {/* SALES CARD */}
+      <div className="relative bg-white rounded-[2rem] border border-gray-200 p-10 lg:p-12 shadow-sm hover:shadow-xl transition-shadow">
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
+          Sales
+        </p>
+
+        <h3 className="mt-4 text-2xl lg:text-3xl font-bold text-gray-900">
+          Laptop Inventory & Accessories
+        </h3>
+
+        <p className="mt-4 text-gray-600 text-base leading-relaxed">
+          Business-grade and open-box laptops, tested in-store and priced fairly
+          based on current market conditions. Suitable for individuals, offices,
+          institutions, and bulk buyers.
+        </p>
+
+        <div className="mt-8 grid grid-cols-2 gap-y-3 text-sm font-semibold text-gray-800">
+          <span>Dell Laptops</span>
+          <span>HP Laptops</span>
+          <span>Acer Laptops</span>
+          <span>Lenovo ThinkPad</span>
         </div>
-      </section>
+
+        {/* Accent line */}
+        <div className="mt-10 h-[2px] w-16 bg-gray-900/10 rounded-full" />
+      </div>
+
+      {/* SERVICES CARD */}
+      <div className="relative bg-white rounded-[2rem] border border-gray-200 p-10 lg:p-12 shadow-sm hover:shadow-xl transition-shadow">
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
+          Technical Services
+        </p>
+
+        <h3 className="mt-4 text-2xl lg:text-3xl font-bold text-gray-900">
+          Repair, Service & Upgrades
+        </h3>
+
+        <p className="mt-4 text-gray-600 text-base leading-relaxed">
+          In-house diagnostics, component-level repairs, and performance upgrades
+          handled by experienced technicians. Advanced logic-board work completed
+          with clear timelines.
+        </p>
+
+        <div className="mt-8 grid grid-cols-2 gap-y-3 text-sm font-semibold text-gray-800">
+          <span>Laptop Repair</span>
+          <span>SSD Upgrade</span>
+          <span>RAM Upgrade</span>
+          <span>Screen Replacement</span>
+        </div>
+
+        {/* Accent line */}
+        <div className="mt-10 h-[2px] w-16 bg-gray-900/10 rounded-full" />
+      </div>
+
+    </div>
+  </div>
+</section>
 
       {/* 3. ABOUT SECTION */}
       <section id="about" className="py-28 bg-white px-6">
