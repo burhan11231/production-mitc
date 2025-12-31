@@ -238,87 +238,78 @@ export default function HomeClient() {
         `}</style>
       </section>
 
-      {/* 3. SERVICES SECTION – SALES & TECHNICAL SERVICES */}
-<section
-  id="services"
-  className="relative bg-gray-50 py-28 px-6"
->
-  <div className="max-w-7xl mx-auto">
 
-    {/* Section Header */}
-    <div className="max-w-3xl mb-20">
-      <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
-        What we offer
+      {/* INVENTORY STATEMENT SECTION */}
+<section className="relative py-36 px-6 overflow-hidden bg-white">
+
+  {/* Signature MITC glow */}
+  <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
+  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
+
+  <div className="relative max-w-7xl mx-auto">
+
+    {/* Headline */}
+    <div className="max-w-4xl mb-28">
+      <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
+        Inventory
       </p>
-      <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900">
-        Sales, service, and long-term reliability.
+
+      <h2 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
+        Hardware that<br className="hidden sm:block" />
+        meets standards.
       </h2>
-      <p className="mt-5 text-lg text-gray-600 leading-relaxed">
-        Carefully sourced hardware, transparent pricing, and in-house technical
-        expertise — built for students, professionals, and growing businesses.
-      </p>
     </div>
 
-    {/* Services Grid */}
-    <div className="grid lg:grid-cols-2 gap-12">
+    {/* Inventory List */}
+    <div className="space-y-24">
 
-      {/* SALES CARD */}
-      <div className="relative bg-white rounded-[2rem] border border-gray-200 p-10 lg:p-12 shadow-sm hover:shadow-xl transition-shadow">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
-          Sales
-        </p>
-
-        <h3 className="mt-4 text-2xl lg:text-3xl font-bold text-gray-900">
-          Laptop Inventory & Accessories
-        </h3>
-
-        <p className="mt-4 text-gray-600 text-base leading-relaxed">
-          Business-grade and open-box laptops, tested in-store and priced fairly
-          based on current market conditions. Suitable for individuals, offices,
-          institutions, and bulk buyers.
-        </p>
-
-        <div className="mt-8 grid grid-cols-2 gap-y-3 text-sm font-semibold text-gray-800">
-          <span>Dell Laptops</span>
-          <span>HP Laptops</span>
-          <span>Acer Laptops</span>
-          <span>Lenovo ThinkPad</span>
+      {/* LAPTOPS */}
+      <div className="grid lg:grid-cols-5 gap-10 items-start">
+        <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
+          Laptops
         </div>
 
-        {/* Accent line */}
-        <div className="mt-10 h-[2px] w-16 bg-gray-900/10 rounded-full" />
+        <div className="lg:col-span-4 space-y-8">
+          <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
+          <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
+          <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
+          <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
+        </div>
       </div>
 
-      {/* SERVICES CARD */}
-      <div className="relative bg-white rounded-[2rem] border border-gray-200 p-10 lg:p-12 shadow-sm hover:shadow-xl transition-shadow">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
-          Technical Services
-        </p>
-
-        <h3 className="mt-4 text-2xl lg:text-3xl font-bold text-gray-900">
-          Repair, Service & Upgrades
-        </h3>
-
-        <p className="mt-4 text-gray-600 text-base leading-relaxed">
-          In-house diagnostics, component-level repairs, and performance upgrades
-          handled by experienced technicians. Advanced logic-board work completed
-          with clear timelines.
-        </p>
-
-        <div className="mt-8 grid grid-cols-2 gap-y-3 text-sm font-semibold text-gray-800">
-          <span>Laptop Repair</span>
-          <span>SSD Upgrade</span>
-          <span>RAM Upgrade</span>
-          <span>Screen Replacement</span>
+      {/* SYSTEMS */}
+      <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
+        <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
+          Systems
         </div>
 
-        {/* Accent line */}
-        <div className="mt-10 h-[2px] w-16 bg-gray-900/10 rounded-full" />
+        <div className="lg:col-span-4 space-y-8">
+          <div className="text-2xl lg:text-3xl font-semibold">
+            All-in-One PC
+          </div>
+        </div>
+      </div>
+
+      {/* ACCESSORIES */}
+      <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
+        <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
+          Accessories
+        </div>
+
+        <div className="lg:col-span-4 space-y-8">
+          <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
+          <div className="text-xl lg:text-2xl font-medium">Mouse</div>
+          <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
+          <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
+        </div>
       </div>
 
     </div>
+
   </div>
 </section>
+      
+        
 
       {/* 3. ABOUT SECTION */}
       <section id="about" className="py-28 bg-white px-6">
