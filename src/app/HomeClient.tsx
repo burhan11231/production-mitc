@@ -162,81 +162,101 @@ export default function HomeClient() {
       </section>
 
       {/* 2. TECHNICAL CAPABILITIES STRIP */}
-      <section className="relative bg-white py-20 overflow-hidden border-t">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
-              Technical Capabilities
-            </p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-              Precision service. Proven expertise.
-            </h2>
-          </div>
+<section className="relative bg-white py-12 lg:py-20 overflow-hidden border-t">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="mb-10 lg:mb-14">
+      <p className="text-[10px] lg:text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
+        Technical Capabilities
+      </p>
+      <h2 className="mt-3 text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+        Precision service. Proven expertise.
+      </h2>
+    </div>
 
-          {/* Animated Track - FIXED CLASSNAME HERE */}
-          <div className="relative overflow-hidden">
-            <div className="flex gap-6 animate-[scroll-left_14s_linear_infinite] will-change-transform motion-reduce:animate-none">
-              {[
-                { label: 'Diagnostics', icon: FaTools },
-                { label: 'Chip-Level Repair', icon: FaMicrochip },
-                { label: 'Screen Replacement', icon: FaDesktop },
-                { label: 'Battery Replacement', icon: FaBatteryHalf },
-                { label: 'OS Installation', icon: FaWindows },
-                { label: 'BIOS Update', icon: FaServer },
-                { label: 'RAM Upgrade', icon: FaMemory },
-                { label: 'SSD Upgrade', icon: MdStorage },
-                { label: 'Diagnostics', icon: FaTools },
-                { label: 'Chip-Level Repair', icon: FaMicrochip },
-                { label: 'Screen Replacement', icon: FaDesktop },
-                { label: 'Battery Replacement', icon: FaBatteryHalf },
-                { label: 'OS Installation', icon: FaWindows },
-                { label: 'BIOS Update', icon: FaServer },
-                { label: 'RAM Upgrade', icon: FaMemory },
-                { label: 'SSD Upgrade', icon: MdStorage },
-              ].map(({ label, icon: Icon }, index) => (
-                <div
-                  key={index}
-                  className={`  
-                    shrink-0  
-                    w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]  
-                    h-[180px] lg:h-[220px]  
-                    rounded-3xl  
-                    border border-gray-200  
-                    bg-white  
-                    shadow-sm  
-                    hover:shadow-xl  
-                    transition-all duration-300  
-                    flex items-center justify-center  
-                  `}
-                >
-                  <div className="text-center px-6">
-                    <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
-                      <Icon className="text-gray-900 text-2xl" />
-                    </div>
-                    <p className="text-base lg:text-lg font-semibold text-gray-900">
-                      {label}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500 font-medium">
-                      In-house service
-                    </p>
-                  </div>
+    {/* Animated Track Container */}
+    <div className="relative flex overflow-hidden group">
+      {/* 
+          ANIMATION EXPLANATION:
+          - We wrap the items in a div that animates.
+          - We duplicate the list (mapping twice) to create a seamless loop.
+          - 'hover:[animation-play-state:paused]' handles the pause.
+          - Duration changed from 14s to 10s for more speed.
+      */}
+      <div className="flex gap-4 lg:gap-6 animate-scroll whitespace-nowrap will-change-transform hover:[animation-play-state:paused]">
+        {/* Render the list twice for seamless looping */}
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="flex gap-4 lg:gap-6">
+            {[
+              { label: 'Diagnostics', icon: FaTools },
+              { label: 'Chip-Level Repair', icon: FaMicrochip },
+              { label: 'Screen Replacement', icon: FaDesktop },
+              { label: 'Battery Replacement', icon: FaBatteryHalf },
+              { label: 'OS Installation', icon: FaWindows },
+              { label: 'BIOS Update', icon: FaServer },
+              { label: 'RAM Upgrade', icon: FaMemory },
+              { label: 'SSD Upgrade', icon: MdStorage },
+            ].map((cap, index) => (
+              <div
+                key={index}
+                className="
+                  shrink-0  
+                  w-[140px] h-[140px]     /* Mobile Size (Smaller) */
+                  lg:w-[240px] lg:h-[200px] /* Desktop Size */
+                  rounded-2xl lg:rounded-3xl  
+                  border border-gray-100  
+                  bg-white shadow-sm  
+                  hover:shadow-md hover:border-blue-100
+                  transition-all duration-300  
+                  flex flex-col items-center justify-center
+                "
+              >
+                <div className="mb-3 lg:mb-6 h-10 w-10 lg:h-14 lg:w-14 rounded-xl lg:rounded-2xl bg-gray-50 flex items-center justify-center">
+                  <cap.icon className="text-gray-900 text-lg lg:text-2xl" />
                 </div>
-              ))}
-            </div>
+                <p className="text-xs lg:text-base font-bold text-gray-900 whitespace-normal text-center px-2">
+                  {cap.label}
+                </p>
+                <p className="hidden lg:block mt-1 text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
+                  In-house service
+                </p>
+              </div>
+            ))}
           </div>
-        </div>
+        ))}
+      </div>
 
-        <style jsx>{`  
-          @keyframes scroll-left {  
-            from {  
-              transform: translateX(0);  
-            }  
-            to {  
-              transform: translateX(-50%);  
-            }  
-          }  
-        `}</style>
-      </section>
+      {/* Edge Fades for a cleaner look */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
+    </div>
+  </div>
+
+  <style jsx>{`  
+    .animate-scroll {
+      display: flex;
+      width: max-content;
+      animation: scroll-left 10s linear infinite; /* Adjusted speed to 10s */
+    }
+
+    @keyframes scroll-left {  
+      0% {  
+        transform: translateX(0);  
+      }  
+      100% {  
+        /* Moves exactly half of the doubled container */
+        transform: translateX(-50%);  
+      }  
+    }
+    
+    /* Ensure motion is smooth even on low power mode */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-scroll {
+        animation: none;
+        overflow-x: auto;
+      }
+    }
+  `}</style>
+</section>
 
 
       {/* INVENTORY STATEMENT SECTION */}
