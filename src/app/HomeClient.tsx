@@ -155,9 +155,6 @@ export default function HomeClient() {
                 <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
                   {label}
                 </p>
-                <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">
-                  In-house service
-                </p>
               </div>
             </div>
           ))}
