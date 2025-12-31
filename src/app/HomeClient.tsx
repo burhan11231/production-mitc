@@ -32,12 +32,12 @@ export default function HomeClient() {
       setCurrentWordIndex((prev) => (prev + 1) % heroWords.length);
     }, 1800);
 
-    // Fetch Rating Stats from Firebase
+    // Fetch Rating Stats from Firebase  
     const fetchStats = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'reviews'));
         const reviews = querySnapshot.docs.map(doc => doc.data());
-        
+
         if (reviews.length > 0) {
           const sum = reviews.reduce((acc, curr) => acc + (curr.rating || 0), 0);
           setRatingStats({
@@ -54,6 +54,7 @@ export default function HomeClient() {
 
     fetchStats();
     return () => clearInterval(interval);
+
   }, []);
 
   return (
@@ -122,16 +123,16 @@ export default function HomeClient() {
               </div>
             </div>
 
-            {/* RATINGS BADGE (Now inside Hero, transparent background) */}
+            {/* RATINGS BADGE */}
             {!isStatsLoading && (
               <div className="mt-10 lg:mt-12 flex flex-wrap items-center gap-5 lg:gap-8">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <FaStar 
-                        key={star} 
-                        className={star <= Math.round(ratingStats.avg) ? "text-yellow-400" : "text-white/20"} 
-                        size={18} 
+                      <FaStar
+                        key={star}
+                        className={star <= Math.round(ratingStats.avg) ? "text-yellow-400" : "text-white/20"}
+                        size={18}
                       />
                     ))}
                   </div>
@@ -140,7 +141,7 @@ export default function HomeClient() {
                     <span className="text-sm text-white/50 font-medium">({ratingStats.count} reviews)</span>
                   </div>
                 </div>
-                
+
                 <div className="h-4 w-px bg-white/20 hidden sm:block" />
 
                 <Link
@@ -160,102 +161,83 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* 2. TECHNICAL CAPABILITIES STRIP */}
+      <section className="relative bg-white py-20 overflow-hidden border-t">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-14">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
+              Technical Capabilities
+            </p>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+              Precision service. Proven expertise.
+            </h2>
+          </div>
 
-{/* 2. TECHNICAL CAPABILITIES STRIP */}
-<section className="relative bg-white py-20 overflow-hidden border-t">
-  <div className="max-w-7xl mx-auto px-6">
-
-    {/* Heading */}
-    <div className="mb-14">
-      <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
-        Technical Capabilities
-      </p>
-      <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-        Precision service. Proven expertise.
-      </h2>
-    </div>
-
-    {/* Animated Track */}
-    <div className="relative overflow-hidden">
-      <div
-        className="
-          flex gap-6
-          animate-[scroll-left_32s_linear_infinite]
-          will-change-transform
-          motion-reduce:animate-none
-        "
-      >
-        {[
-          { label: 'Diagnostics', icon: FaTools },
-          { label: 'Chip-Level Repair', icon: FaMicrochip },
-          { label: 'Screen Replacement', icon: FaDesktop },
-          { label: 'Battery Replacement', icon: FaBatteryHalf },
-          { label: 'OS Installation', icon: FaWindows },
-          { label: 'BIOS Update', icon: FaServer },
-          { label: 'RAM Upgrade', icon: FaMemory },
-          { label: 'SSD Upgrade', icon: MdStorage },
-          // duplicate for seamless loop
-          { label: 'Diagnostics', icon: FaTools },
-          { label: 'Chip-Level Repair', icon: FaMicrochip },
-          { label: 'Screen Replacement', icon: FaDesktop },
-          { label: 'Battery Replacement', icon: FaBatteryHalf },
-          { label: 'OS Installation', icon: FaWindows },
-          { label: 'BIOS Update', icon: FaServer },
-          { label: 'RAM Upgrade', icon: FaMemory },
-          { label: 'SSD Upgrade', icon: MdStorage },
-        ].map(({ label, icon: Icon }, index) => (
-          <div
-            key={index}
-            className={`
-              shrink-0
-              w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
-              h-[180px] lg:h-[220px]
-              rounded-3xl
-              border border-gray-200
-              bg-white
-              shadow-sm
-              hover:shadow-xl
-              transition-all duration-300
-              flex items-center justify-center
-            `}
-          >
-            <div className="text-center px-6">
-              {/* Icon */}
-              <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
-                <Icon className="text-gray-900 text-2xl" />
-              </div>
-
-              {/* Label */}
-              <p className="text-base lg:text-lg font-semibold text-gray-900">
-                {label}
-              </p>
-
-              {/* Subtle confidence cue */}
-              <p className="mt-1 text-xs text-gray-500 font-medium">
-                In-house service
-              </p>
+          {/* Animated Track - FIXED CLASSNAME HERE */}
+          <div className="relative overflow-hidden">
+            <div className="flex gap-6 animate-[scroll-left_32s_linear_infinite] will-change-transform motion-reduce:animate-none">
+              {[
+                { label: 'Diagnostics', icon: FaTools },
+                { label: 'Chip-Level Repair', icon: FaMicrochip },
+                { label: 'Screen Replacement', icon: FaDesktop },
+                { label: 'Battery Replacement', icon: FaBatteryHalf },
+                { label: 'OS Installation', icon: FaWindows },
+                { label: 'BIOS Update', icon: FaServer },
+                { label: 'RAM Upgrade', icon: FaMemory },
+                { label: 'SSD Upgrade', icon: MdStorage },
+                { label: 'Diagnostics', icon: FaTools },
+                { label: 'Chip-Level Repair', icon: FaMicrochip },
+                { label: 'Screen Replacement', icon: FaDesktop },
+                { label: 'Battery Replacement', icon: FaBatteryHalf },
+                { label: 'OS Installation', icon: FaWindows },
+                { label: 'BIOS Update', icon: FaServer },
+                { label: 'RAM Upgrade', icon: FaMemory },
+                { label: 'SSD Upgrade', icon: MdStorage },
+              ].map(({ label, icon: Icon }, index) => (
+                <div
+                  key={index}
+                  className={`  
+                    shrink-0  
+                    w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]  
+                    h-[180px] lg:h-[220px]  
+                    rounded-3xl  
+                    border border-gray-200  
+                    bg-white  
+                    shadow-sm  
+                    hover:shadow-xl  
+                    transition-all duration-300  
+                    flex items-center justify-center  
+                  `}
+                >
+                  <div className="text-center px-6">
+                    <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                      <Icon className="text-gray-900 text-2xl" />
+                    </div>
+                    <p className="text-base lg:text-lg font-semibold text-gray-900">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 font-medium">
+                      In-house service
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
 
-  </div>
+        <style jsx>{`  
+          @keyframes scroll-left {  
+            from {  
+              transform: translateX(0);  
+            }  
+            to {  
+              transform: translateX(-50%);  
+            }  
+          }  
+        `}</style>
+      </section>
 
-  {/* Animation */}
-  <style jsx>{`
-    @keyframes scroll-left {
-      from {
-        transform: translateX(0);
-      }
-      to {
-        transform: translateX(-50%);
-      }
-    }
-  `}</style>
-</section>
-      
-      
       {/* 2. SERVICES SECTION */}
       <section id="services" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto">
@@ -371,4 +353,4 @@ export default function HomeClient() {
       </section>
     </main>
   );
-}
+      }
