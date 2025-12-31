@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -79,7 +78,7 @@ export default function HomeClient() {
             className="h-full w-full object-cover object-center"
             loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-white/10" />
           <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
         </div>
 
@@ -174,54 +173,62 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 2. INVENTORY STATEMENT SECTION (MOVED UP & BG UPDATED) */}
-      <section className="relative py-24 px-6 overflow-hidden bg-gradient-to-b from-black via-white to-white">
-        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
-        
+      {/* 2. INVENTORY STATEMENT SECTION (UPDATED BACKGROUND + SPACING) */}
+      <section className="relative py-24 lg:py-28 px-6 overflow-hidden bg-gradient-to-b from-[#071425] via-[#0a1b33] to-white">
+        {/* subtle blue glow like hero end */}
+        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.18),transparent_60%)]" />
+        {/* soft fade to white towards the bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white" />
+
         <div className="relative max-w-7xl mx-auto">
-          <div className="max-w-4xl mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.4em] text-white/50">Inventory</p>
-            <h2 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-white">
-              Hardware that<br className="hidden sm:block" />
+          {/* match heading spacing with marquee section */}
+          <div className="mb-14">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/65">
+              Inventory
+            </p>
+            <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white">
+              Hardware that
+              <br className="hidden sm:block" />
               meets standards.
             </h2>
           </div>
 
-          <div className="space-y-24 text-gray-900">
+          <div className="space-y-16 lg:space-y-20">
             <div className="grid lg:grid-cols-5 gap-10 items-start">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Laptops</div>
-              <div className="lg:col-span-4 space-y-8">
-                <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
+              <div className="text-sm font-bold uppercase tracking-widest text-white/55">Laptops</div>
+              <div className="lg:col-span-4 space-y-6">
+                <div className="text-xl lg:text-2xl font-semibold text-white">Dell Laptops</div>
+                <div className="text-xl lg:text-2xl font-semibold text-white">HP Laptops</div>
+                <div className="text-xl lg:text-2xl font-semibold text-white">Acer Laptops</div>
+                <div className="text-xl lg:text-2xl font-semibold text-white">Lenovo ThinkPad</div>
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-gray-100 pt-16">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Systems</div>
-              <div className="lg:col-span-4 space-y-8">
-                <div className="text-2xl lg:text-3xl font-semibold">All-in-One PC</div>
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-white/15 pt-12 lg:pt-14">
+              <div className="text-sm font-bold uppercase tracking-widest text-white/55">Systems</div>
+              <div className="lg:col-span-4 space-y-6">
+                <div className="text-xl lg:text-2xl font-semibold text-white">All-in-One PC</div>
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-gray-100 pt-16">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Accessories</div>
-              <div className="lg:col-span-4 space-y-8">
-                <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
-                <div className="text-xl lg:text-2xl font-medium">Mouse</div>
-                <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
-                <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-white/15 pt-12 lg:pt-14">
+              <div className="text-sm font-bold uppercase tracking-widest text-white/55">Accessories</div>
+              <div className="lg:col-span-4 space-y-5">
+                <div className="text-lg lg:text-xl font-medium text-white/90">Keyboard</div>
+                <div className="text-lg lg:text-xl font-medium text-white/90">Mouse</div>
+                <div className="text-lg lg:text-xl font-medium text-white/90">HDMI Cable</div>
+                <div className="text-lg lg:text-xl font-medium text-white/90">Wi-Fi Dongle</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. TECHNICAL CAPABILITIES STRIP (MOVED DOWN) */}
-      <section className="relative bg-white py-24 overflow-hidden border-t">
+      {/* 3. TECHNICAL CAPABILITIES STRIP (MOVED BELOW INVENTORY) */}
+      <section className="relative bg-white py-20 overflow-hidden border-t">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
+          {/* keep heading spacing equal to inventory heading block */}
+          <div className="mb-14">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
               Technical Capabilities
             </p>
@@ -275,11 +282,13 @@ export default function HomeClient() {
             animation: cap-scroll 18s linear infinite;
             will-change: transform;
           }
+
           .cap-track {
             display: flex;
             gap: 1rem;
             padding-right: 1rem;
           }
+
           .cap-card {
             flex: 0 0 auto;
             width: 56vw;
@@ -294,24 +303,51 @@ export default function HomeClient() {
             align-items: center;
             justify-content: center;
           }
+
           .cap-card:hover {
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
             transform: translateY(-2px);
           }
+
           @keyframes cap-scroll {
-            from { transform: translateX(0); }
-            to { transform: translateX(-100%); }
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(-100%);
+            }
           }
-          .pause-marquee { animation-play-state: paused; }
+
+          /* Uses CSS animation-play-state to pause on hover */
+          .pause-marquee {
+            animation-play-state: paused;
+          }
+
           @media (min-width: 640px) {
-            .cap-card { width: 44vw; max-width: 360px; height: 180px; }
+            .cap-card {
+              width: 44vw;
+              max-width: 360px;
+              height: 180px;
+            }
           }
+
           @media (min-width: 768px) {
-            .cap-card { width: 30vw; max-width: 360px; height: 200px; }
+            .cap-card {
+              width: 30vw;
+              max-width: 360px;
+              height: 200px;
+            }
           }
+
           @media (min-width: 1024px) {
-            .cap-marquee { animation-duration: 22s; }
-            .cap-card { width: 23vw; max-width: 380px; height: 220px; }
+            .cap-marquee {
+              animation-duration: 22s;
+            }
+            .cap-card {
+              width: 23vw;
+              max-width: 380px;
+              height: 220px;
+            }
           }
         `}</style>
       </section>
@@ -396,4 +432,4 @@ export default function HomeClient() {
       </section>
     </main>
   );
-}
+        }
