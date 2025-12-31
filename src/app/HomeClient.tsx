@@ -178,7 +178,12 @@ export default function HomeClient() {
     {/* Animated Track */}
     <div className="relative overflow-hidden">
       <div
-        className="flex gap-6 animate-[scroll-left_32s_linear_infinite] will-change-transform"
+        className="
+          flex gap-6
+          animate-[scroll-left_32s_linear_infinite]
+          will-change-transform
+          motion-reduce:animate-none
+        "
       >
         {[
           { label: 'Diagnostics', icon: FaTools },
@@ -189,51 +194,49 @@ export default function HomeClient() {
           { label: 'BIOS Update', icon: FaServer },
           { label: 'RAM Upgrade', icon: FaMemory },
           { label: 'SSD Upgrade', icon: MdStorage },
-        ]
-          .concat([
-            { label: 'Diagnostics', icon: FaTools },
-            { label: 'Chip-Level Repair', icon: FaMicrochip },
-            { label: 'Screen Replacement', icon: FaDesktop },
-            { label: 'Battery Replacement', icon: FaBatteryHalf },
-            { label: 'OS Installation', icon: FaWindows },
-            { label: 'BIOS Update', icon: FaServer },
-            { label: 'RAM Upgrade', icon: FaMemory },
-            { label: 'SSD Upgrade', icon: MdStorage },
-          ])
-          .map(({ label, icon: Icon }, index) => (
-            <div
-              key={index}
-              className={`
-  shrink-0
-  w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
-  h-[180px] lg:h-[220px]
-  rounded-3xl
-  border border-gray-200
-  bg-white
-  shadow-sm
-  hover:shadow-xl
-  transition-all duration-300
-  flex items-center justify-center
-`}
-            
-              <div className="text-center px-6">
-                {/* Icon */}
-                <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
-                  <Icon className="text-gray-900 text-2xl" />
-                </div>
-
-                {/* Label */}
-                <p className="text-base lg:text-lg font-semibold text-gray-900">
-                  {label}
-                </p>
-
-                {/* Subtle confidence cue */}
-                <p className="mt-1 text-xs text-gray-500 font-medium">
-                  In-house service
-                </p>
+          // duplicate for seamless loop
+          { label: 'Diagnostics', icon: FaTools },
+          { label: 'Chip-Level Repair', icon: FaMicrochip },
+          { label: 'Screen Replacement', icon: FaDesktop },
+          { label: 'Battery Replacement', icon: FaBatteryHalf },
+          { label: 'OS Installation', icon: FaWindows },
+          { label: 'BIOS Update', icon: FaServer },
+          { label: 'RAM Upgrade', icon: FaMemory },
+          { label: 'SSD Upgrade', icon: MdStorage },
+        ].map(({ label, icon: Icon }, index) => (
+          <div
+            key={index}
+            className={`
+              shrink-0
+              w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
+              h-[180px] lg:h-[220px]
+              rounded-3xl
+              border border-gray-200
+              bg-white
+              shadow-sm
+              hover:shadow-xl
+              transition-all duration-300
+              flex items-center justify-center
+            `}
+          >
+            <div className="text-center px-6">
+              {/* Icon */}
+              <div className="mx-auto mb-6 h-14 w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                <Icon className="text-gray-900 text-2xl" />
               </div>
+
+              {/* Label */}
+              <p className="text-base lg:text-lg font-semibold text-gray-900">
+                {label}
+              </p>
+
+              {/* Subtle confidence cue */}
+              <p className="mt-1 text-xs text-gray-500 font-medium">
+                In-house service
+              </p>
             </div>
-          ))}
+          </div>
+        ))}
       </div>
     </div>
 
