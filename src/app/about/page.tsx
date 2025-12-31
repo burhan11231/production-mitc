@@ -1,132 +1,207 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About MITC | Mateen IT Corp - Kashmir\'s Tech Authority',
-  description: 'Learn about MITC - Kashmir\'s leading laptop sales and technical services provider since 2013.',
+  title: "About MITC | Mateen IT Corp – Kashmir's Tech Authority Since 2013",
+  description:
+    "Learn about MITC (Mateen IT Corp), Kashmir’s trusted laptop sales and IT services provider since 2013. Discover our journey, values, and commitment to quality technology.",
 };
 
 export default function AboutPage() {
   return (
-    <>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary-50 to-blue-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">About MITC</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Kashmir's Tech Authority Since 2013
+    <main className="overflow-x-hidden">
+
+      {/* HERO / INTRO */}
+      <section className="relative py-28 px-6 bg-[#f3f7fb]">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500 mb-6">
+            About Mateen IT Corp
+          </p>
+
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.05]">
+            Kashmir’s Tech Authority,
+            <br className="hidden sm:block" />
+            built since 2013.
+          </h1>
+
+          <p className="mt-8 max-w-3xl mx-auto text-lg sm:text-xl text-gray-600 leading-relaxed">
+            MITC (Mateen IT Corp) is a premium laptop sales and technical services
+            company based in Srinagar, serving students, professionals, offices,
+            and institutions with transparency, precision, and long-term trust.
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Story Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+      {/* STORY + TIMELINE */}
+      <section className="relative py-28 px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+
+          {/* STORY */}
           <div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Journey</h2>
-            <p className="text-lg text-gray-700 mb-6">
-              Founded in 2013, MITC (Mateen IT Corp) started as a small laptop retail shop in Srinagar with a vision to provide quality technology solutions to the people of Kashmir.
-            </p>
-            <p className="text-lg text-gray-700 mb-6">
-              Over the years, we've grown to become Kashmir's most trusted technology partner, serving thousands of satisfied customers including individuals, small businesses, and large organizations.
-            </p>
-            <p className="text-lg text-gray-700">
-              Today, we're proud to offer a comprehensive range of services from laptop sales to advanced technical support, all with the same passion and commitment we started with.
-            </p>
-          </div>
-          <div className="bg-primary-100 rounded-lg h-96"></div>
-        </div>
+            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+              Our journey.
+            </h2>
 
-        {/* Mission & Vision */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-          <div className="card p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
-            <p className="text-gray-700">
-              To provide Kashmir with reliable, high-quality technology solutions and exceptional customer service that empowers businesses and individuals to achieve their goals.
+            <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-6">
+              Founded in 2013, Mateen IT Corp began as a focused effort to bring
+              reliable laptops and honest technical guidance to customers in
+              Kashmir. At a time when quality hardware and trustworthy service
+              were difficult to access, MITC set out to change expectations.
             </p>
-          </div>
-          <div className="card p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-            <p className="text-gray-700">
-              To be the most trusted and preferred technology solutions provider in Kashmir, known for quality, integrity, and customer-centric approach.
-            </p>
-          </div>
-        </div>
 
-        {/* Core Values */}
-        <div className="mb-20">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">Our Core Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-6">
+              Over the years, we expanded from a single retail outlet into a
+              trusted technology partner for individuals, businesses, and
+              institutions—handling everything from laptop procurement to
+              diagnostics, upgrades, and advanced logic-board repairs.
+            </p>
+
+            <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
+              Today, MITC stands for clean devices, clear guidance, and confident
+              purchases—supported by process, not promises.
+            </p>
+          </div>
+
+          {/* TIMELINE */}
+          <div className="relative pl-6 border-l border-gray-200 space-y-12">
+
             {[
-              { title: 'Integrity', description: 'We believe in honest dealings and transparency in all our interactions.' },
-              { title: 'Quality', description: 'We never compromise on the quality of products and services we offer.' },
-              { title: 'Innovation', description: 'We stay updated with the latest technology trends and solutions.' },
-              { title: 'Customer First', description: 'Your satisfaction and trust are our top priorities.' },
-            ].map((value) => (
-              <div key={value.title} className="card p-8 text-center">
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
-                <p className="text-gray-600">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Why Choose Us */}
-        <div className="bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 mb-20">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">Why Choose MITC?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              { icon: '🏆', title: '12+ Years Experience', description: 'Over a decade of proven expertise in the technology industry.' },
-              { icon: '👥', title: '1000+ Happy Clients', description: 'Trusted by individuals and businesses across Kashmir.' },
-              { icon: '🛠️', title: 'Expert Team', description: 'Certified technicians with professional training and certifications.' },
-              { icon: '📦', title: 'Authorized Dealers', description: 'Original products from authorized distributors and manufacturers.' },
-              { icon: '⚡', title: 'Quick Turnaround', description: 'Fast and efficient service delivery without compromising quality.' },
-              { icon: '💰', title: 'Best Prices', description: 'Competitive pricing with transparent quotes and no hidden charges.' },
+              {
+                year: "2013",
+                title: "Foundation",
+                desc: "MITC was established in Srinagar with a focus on quality laptops and honest service.",
+              },
+              {
+                year: "2016",
+                title: "Commercial Focus",
+                desc: "Shift toward business-grade and enterprise laptops for offices and professionals.",
+              },
+              {
+                year: "2019",
+                title: "Advanced Repairs",
+                desc: "Introduced chip-level diagnostics, board repair, and structured service timelines.",
+              },
+              {
+                year: "2022",
+                title: "Process-Driven Sales",
+                desc: "Standardized testing, pricing transparency, and customer verification checks.",
+              },
+              {
+                year: "2025",
+                title: "Second Branch",
+                desc: "Expansion with an additional branch to support growing demand across Kashmir.",
+              },
             ].map((item) => (
-              <div key={item.title} className="flex gap-4">
-                <div className="text-4xl flex-shrink-0">{item.icon}</div>
+              <div key={item.year} className="relative">
+                <span className="absolute -left-[11px] top-1.5 h-5 w-5 rounded-full bg-white border-4 border-[#0071e3]" />
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h4>
-                  <p className="text-gray-600">{item.description}</p>
+                  <p className="text-sm font-bold text-[#0071e3] mb-1">
+                    {item.year}
+                  </p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
             ))}
+
           </div>
         </div>
+      </section>
 
-        {/* Team Section */}
-        <div className="text-center mb-20">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Team</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
-            Our dedicated team of professionals is committed to providing you with the best technology solutions and customer service.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* VALUES */}
+      <section className="relative py-28 px-6 bg-[#f3f7fb]">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 text-center mb-16">
+            What we stand for.
+          </h2>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { name: 'Mateen Khan', role: 'Founder & CEO' },
-              { name: 'Ahmed Ali', role: 'Technical Director' },
-              { name: 'Fatima Malik', role: 'Operations Manager' },
-            ].map((member) => (
-              <div key={member.name} className="card p-8 text-center">
-                <div className="bg-primary-100 h-24 rounded-lg mb-4"></div>
-                <h4 className="text-lg font-bold text-gray-900">{member.name}</h4>
-                <p className="text-gray-600">{member.role}</p>
+              {
+                title: "Integrity",
+                desc: "Transparent pricing, clear condition disclosure, and no hidden trade-offs.",
+              },
+              {
+                title: "Quality",
+                desc: "Only devices that pass strict diagnostics and usability checks.",
+              },
+              {
+                title: "Expertise",
+                desc: "Over a decade of hands-on experience with modern commercial hardware.",
+              },
+              {
+                title: "Customer Trust",
+                desc: "Long-term relationships over short-term sales.",
+              },
+            ].map((value) => (
+              <div
+                key={value.title}
+                className="rounded-3xl border border-gray-200 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,0.10)]"
+              >
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  {value.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {value.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA Section */}
-      <div className="bg-primary-600 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Experience MITC?</h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Get in touch with our team today and discover why we're Kashmir's trusted tech partner.
+      {/* WHY MITC */}
+      <section className="relative py-28 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-16">
+            Why customers choose MITC.
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-10">
+            {[
+              "11+ years of proven local expertise",
+              "Business-grade and commercial laptops",
+              "15-day replacement warranty on eligible devices",
+              "Transparent, market-aligned pricing",
+              "Advanced repairs with realistic timelines",
+              "Store sales and service under one roof",
+            ].map((point) => (
+              <div
+                key={point}
+                className="flex items-start gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-6"
+              >
+                <span className="mt-1 h-2 w-2 rounded-full bg-[#0071e3]" />
+                <p className="text-gray-700 text-sm sm:text-base">
+                  {point}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative py-28 px-6 bg-gray-900 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+            Experience MITC.
+          </h2>
+          <p className="text-gray-300 text-lg sm:text-xl mb-10">
+            Visit our showroom or speak with our team to experience a more
+            transparent way to buy and service technology.
           </p>
-          <a href="/contact" className="inline-block bg-white text-primary-600 font-bold py-3 px-8 rounded-lg hover:bg-primary-50 transition">
-            Contact Us
+          <a
+            href="/contact"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-gray-900 font-semibold text-base hover:bg-gray-100 transition"
+          >
+            Contact MITC
           </a>
         </div>
-      </div>
-    </>
+      </section>
+
+    </main>
   );
 }
