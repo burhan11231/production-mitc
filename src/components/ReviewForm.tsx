@@ -1,115 +1,172 @@
 'use client';
 
-import { useState } from 'react';
-import { Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth-context';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { FaStar, FaPlus } from 'react-icons/fa'; // Switched
+import { MdMessage } from 'react-icons/md';      // Switched
+import ReviewForm from '@/components/ReviewForm';
 
-interface ReviewFormProps {
-  onSuccess: () => void;
-  onCancel: () => void;
+interface Review {
+  id: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: any;
 }
 
-export default function ReviewForm({ onSuccess, onCancel }: ReviewFormProps) {
+export default function RatingsPage() {
   const { user } = useAuth();
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [stats, setStats] = useState({ avg: 0, count: 0, distribution: [0, 0, 0, 0, 0] });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (rating === 0) return toast.error('Please select a rating');
-    if (comment.length < 10) return toast.error('Comment must be at least 10 characters');
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
-    setIsSubmitting(true);
+  const fetchReviews = async () => {
     try {
-      await addDoc(collection(db, 'reviews'), {
-        userId: user?.uid,
-        userName: user?.displayName || 'Anonymous User',
-        userEmail: user?.email,
-        rating,
-        comment,
-        createdAt: serverTimestamp(),
-      });
-      toast.success('Review submitted successfully!');
-      onSuccess();
+      const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const reviewsData = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Review[];
+
+      setReviews(reviewsData);
+
+      if (reviewsData.length > 0) {
+        const avg = reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length;
+        const dist = [0, 0, 0, 0, 0];
+        reviewsData.forEach(r => {
+            if(r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++;
+        });
+        setStats({ 
+          avg: Math.round(avg * 10) / 10, 
+          count: reviewsData.length,
+          distribution: [...dist].reverse() 
+        });
+      }
     } catch (error) {
-      console.error('Error adding review:', error);
-      toast.error('Failed to submit review');
+      toast.error('Failed to load reviews');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-6 md:p-8 animate-in fade-in zoom-in duration-300">
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">Write a Review</h3>
-      <p className="text-gray-500 mb-6">How was your experience with our services?</p>
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            Community <span className="text-blue-600">Feedback</span>
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            We value your experience. Join our community of satisfied users.
+          </p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Star Selection */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700">Overall Rating</label>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHover(star)}
-                onMouseLeave={() => setHover(0)}
-                className="transition-transform hover:scale-110 focus:outline-none"
-              >
-                <Star
-                  size={32}
-                  className={`${
-                    (hover || rating) >= star
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
-                  } transition-colors duration-200`}
-                />
-              </button>
-            ))}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sticky top-8">
+              <div className="text-center mb-8">
+                <div className="text-6xl font-black text-gray-900 mb-2">{stats.avg}</div>
+                <div className="flex justify-center gap-1 mb-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <FaStar key={i} size={20} className={i <= Math.round(stats.avg) ? 'text-yellow-400' : 'text-gray-200'} />
+                  ))}
+                </div>
+                <div className="text-gray-500 font-medium">Based on {stats.count} reviews</div>
+              </div>
+
+              <div className="space-y-3">
+                {stats.distribution.map((count, idx) => {
+                  const starNum = 5 - idx;
+                  const percentage = stats.count > 0 ? (count / stats.count) * 100 : 0;
+                  return (
+                    <div key={starNum} className="flex items-center gap-4">
+                      <div className="text-sm font-semibold text-gray-600 w-12">{starNum} star</div>
+                      <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-yellow-400 rounded-full" 
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-400 w-8 text-right">{Math.round(percentage)}%</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!showForm && (
+                <button 
+                  onClick={() => user ? setShowForm(true) : toast.error('Please login to review')}
+                  className="w-full mt-8 flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-xl transition-all"
+                >
+                  <FaPlus size={16} /> Write a Review
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-8 space-y-6">
+            {showForm && (
+              <ReviewForm 
+                onSuccess={() => { setShowForm(false); fetchReviews(); }} 
+                onCancel={() => setShowForm(false)} 
+              />
+            )}
+
+            {isLoading ? (
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="grid gap-6">
+                {reviews.map((review) => (
+                  <div key={review.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">
+                          {review.userName?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900">{review.userName}</h4>
+                          <div className="flex gap-0.5 mt-0.5">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <FaStar key={i} size={14} className={i <= review.rating ? 'text-yellow-400' : 'text-gray-200'} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-xs font-medium text-gray-400">
+                        {new Date(review.createdAt?.toDate?.() || review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                      {review.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-200">
+                <MdMessage size={48} className="text-gray-200 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No reviews yet</h3>
+                <p className="text-gray-500 mb-8">Be the first one to share your feedback!</p>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Comment Input */}
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <label className="text-sm font-semibold text-gray-700">Your Feedback</label>
-            <span className="text-xs text-gray-400">{comment.length}/500</span>
-          </div>
-          <textarea
-            required
-            maxLength={500}
-            rows={4}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="What did you like or dislike? How can we improve?"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none"
-          />
-        </div>
-
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200"
-          >
-            {isSubmitting ? 'Posting...' : 'Post Review'}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition-all"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }
