@@ -6,8 +6,8 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { FaStar, FaPlus } from 'react-icons/fa'; // Switched
-import { MdMessage } from 'react-icons/md';      // Switched
+import { FaStar, FaPlus } from 'react-icons/fa'; // Used react-icons
+import { MdMessage } from 'react-icons/md';      // Used react-icons
 import ReviewForm from '@/components/ReviewForm';
 
 interface Review {
@@ -44,7 +44,7 @@ export default function RatingsPage() {
         const avg = reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length;
         const dist = [0, 0, 0, 0, 0];
         reviewsData.forEach(r => {
-            if(r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++;
+          if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++;
         });
         setStats({ 
           avg: Math.round(avg * 10) / 10, 
@@ -63,18 +63,17 @@ export default function RatingsPage() {
     <div className="min-h-screen bg-gray-50/50 pb-20">
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-            Community <span className="text-blue-600">Feedback</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            Customer <span className="text-blue-600">Reviews</span>
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            We value your experience. Join our community of satisfied users.
+            Real feedback from our valued clients.
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sticky top-8">
               <div className="text-center mb-8">
@@ -84,7 +83,7 @@ export default function RatingsPage() {
                     <FaStar key={i} size={20} className={i <= Math.round(stats.avg) ? 'text-yellow-400' : 'text-gray-200'} />
                   ))}
                 </div>
-                <div className="text-gray-500 font-medium">Based on {stats.count} reviews</div>
+                <div className="text-gray-500">Based on {stats.count} reviews</div>
               </div>
 
               <div className="space-y-3">
@@ -95,10 +94,7 @@ export default function RatingsPage() {
                     <div key={starNum} className="flex items-center gap-4">
                       <div className="text-sm font-semibold text-gray-600 w-12">{starNum} star</div>
                       <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-yellow-400 rounded-full" 
-                          style={{ width: `${percentage}%` }}
-                        />
+                        <div className="h-full bg-yellow-400" style={{ width: `${percentage}%` }} />
                       </div>
                       <div className="text-sm text-gray-400 w-8 text-right">{Math.round(percentage)}%</div>
                     </div>
@@ -109,9 +105,9 @@ export default function RatingsPage() {
               {!showForm && (
                 <button 
                   onClick={() => user ? setShowForm(true) : toast.error('Please login to review')}
-                  className="w-full mt-8 flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-xl transition-all"
+                  className="w-full mt-8 flex items-center justify-center gap-2 bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all"
                 >
-                  <FaPlus size={16} /> Write a Review
+                  <FaPlus size={14} /> Write a Review
                 </button>
               )}
             </div>
@@ -135,7 +131,7 @@ export default function RatingsPage() {
                   <div key={review.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">
+                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
                           {review.userName?.charAt(0).toUpperCase() || 'U'}
                         </div>
                         <div>
@@ -147,13 +143,11 @@ export default function RatingsPage() {
                           </div>
                         </div>
                       </div>
-                      <span className="text-xs font-medium text-gray-400">
+                      <span className="text-xs text-gray-400">
                         {new Date(review.createdAt?.toDate?.() || review.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-gray-600 leading-relaxed">
-                      {review.comment}
-                    </p>
+                    <p className="text-gray-600 leading-relaxed">{review.comment}</p>
                   </div>
                 ))}
               </div>
@@ -161,7 +155,7 @@ export default function RatingsPage() {
               <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-200">
                 <MdMessage size={48} className="text-gray-200 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">No reviews yet</h3>
-                <p className="text-gray-500 mb-8">Be the first one to share your feedback!</p>
+                <p className="text-gray-500 mb-8">Be the first to share your experience!</p>
               </div>
             )}
           </div>
