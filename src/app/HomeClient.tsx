@@ -349,107 +349,121 @@ export default function HomeClient() {
         
 
 
-{/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + CLEAN / NO GRADIENTS) */}
+{/* 3. ABOUT US SECTION */}
 <section
   id="about"
-  className="relative py-28 px-6 bg-white overflow-hidden"
+  className="relative py-28 px-6 bg-[#f3f7fb] overflow-hidden"
 >
-  {/* REMOVED: all radial / gradient background layers */}
+  {/* Soft curved separator from previous white section */}
+  <div className="absolute inset-x-0 -top-24 h-24 bg-white">
+    <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
+  </div>
 
   <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-16 lg:gap-24 items-center">
-    {/* Left content */}
+    
+    {/* LEFT CONTENT */}
     <div>
-      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 mb-6">
-        <span className="h-1.5 w-1.5 rounded-full bg-gray-900" />
+      {/* Eyebrow */}
+      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-1.5 mb-6">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
         <span className="text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-500">
           About Mateen IT Corp
         </span>
       </div>
 
-      <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
-        Technical Excellence.
+      {/* Heading */}
+      <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.05] mb-6">
+        Technical excellence,
+        <br className="hidden sm:block" />
+        built on trust.
       </h2>
 
+      {/* Description */}
       <p className="text-base sm:text-lg text-gray-600 max-w-xl leading-relaxed">
-        Since 2013, Mateen IT Corp has built a reputation for transparent guidance,
-        reliable inventory, and service standards that match modern commercial
-        hardware. Every laptop goes through strict checks so customers know exactly
-        what they are buying.
+        Founded in 2013, Mateen IT Corp is Kashmir’s trusted destination for
+        premium laptops and professional IT services. We focus on transparent
+        guidance, reliable inventory, and service standards aligned with modern
+        commercial hardware—so customers always know exactly what they are
+        buying.
       </p>
 
-      <div className="mt-10 grid grid-cols-2 gap-6 sm:gap-8 max-w-md">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
+      {/* Stats */}
+      <div className="mt-12 grid grid-cols-2 gap-6 sm:gap-8 max-w-md">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)]">
           <div className="text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
-            Years of Expertise
+            Experience
           </div>
           <div className="text-3xl sm:text-4xl font-bold text-gray-900">
-            11+
+            11+ Years
           </div>
           <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            Consistently serving businesses, students, and creators across Kashmir.
+            Serving students, professionals, and businesses across Kashmir.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)]">
           <div className="text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
-            Premium Clients
+            Clients Served
           </div>
           <div className="text-3xl sm:text-4xl font-bold text-gray-900">
-            5k+
+            5,000+
           </div>
           <p className="mt-1 text-xs sm:text-sm text-gray-500">
-            Repeat buyers who trust MITC for upgrades, replacements, and fleet refresh.
+            Repeat customers who trust MITC for upgrades and replacements.
           </p>
         </div>
       </div>
 
-      <div className="mt-10 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-500">
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-900 text-white">
+      {/* Pills */}
+      <div className="mt-10 flex flex-wrap items-center gap-4 text-xs sm:text-sm">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-900 text-white">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           Store & service under one roof
         </span>
-        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+        <span className="px-4 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600">
           Imported, open-box & commercial-grade laptops
         </span>
       </div>
     </div>
 
-    {/* Right visual / stacked cards */}
+    {/* RIGHT VISUAL CONTENT */}
     <div className="relative">
-      {/* REMOVED: blur glow circles */}
-
       <div className="relative grid gap-4">
-        <div className="rounded-3xl overflow-hidden border border-gray-200 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.12)]">
+        
+        {/* Main Image */}
+        <div className="rounded-3xl overflow-hidden border border-gray-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
           <img
-            src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1200"
-            alt="MITC Interior"
+            src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1400"
+            alt="MITC Showroom Interior"
             className="w-full h-[260px] sm:h-[320px] lg:h-[360px] object-cover"
           />
         </div>
 
+        {/* Info Cards */}
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+          <div className="rounded-2xl border border-gray-200 bg-white p-5">
             <p className="text-[11px] font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
-              Branches
+              Growth
             </p>
             <p className="text-sm sm:text-base text-gray-700">
-              Established in 2013 with a second branch added in 2025 to handle
-              growing demand.
+              Started in 2013 with a second branch added in 2025 to support
+              increasing demand and faster service turnaround.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-900 p-4 sm:p-5 text-white">
+          <div className="rounded-2xl border border-gray-200 bg-gray-900 p-5 text-white">
             <p className="text-[11px] font-semibold tracking-[0.24em] uppercase text-white/60 mb-2">
-              What MITC Stands For
+              Our Promise
             </p>
             <p className="text-sm sm:text-base text-white/90">
-              Clean devices, clear guidance, and confident purchases—for
-              first-time buyers and seasoned professionals alike.
+              Clean devices, clear guidance, and confident purchases—without
+              pressure or hidden trade-offs.
             </p>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </section>
 
