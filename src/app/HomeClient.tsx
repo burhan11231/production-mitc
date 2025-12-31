@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -78,7 +79,7 @@ export default function HomeClient() {
             className="h-full w-full object-cover object-center"
             loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-white/10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-black" />
           <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
         </div>
 
@@ -173,10 +174,54 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 2. TECHNICAL CAPABILITIES STRIP (FIXED) */}
-      <section className="relative bg-white py-20 overflow-hidden border-t">
+      {/* 2. INVENTORY STATEMENT SECTION (MOVED UP & BG UPDATED) */}
+      <section className="relative py-24 px-6 overflow-hidden bg-gradient-to-b from-black via-white to-white">
+        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
+        
+        <div className="relative max-w-7xl mx-auto">
+          <div className="max-w-4xl mb-16">
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-white/50">Inventory</p>
+            <h2 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-white">
+              Hardware that<br className="hidden sm:block" />
+              meets standards.
+            </h2>
+          </div>
+
+          <div className="space-y-24 text-gray-900">
+            <div className="grid lg:grid-cols-5 gap-10 items-start">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Laptops</div>
+              <div className="lg:col-span-4 space-y-8">
+                <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-gray-100 pt-16">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Systems</div>
+              <div className="lg:col-span-4 space-y-8">
+                <div className="text-2xl lg:text-3xl font-semibold">All-in-One PC</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-gray-100 pt-16">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Accessories</div>
+              <div className="lg:col-span-4 space-y-8">
+                <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
+                <div className="text-xl lg:text-2xl font-medium">Mouse</div>
+                <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
+                <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. TECHNICAL CAPABILITIES STRIP (MOVED DOWN) */}
+      <section className="relative bg-white py-24 overflow-hidden border-t">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14">
+          <div className="mb-16">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
               Technical Capabilities
             </p>
@@ -187,14 +232,9 @@ export default function HomeClient() {
 
           {/* Marquee */}
           <div className="relative overflow-hidden">
-            {/* optional edge fades */}
             <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
 
-            {/* IMPORTANT:
-               - Two identical tracks for seamless looping
-               - Pause on hover using animation-play-state
-            */}
             <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
               <div className="cap-track">
                 {capabilities.map(({ label, icon: Icon }) => (
@@ -228,7 +268,6 @@ export default function HomeClient() {
         </div>
 
         <style jsx>{`
-          /* wrapper moves left continuously */
           .cap-marquee {
             display: flex;
             width: max-content;
@@ -236,20 +275,16 @@ export default function HomeClient() {
             animation: cap-scroll 18s linear infinite;
             will-change: transform;
           }
-
-          /* each track is one full set */
           .cap-track {
             display: flex;
             gap: 1rem;
             padding-right: 1rem;
           }
-
-          /* card sizing: smaller on mobile */
           .cap-card {
             flex: 0 0 auto;
-            width: 56vw;           /* mobile smaller than your 70% + better fit */
+            width: 56vw;
             max-width: 260px;
-            height: 120px;         /* smaller on mobile */
+            height: 120px;
             border-radius: 1.5rem;
             border: 1px solid rgb(229 231 235);
             background: white;
@@ -259,103 +294,29 @@ export default function HomeClient() {
             align-items: center;
             justify-content: center;
           }
-
           .cap-card:hover {
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
             transform: translateY(-2px);
           }
-
-          /* seamless loop: move exactly one track width */
           @keyframes cap-scroll {
-            from {
-              transform: translateX(0);
-            }
-            to {
-              transform: translateX(-100%);
-            }
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
           }
-
-          /* pause on hover (no jump) */
-          .pause-marquee {
-            animation-play-state: paused;
-          }
-
-          /* responsive sizing */
+          .pause-marquee { animation-play-state: paused; }
           @media (min-width: 640px) {
-            .cap-card {
-              width: 44vw;
-              max-width: 360px;
-              height: 180px;
-            }
+            .cap-card { width: 44vw; max-width: 360px; height: 180px; }
           }
-
           @media (min-width: 768px) {
-            .cap-card {
-              width: 30vw;
-              max-width: 360px;
-              height: 200px;
-            }
+            .cap-card { width: 30vw; max-width: 360px; height: 200px; }
           }
-
           @media (min-width: 1024px) {
-            .cap-marquee {
-              animation-duration: 22s; /* slightly calmer on large screens */
-            }
-            .cap-card {
-              width: 23vw;
-              max-width: 380px;
-              height: 220px;
-            }
+            .cap-marquee { animation-duration: 22s; }
+            .cap-card { width: 23vw; max-width: 380px; height: 220px; }
           }
         `}</style>
       </section>
 
-      {/* INVENTORY STATEMENT SECTION */}
-      <section className="relative py-36 px-6 overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
-
-        <div className="relative max-w-7xl mx-auto">
-          <div className="max-w-4xl mb-28">
-            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">Inventory</p>
-            <h2 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
-              Hardware that<br className="hidden sm:block" />
-              meets standards.
-            </h2>
-          </div>
-
-          <div className="space-y-24">
-            <div className="grid lg:grid-cols-5 gap-10 items-start">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Laptops</div>
-              <div className="lg:col-span-4 space-y-8">
-                <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Systems</div>
-              <div className="lg:col-span-4 space-y-8">
-                <div className="text-2xl lg:text-3xl font-semibold">All-in-One PC</div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Accessories</div>
-              <div className="lg:col-span-4 space-y-8">
-                <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
-                <div className="text-xl lg:text-2xl font-medium">Mouse</div>
-                <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
-                <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. ABOUT SECTION */}
+      {/* 4. ABOUT SECTION */}
       <section id="about" className="py-28 bg-white px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div>
@@ -386,7 +347,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. TRUST PILLARS SECTION */}
+      {/* 5. TRUST PILLARS SECTION */}
       <section className="py-20 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
           {[
@@ -411,7 +372,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 5. LOCATION SECTION */}
+      {/* 6. LOCATION SECTION */}
       <section id="location" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden border shadow-xl grid lg:grid-cols-2">
           <div className="p-12 flex flex-col justify-center">
