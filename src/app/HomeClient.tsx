@@ -116,7 +116,7 @@ export default function HomeClient() {
 
       {/* 2. RATINGS BADGE SECTION (Right after Hero) */}
       {!isStatsLoading && (
-        <section className="flex justify-center -mt-8 relative z-20 px-6">
+        <section className="flex justify-center relative z-20 px-6">
           <div className="group inline-flex flex-wrap items-center justify-center rounded-3xl lg:rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_10px_30px_rgba(15,23,42,0.10)] px-5 py-3 gap-4">
             <div className="inline-flex items-center gap-2">
               <div className="inline-flex items-center gap-1">
