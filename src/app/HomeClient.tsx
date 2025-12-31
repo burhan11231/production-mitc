@@ -138,8 +138,20 @@ export default function HomeClient() {
 
 
 
-      {/* 2. TECHNICAL CAPABILITIES STRIP (ANIMATION) */}
-      <section className="relative bg-white py-20 overflow-hidden border-t">
+        
+      
+
+
+      {/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
+      <section
+        id="about"
+        className="relative py-28 px-6 bg-white overflow-hidden"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-x-[-10%] top-[-120px] h-[360px] bg-[radial-gradient(600px_circle_at_10%_0%,rgba(0,113,227,0.12),transparent_55%)]" />
+          <div className="absolute inset-x-[-10%] bottom-[-140px] h-[420px] bg-[radial-gradient(700px_circle_at_90%_120%,rgba(15,23,42,0.10),transparent_55%)]" />
+        </div>
+
         <div className="max-w-7xl mx-auto px-6">
          
 
@@ -260,18 +272,6 @@ export default function HomeClient() {
             }
           }
         `}</style>
-      </section>
-
-
-      {/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
-      <section
-        id="about"
-        className="relative py-28 px-6 bg-white overflow-hidden"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-x-[-10%] top-[-120px] h-[360px] bg-[radial-gradient(600px_circle_at_10%_0%,rgba(0,113,227,0.12),transparent_55%)]" />
-          <div className="absolute inset-x-[-10%] bottom-[-140px] h-[420px] bg-[radial-gradient(700px_circle_at_90%_120%,rgba(15,23,42,0.10),transparent_55%)]" />
-        </div>
 
         <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-16 lg:gap-24 items-center">
           {/* Left content */}
@@ -365,7 +365,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 3. INVENTORY STATEMENT SECTION (NOW BELOW ABOUT) */}
+      {/* 4. INVENTORY STATEMENT SECTION (NOW BELOW ABOUT) */}
       <section className="relative py-20 sm:py-24 lg:py-28 px-6 overflow-hidden bg-white">
         <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
