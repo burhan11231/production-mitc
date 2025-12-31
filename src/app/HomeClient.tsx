@@ -173,65 +173,156 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 2. INVENTORY SECTION (MATCH HERO END) */}
+      {/* 2. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
       <section
-        className="
-          relative overflow-hidden px-6
-          pt-24 pb-24 lg:pt-28 lg:pb-28
-          bg-linear-to-b from-[#071425] via-[#081a2f] to-white
-        "
+        id="about"
+        className="relative py-28 px-6 bg-white overflow-hidden"
       >
-        {/* blue glow top-left like hero */}
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.35),transparent_60%)]" />
-        {/* purple glow bottom-left like screenshot vibe */}
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_10%_95%,rgba(147,51,234,0.35),transparent_60%)]" />
-        {/* ensure lower half becomes clean white */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/15 to-white" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-x-[-10%] top-[-120px] h-[360px] bg-[radial-gradient(600px_circle_at_10%_0%,rgba(0,113,227,0.12),transparent_55%)]" />
+          <div className="absolute inset-x-[-10%] bottom-[-140px] h-[420px] bg-[radial-gradient(700px_circle_at_90%_120%,rgba(15,23,42,0.10),transparent_55%)]" />
+        </div>
 
-        <div className="relative max-w-7xl mx-auto">
-          <div className="mb-14">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
-              Inventory
-            </p>
-            <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white">
-              Hardware that
-              <br className="hidden sm:block" />
-              meets standards.
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-16 lg:gap-24 items-center">
+          {/* Left content */}
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/60 backdrop-blur px-3 py-1 mb-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+              <span className="text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-500">
+                About Mateen IT Corp
+              </span>
+            </div>
+
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
+              Technical{' '}
+              <span className="inline-block bg-gradient-to-r from-blue-600 to-gray-900 bg-clip-text text-transparent">
+                Excellence.
+              </span>
             </h2>
+
+            <p className="text-base sm:text-lg text-gray-600 max-w-xl leading-relaxed">
+              Since 2013, Mateen IT Corp has built a reputation for transparent guidance, reliable inventory,
+              and **service** standards that match modern commercial hardware. Every laptop goes through
+              strict checks so customers know exactly what they are buying.
+            </p>
+
+            <div className="mt-10 grid grid-cols-2 gap-6 sm:gap-8 max-w-md">
+              <div className="rounded-2xl border border-gray-200 bg-white/70 backdrop-blur p-5">
+                <div className="text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
+                  Years of Expertise
+                </div>
+                <div className="text-3xl sm:text-4xl font-bold text-gray-900">11+</div>
+                <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                  Consistently serving businesses, students, and creators across Kashmir.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-white/70 backdrop-blur p-5">
+                <div className="text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
+                  Premium Clients
+                </div>
+                <div className="text-3xl sm:text-4xl font-bold text-gray-900">5k+</div>
+                <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                  Repeat buyers who trust MITC for upgrades, replacements, and fleet refresh.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-500">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-900 text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Store & service under one roof
+              </span>
+              <span className="px-3 py-1 rounded-full bg-gray-100">
+                Imported, open-box & commercial-grade laptops
+              </span>
+            </div>
           </div>
 
-          <div className="space-y-16 lg:space-y-20">
-            <div className="grid lg:grid-cols-5 gap-10 items-start">
-              <div className="text-sm font-bold uppercase tracking-widest text-white/55">Laptops</div>
-              <div className="lg:col-span-4 space-y-6">
-                <div className="text-xl lg:text-2xl font-semibold text-white">Dell Laptops</div>
-                <div className="text-xl lg:text-2xl font-semibold text-white">HP Laptops</div>
-                <div className="text-xl lg:text-2xl font-semibold text-white">Acer Laptops</div>
-                <div className="text-xl lg:text-2xl font-semibold text-white">Lenovo ThinkPad</div>
-              </div>
-            </div>
+          {/* Right visual / stacked cards */}
+          <div className="relative">
+            <div className="absolute -top-10 -left-6 h-40 w-40 rounded-full bg-blue-100 blur-3xl opacity-70" />
+            <div className="absolute -bottom-16 -right-10 h-44 w-44 rounded-full bg-gray-900/10 blur-3xl opacity-80" />
 
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-white/15 pt-12 lg:pt-14">
-              <div className="text-sm font-bold uppercase tracking-widest text-white/55">Systems</div>
-              <div className="lg:col-span-4 space-y-6">
-                <div className="text-xl lg:text-2xl font-semibold text-white">All-in-One PC</div>
+            <div className="relative grid gap-4">
+              <div className="rounded-3xl overflow-hidden border border-gray-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.16)]">
+                <img
+                  src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1200"
+                  alt="MITC Interior"
+                  className="w-full h-[260px] sm:h-[320px] lg:h-[360px] object-cover"
+                />
               </div>
-            </div>
 
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t border-white/15 pt-12 lg:pt-14">
-              <div className="text-sm font-bold uppercase tracking-widest text-white/55">Accessories</div>
-              <div className="lg:col-span-4 space-y-5">
-                <div className="text-lg lg:text-xl font-medium text-white/90">Keyboard</div>
-                <div className="text-lg lg:text-xl font-medium text-white/90">Mouse</div>
-                <div className="text-lg lg:text-xl font-medium text-white/90">HDMI Cable</div>
-                <div className="text-lg lg:text-xl font-medium text-white/90">Wi-Fi Dongle</div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur p-4 sm:p-5">
+                  <p className="text-[11px] font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
+                    Branches
+                  </p>
+                  <p className="text-sm sm:text-base text-gray-700">
+                    Established in 2013 with a second branch added in 2025 to handle growing demand.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-900 via-gray-900 to-slate-800 p-4 sm:p-5 text-white">
+                  <p className="text-[11px] font-semibold tracking-[0.24em] uppercase text-white/60 mb-2">
+                    What MITC Stands For
+                  </p>
+                  <p className="text-sm sm:text-base text-white/90">
+                    Clean devices, clear guidance, and confident purchases—for first-time buyers and seasoned professionals alike.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. TECHNICAL CAPABILITIES STRIP (MOVED BELOW INVENTORY) */}
+      {/* 3. INVENTORY STATEMENT SECTION (NOW BELOW ABOUT) */}
+      <section className="relative py-20 sm:py-24 lg:py-28 px-6 overflow-hidden bg-white">
+        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="max-w-4xl mb-14">
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
+              Inventory
+            </p>
+            <h2 className="mt-3 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
+              Hardware that<br className="hidden sm:block" />
+              meets standards.
+            </h2>
+          </div>
+
+          <div className="space-y-20 sm:space-y-24">
+            <div className="grid lg:grid-cols-5 gap-10 items-start">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Laptops</div>
+              <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+                <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Systems</div>
+              <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+                <div className="text-2xl lg:text-3xl font-semibold">All-in-One PC</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Accessories</div>
+              <div className="lg:col-span-4 space-y-4 sm:space-y-6">
+                <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
+                <div className="text-xl lg:text-2xl font-medium">Mouse</div>
+                <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
+                <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. TECHNICAL CAPABILITIES STRIP (ANIMATION) */}
       <section className="relative bg-white py-20 overflow-hidden border-t">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-14">
@@ -243,6 +334,7 @@ export default function HomeClient() {
             </h2>
           </div>
 
+          {/* Marquee */}
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
@@ -255,8 +347,12 @@ export default function HomeClient() {
                       <div className="mx-auto mb-3 sm:mb-6 h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
                         <Icon className="text-gray-900 text-xl sm:text-2xl" />
                       </div>
-                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">{label}</p>
-                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">In-house service</p>
+                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                        {label}
+                      </p>
+                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">
+                        In-house service
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -266,11 +362,15 @@ export default function HomeClient() {
                 {capabilities.map(({ label, icon: Icon }) => (
                   <div key={`b-${label}`} className="cap-card">
                     <div className="text-center px-4 sm:px-6">
-                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-content-center">
+                      <div className="mx-auto mb-4 sm:mb-6 h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-gray-900/5 flex items-center justify-center">
                         <Icon className="text-gray-900 text-xl sm:text-2xl" />
                       </div>
-                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">{label}</p>
-                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">In-house service</p>
+                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                        {label}
+                      </p>
+                      <p className="mt-1 text-[11px] sm:text-xs text-gray-500 font-medium">
+                        In-house service
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -287,11 +387,13 @@ export default function HomeClient() {
             animation: cap-scroll 18s linear infinite;
             will-change: transform;
           }
+
           .cap-track {
             display: flex;
             gap: 1rem;
             padding-right: 1rem;
           }
+
           .cap-card {
             flex: 0 0 auto;
             width: 56vw;
@@ -306,10 +408,12 @@ export default function HomeClient() {
             align-items: center;
             justify-content: center;
           }
+
           .cap-card:hover {
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
             transform: translateY(-2px);
           }
+
           @keyframes cap-scroll {
             from {
               transform: translateX(0);
@@ -318,9 +422,11 @@ export default function HomeClient() {
               transform: translateX(-100%);
             }
           }
+
           .pause-marquee {
             animation-play-state: paused;
           }
+
           @media (min-width: 640px) {
             .cap-card {
               width: 44vw;
@@ -328,6 +434,7 @@ export default function HomeClient() {
               height: 180px;
             }
           }
+
           @media (min-width: 768px) {
             .cap-card {
               width: 30vw;
@@ -335,6 +442,7 @@ export default function HomeClient() {
               height: 200px;
             }
           }
+
           @media (min-width: 1024px) {
             .cap-marquee {
               animation-duration: 22s;
@@ -346,37 +454,6 @@ export default function HomeClient() {
             }
           }
         `}</style>
-      </section>
-
-      {/* 4. ABOUT SECTION */}
-      <section id="about" className="py-28 bg-white px-6">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-          <div>
-            <h2 className="text-4xl lg:text-6xl font-bold mb-8">
-              Technical <span className="text-blue-600">Excellence.</span>
-            </h2>
-            <p className="text-gray-600 text-lg mb-12">
-              Since 2013, Mateen IT Corp has built a reputation for transparency, reliability, and uncompromising quality in hardware and services.
-            </p>
-            <div className="flex gap-16 border-t pt-10">
-              <div>
-                <div className="text-4xl font-bold">11+</div>
-                <div className="text-xs uppercase tracking-widest text-gray-500">Years Expertise</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold">5k+</div>
-                <div className="text-xs uppercase tracking-widest text-gray-500">Premium Clients</div>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-3xl overflow-hidden shadow-2xl">
-            <img
-              src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1200"
-              alt="MITC Interior"
-              className="w-full h-[420px] lg:h-[560px] object-cover"
-            />
-          </div>
-        </div>
       </section>
 
       {/* 5. TRUST PILLARS SECTION */}
