@@ -12,6 +12,7 @@ import {
   FaServer,
   FaMemory,
   FaStar,
+  FaShieldAlt,
 } from 'react-icons/fa';
 import { MdStorage } from 'react-icons/md';
 import Link from 'next/link';
@@ -435,20 +436,23 @@ export default function HomeClient() {
 
     {/* Pillars */}
     <div className="grid gap-8 lg:grid-cols-3">
-      {/* Pillar 1 */}
-      <div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
-        <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-900 text-white text-xl font-bold">
-          15
-        </div>
-        <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
-          15-Day Replacement Warranty
-        </h3>
-        <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
-          Every laptop is covered with a 15-day replacement warranty. Basic
-          diagnostics and functionality checks are performed transparently in
-          front of the customer before delivery.
-        </p>
-      </div>
+      {/* Pillar 1 – Warranty */}
+<div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
+  <div className="mb-6 flex items-center justify-center h-14 w-14 rounded-2xl bg-gray-900 text-white">
+    <FaShieldAlt className="text-xl" />
+  </div>
+
+  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
+    15-Day Replacement Warranty
+  </h3>
+
+  <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
+    Every laptop is covered with a 15-day replacement warranty. Basic
+    diagnostics and functionality checks are performed transparently in
+    front of the customer before delivery.
+  </p>
+</div>
+
 
       {/* Pillar 2 */}
       <div className="group relative rounded-3xl border border-gray-200 bg-white p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
@@ -484,30 +488,83 @@ export default function HomeClient() {
 </section>
 
 
-      {/* 5. LOCATION SECTION */}
-      <section id="location" className="py-24 bg-gray-50 px-6">
-        <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden border shadow-xl grid lg:grid-cols-2">
-          <div className="p-12 flex flex-col justify-center">
-            <h2 className="text-3xl font-bold mb-8">Visit Our Showroom</h2>
-            <p className="text-gray-600 mb-4">Gaw Kadal, Maisuma, Srinagar, J&amp;K 190001</p>
-            <p className="font-bold text-lg mb-8">+91 80827 54459</p>
-            <a
-              href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
-              target="_blank"
-              className="inline-block px-8 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition"
-            >
-              Open in Google Maps
-            </a>
+      {/* 5. LOCATION / SHOWROOM SECTION */}
+<section
+  id="location"
+  className="relative py-28 px-6 bg-white"
+>
+  <div className="max-w-7xl mx-auto">
+    {/* Section Header */}
+    <div className="max-w-3xl mb-20">
+      <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
+        Location
+      </p>
+      <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.05]">
+        Visit our showroom.<br className="hidden sm:block" />
+        Experience it in person.
+      </h2>
+    </div>
+
+    {/* Content */}
+    <div className="grid lg:grid-cols-2 gap-12 items-stretch">
+      {/* Left: Address & Actions */}
+      <div className="flex flex-col justify-between rounded-3xl border border-gray-200 bg-white p-8 sm:p-10 lg:p-12">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500 mb-4">
+            Mateen IT Corp
+          </p>
+
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+            Srinagar Showroom
+          </h3>
+
+          <p className="text-gray-600 text-sm sm:text-base leading-relaxed max-w-md">
+            Gaw Kadal, Maisuma,<br />
+            Srinagar, Jammu &amp; Kashmir — 190001
+          </p>
+
+          <div className="mt-6 text-sm sm:text-base">
+            <p className="text-gray-500">Phone</p>
+            <p className="font-semibold text-gray-900">
+              +91 80827 54459
+            </p>
           </div>
-          <iframe
-            className="w-full h-[400px] lg:h-full border-0 grayscale hover:grayscale-0 transition"
-            loading="lazy"
-            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3304.8450556905805!2d74.809277!3d34.073485999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzTCsDA0JzI0LjYiTiA3NMKwNDgnMzMuNCJF!5e0!3m2!1sen!2sin!4v1767205829652!5m2!1sen!2sin"
-          />
         </div>
 
-        
-      </section>
+        {/* CTAs */}
+        <div className="mt-10 flex flex-wrap gap-4">
+          <a
+            href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-7 py-4 rounded-xl bg-gray-900 text-white font-semibold text-sm sm:text-base hover:bg-gray-800 transition"
+          >
+            Open in Google Maps
+          </a>
+
+          <a
+            href="tel:+918082754459"
+            className="inline-flex items-center justify-center px-7 py-4 rounded-xl border border-gray-300 text-gray-900 font-semibold text-sm sm:text-base hover:border-gray-900 transition"
+          >
+            Call Showroom
+          </a>
+        </div>
+      </div>
+
+      {/* Right: Map */}
+      <div className="relative rounded-3xl overflow-hidden border border-gray-200">
+        <iframe
+          className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition duration-500"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3304.8450556905805!2d74.809277!3d34.073485999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzTCsDA0JzI0LjYiTiA3NMKwNDgnMzMuNCJF!5e0!3m2!1sen!2sin!4v1767205829652!5m2!1sen!2sin"
+        />
+        <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-gray-200" />
+      </div>
+    </div>
+  </div>
+</section>
+
     </main>
   );
 }
