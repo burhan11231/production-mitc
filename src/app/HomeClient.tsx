@@ -70,7 +70,7 @@ export default function HomeClient() {
       {/* 1. HERO SECTION */}
       <section
         id="home"
-        className="relative mb-6 min-h-[60vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
+        className="relative min-h-[60vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
       >
         <div className="absolute inset-0">
           <img
@@ -103,7 +103,7 @@ export default function HomeClient() {
               </span>
             </h1>
 
-            <div className="mt-12 lg:mt-16">
+            <div className="mt-12 lg:mt-16 mb-6">
               <div className="rounded-[1.75rem] lg:rounded-[2.5rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
                 <div className="grid lg:grid-cols-3">
                   <div className="lg:col-span-2 p-6 lg:p-10">
