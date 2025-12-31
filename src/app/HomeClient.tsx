@@ -152,7 +152,7 @@ export default function HomeClient() {
           <div className="absolute inset-x-[-10%] bottom-[-140px] h-[420px] bg-[radial-gradient(700px_circle_at_90%_120%,rgba(15,23,42,0.10),transparent_55%)]" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6 mb-28">
          
 
           {/* Marquee */}
