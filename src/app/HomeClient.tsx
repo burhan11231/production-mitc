@@ -149,6 +149,96 @@ export default function HomeClient() {
         </div>
       </section>
 
+
+{/* 2. REPAIR & UPGRADE CAPABILITIES STRIP */}
+<section className="relative bg-white py-20 overflow-hidden">
+  <div className="max-w-7xl mx-auto px-6">
+
+    {/* Section Heading */}
+    <div className="mb-14">
+      <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-500">
+        In-house Expertise
+      </p>
+      <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+        Advanced repair & upgrade capabilities
+      </h2>
+    </div>
+
+    {/* Animated Track */}
+    <div className="relative overflow-hidden">
+      <div
+        className="
+          flex gap-6
+          animate-[scroll-left_30s_linear_infinite]
+          will-change-transform
+        "
+      >
+
+        {[
+          'Diagnostics',
+          'Chip-Level Repair',
+          'Screen Replacement',
+          'Battery Replacement',
+          'OS Installation',
+          'BIOS Update',
+          'RAM Upgrade',
+          'SSD Upgrade',
+        ].concat([
+          'Diagnostics',
+          'Chip-Level Repair',
+          'Screen Replacement',
+          'Battery Replacement',
+          'OS Installation',
+          'BIOS Update',
+          'RAM Upgrade',
+          'SSD Upgrade',
+        ]).map((item, i) => (
+          <div
+            key={i}
+            className="
+              shrink-0
+              w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%]
+              h-[180px] lg:h-[220px]
+              rounded-3xl
+              border border-gray-200
+              bg-white
+              shadow-sm
+              hover:shadow-xl
+              transition-all duration-300
+              flex items-center justify-center
+            "
+          >
+            <div className="text-center px-6">
+              <div className="mx-auto mb-6 h-12 w-12 rounded-xl bg-gray-900/5 flex items-center justify-center">
+                <div className="h-4 w-4 rounded-full bg-gray-900" />
+              </div>
+              <p className="text-base lg:text-lg font-semibold text-gray-900">
+                {item}
+              </p>
+            </div>
+          </div>
+        ))}
+
+      </div>
+    </div>
+
+  </div>
+
+  {/* Animation keyframes */}
+  <style jsx>{`
+    @keyframes scroll-left {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-50%);
+      }
+    }
+  `}</style>
+</section>
+
+      
+      
       {/* 2. SERVICES SECTION */}
       <section id="services" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto">
