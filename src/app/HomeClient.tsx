@@ -50,7 +50,7 @@ export default function HomeClient() {
       {/* 1. HERO SECTION */}
       <section
         id="home"
-        className="relative pt-0 lg:pt-0 min-h-[60vh] lg:min-h-screen overflow-hidden"
+        className="relative pt-0 lg:pt-0 min-h-[60vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
       >
         <div className="absolute inset-0">
           <img
@@ -63,7 +63,7 @@ export default function HomeClient() {
           <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="max-w-4xl pt-10 lg:pt-16">
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-[#0071e3] animate-pulse" />
@@ -110,47 +110,46 @@ export default function HomeClient() {
                 </div>
               </div>
             </div>
+
+            {/* RATINGS BADGE (Now inside Hero, transparent background) */}
+            {!isStatsLoading && (
+              <div className="mt-10 lg:mt-12 flex flex-wrap items-center gap-5 lg:gap-8">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FaStar 
+                        key={star} 
+                        className={star <= Math.round(ratingStats.avg) ? "text-yellow-400" : "text-white/20"} 
+                        size={18} 
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold text-white">{ratingStats.avg}</span>
+                    <span className="text-sm text-white/50 font-medium">({ratingStats.count} reviews)</span>
+                  </div>
+                </div>
+                
+                <div className="h-4 w-px bg-white/20 hidden sm:block" />
+
+                <Link
+                  href="/ratings"
+                  className="group flex items-center gap-2 text-white/90 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider border-b border-white/30 group-hover:border-white pb-0.5">
+                    Write a review
+                  </span>
+                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* 2. RATINGS BADGE SECTION (Right after Hero) */}
-{!isStatsLoading && (
-  <section className="flex justify-center relative z-20 px-6 my-10 md:my-14 lg:my-16">
-    <div className="group inline-flex flex-wrap items-center justify-center rounded-3xl lg:rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_10px_30px_rgba(15,23,42,0.10)] px-5 py-3 gap-4">
-      
-      <div className="inline-flex items-center gap-2">
-        <div className="inline-flex items-center gap-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <FaStar
-              key={star}
-              className={star <= Math.round(ratingStats.avg) ? "text-amber-400" : "text-gray-200"}
-              size={16}
-            />
-          ))}
-        </div>
-
-        <div className="inline-flex items-baseline gap-2 whitespace-nowrap">
-          <span className="text-sm font-bold text-slate-900">{ratingStats.avg}</span>
-          <span className="text-sm text-slate-500 font-medium">
-            ({ratingStats.count} reviews)
-          </span>
-        </div>
-      </div>
-
-      <div className="hidden sm:block h-5 w-px bg-slate-200"></div>
-
-      <Link
-        href="/ratings"
-        className="inline-flex items-center justify-center rounded-full h-9 px-4 text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition-all border border-blue-100"
-      >
-        Write a review
-      </Link>
-    </div>
-  </section>
-)}
-
-      {/* 3. SERVICES SECTION */}
+      {/* 2. SERVICES SECTION */}
       <section id="services" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl lg:text-6xl font-bold mb-16">
@@ -185,7 +184,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. ABOUT SECTION */}
+      {/* 3. ABOUT SECTION */}
       <section id="about" className="py-28 bg-white px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div>
@@ -216,7 +215,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 5. TRUST PILLARS SECTION (Below About) */}
+      {/* 4. TRUST PILLARS SECTION */}
       <section className="py-20 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
           {[
@@ -241,7 +240,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 6. LOCATION SECTION */}
+      {/* 5. LOCATION SECTION */}
       <section id="location" className="py-24 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden border shadow-xl grid lg:grid-cols-2">
           <div className="p-12 flex flex-col justify-center">
