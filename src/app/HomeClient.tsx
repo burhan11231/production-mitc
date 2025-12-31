@@ -137,21 +137,10 @@ export default function HomeClient() {
 
 
 
-
-        
-      
-
-
-      {/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
-      <section
-        id="about"
-        className="relative py-28 px-6 bg-white overflow-hidden"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-x-[-10%] top-[-120px] h-[360px] bg-[radial-gradient(600px_circle_at_10%_0%,rgba(0,113,227,0.12),transparent_55%)]" />
-          <div className="absolute inset-x-[-10%] bottom-[-140px] h-[420px] bg-[radial-gradient(700px_circle_at_90%_120%,rgba(15,23,42,0.10),transparent_55%)]" />
-        </div>
-
+{/* 2. INVENTORY STATEMENT SECTION (NOW BELOW ABOUT) */}
+      <section className="relative py-20 sm:py-24 lg:py-28 px-6 overflow-hidden bg-white">
+        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
         <div className="max-w-7xl mx-auto px-6 mb-28">
          
 
@@ -273,6 +262,64 @@ export default function HomeClient() {
           }
         `}</style>
 
+        <div className="relative max-w-7xl mx-auto">
+          <div className="max-w-4xl mb-14">
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
+              Inventory
+            </p>
+            <h2 className="mt-3 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
+              Hardware that<br className="hidden sm:block" />
+              meets standards.
+            </h2>
+          </div>
+
+          <div className="space-y-20 sm:space-y-24">
+            <div className="grid lg:grid-cols-5 gap-10 items-start">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Laptops</div>
+              <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+                <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Systems</div>
+              <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+                <div className="text-2xl lg:text-3xl font-semibold">All-in-One PC</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Accessories</div>
+              <div className="lg:col-span-4 space-y-4 sm:space-y-6">
+                <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
+                <div className="text-xl lg:text-2xl font-medium">Mouse</div>
+                <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
+                <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+        
+      
+
+
+      {/* 3. ABOUT SECTION (MOVED ABOVE INVENTORY + REDESIGNED) */}
+      <section
+        id="about"
+        className="relative py-28 px-6 bg-white overflow-hidden"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-x-[-10%] top-[-120px] h-[360px] bg-[radial-gradient(600px_circle_at_10%_0%,rgba(0,113,227,0.12),transparent_55%)]" />
+          <div className="absolute inset-x-[-10%] bottom-[-140px] h-[420px] bg-[radial-gradient(700px_circle_at_90%_120%,rgba(15,23,42,0.10),transparent_55%)]" />
+        </div>
+
+        
+
         <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-16 lg:gap-24 items-center">
           {/* Left content */}
           <div>
@@ -365,55 +412,9 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. INVENTORY STATEMENT SECTION (NOW BELOW ABOUT) */}
-      <section className="relative py-20 sm:py-24 lg:py-28 px-6 overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(1100px_circle_at_12%_8%,rgba(0,113,227,0.14),transparent_60%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-white" />
-
-        <div className="relative max-w-7xl mx-auto">
-          <div className="max-w-4xl mb-14">
-            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500">
-              Inventory
-            </p>
-            <h2 className="mt-3 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] text-gray-900">
-              Hardware that<br className="hidden sm:block" />
-              meets standards.
-            </h2>
-          </div>
-
-          <div className="space-y-20 sm:space-y-24">
-            <div className="grid lg:grid-cols-5 gap-10 items-start">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Laptops</div>
-              <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-                <div className="text-2xl lg:text-3xl font-semibold">Dell Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">HP Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">Acer Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold">Lenovo ThinkPad</div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Systems</div>
-              <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-                <div className="text-2xl lg:text-3xl font-semibold">All-in-One PC</div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-5 gap-10 items-start border-t pt-16">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">Accessories</div>
-              <div className="lg:col-span-4 space-y-4 sm:space-y-6">
-                <div className="text-xl lg:text-2xl font-medium">Keyboard</div>
-                <div className="text-xl lg:text-2xl font-medium">Mouse</div>
-                <div className="text-xl lg:text-2xl font-medium">HDMI Cable</div>
-                <div className="text-xl lg:text-2xl font-medium">Wi-Fi Dongle</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       
-      {/* 5. TRUST PILLARS SECTION */}
+      
+      {/* 4. TRUST PILLARS SECTION */}
       <section className="py-20 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-y py-16">
           {[
