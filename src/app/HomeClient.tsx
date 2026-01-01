@@ -119,8 +119,8 @@ export default function HomeClient() {
     <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
   </div>
 
-  <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 w-full text-center">
-    <div className="max-w-3xl mx-auto pt-2 lg:pt-3 space-y-8 lg:space-y-12">
+  <div className="relative z-10 px-6 lg:px-8 w-full text-center">
+    <div className="max-w-4xl lg:max-w-7xl mx-auto pt-2 lg:pt-3 space-y-8 lg:space-y-12">
       
       {/* Eyebrow - Centered */}
       <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
@@ -131,7 +131,7 @@ export default function HomeClient() {
       </div>
 
       {/* Main Heading - Centered */}
-      <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08] mx-auto">
+      <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08] max-w-4xl mx-auto">
         Premium laptops, built for
         <span className="block mt-3 lg:mt-4">
           <span className="inline-grid place-items-center px-5 h-[1.25em] lg:h-[1.15em] rounded-full bg-white/10 border border-white/20 backdrop-blur-md mx-auto">
@@ -142,17 +142,17 @@ export default function HomeClient() {
         </span>
       </h1>
 
-      {/* Content Card - Full width centered */}
-      <div className="w-full mx-auto mb-10">
-        <div className="rounded-[2rem] lg:rounded-[2.75rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
-          <div className="p-8 lg:p-12 text-left max-w-2xl mx-auto">
-            <p className="text-white/70 text-xs lg:text-sm font-bold uppercase tracking-[0.25em] mb-4">
+      {/* Content Card - Full width on PC, centered on mobile */}
+      <div className="w-full mx-auto mb-14 lg:mb-20">
+        <div className="rounded-[2rem] lg:rounded-[2.75rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)] mx-auto max-w-4xl lg:max-w-5xl">
+          <div className="p-8 lg:p-12 text-center">
+            <p className="text-white/70 text-xs lg:text-sm font-bold uppercase tracking-[0.25em] mb-6 lg:mb-8">
               What you get
             </p>
-            <p className="text-white text-xl lg:text-3xl font-bold tracking-tight leading-snug mb-4">
+            <p className="text-white text-xl lg:text-3xl font-bold tracking-tight leading-snug mb-6 lg:mb-8">
               Clean devices. Clear guidance. Confident purchase.
             </p>
-            <p className="text-white/75 text-base lg:text-lg leading-relaxed">
+            <p className="text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl mx-auto">
               Commercial laptops, accessories, and upgrades—plus straightforward service timelines
               for advanced repairs.
             </p>
@@ -162,6 +162,8 @@ export default function HomeClient() {
     </div>
   </div>
 </section>
+
+
 
 
       {/* 2. ABOUT US SECTION */}
