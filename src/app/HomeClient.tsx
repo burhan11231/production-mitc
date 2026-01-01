@@ -120,7 +120,7 @@ export default function HomeClient() {
   </div>
 
   <div className="relative z-10 px-6 lg:px-8 w-full text-center">
-    <div className="max-w-4xl lg:max-w-7xl mx-auto pt-2 lg:pt-3 space-y-6 lg:space-y-8">
+    <div className="relative max-w-4xl mx-auto">
       
       {/* Eyebrow - Centered */}
       <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
