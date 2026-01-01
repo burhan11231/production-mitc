@@ -412,7 +412,7 @@ export default function HomeClient() {
       {/* 4. WHY CHOOSE US SECTION (UPDATED) */}
 <section
   id="why-choose-us"
-  className="relative py-24 sm:py-28 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+  className="relative py-6 lg:py-12 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
 >
   {/* Background accents */}
   <div className="pointer-events-none absolute inset-0">
