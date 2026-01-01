@@ -104,74 +104,85 @@ export default function HomeClient() {
   return (
     <main className="overflow-x-hidden">
      {/* 1. HERO SECTION */}
-      <section
-        id="home"
-        className="relative min-h-[65vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
-      >
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2400"
-            alt="MITC premium laptops and service"
-            className="h-full w-full object-cover object-center"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-white/10" />
-          <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
-        </div>
+<section
+  id="home"
+  className="relative min-h-[70vh] lg:min-h-screen overflow-hidden flex flex-col justify-center bg-[#000]"
+>
+  {/* Background Layer */}
+  <div className="absolute inset-0">
+    <img
+      src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2400"
+      alt="MITC premium laptops"
+      className="h-full w-full object-cover object-center opacity-80"
+      loading="eager"
+    />
+    {/* Sophisticated Overlays */}
+    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,113,227,0.3),transparent_50%)]" />
+  </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
-          <div className="max-w-4xl pt-8 lg:pt-16">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-[#0071e3] animate-pulse" />
-              <span className="text-[10px] lg:text-[11px] font-bold text-white/90 tracking-widest uppercase">
-                Kashmir&apos;s Tech Authority Since 2013
-              </span>
-            </div>
+  {/* Content Container - Equal py-10 for balance */}
+  <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full py-10">
+    <div className="max-w-4xl">
+      
+      {/* Badge - mt-0 since it's at the top */}
+      <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-2xl">
+        <span className="flex h-2 w-2 rounded-full bg-[#0071e3] shadow-[0_0_10px_#0071e3] animate-pulse" />
+        <span className="text-[10px] lg:text-[11px] font-bold text-white tracking-[0.15em] uppercase">
+          Kashmir&apos;s Tech Authority Since 2013
+        </span>
+      </div>
 
-            <h1 className="mt-10 text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08]">
-              Premium laptops, built for
-              <span className="block mt-3">
-                
-                  <span className="flex items-center text-white leading-none border-r-2 animate-pulse">
-                    {currentWord}
-                  </span>
-               
-              </span>
-            </h1>
+      {/* Main Heading - mt-8 (within max 10) */}
+      <h1 className="mt-8 text-5xl sm:text-6xl lg:text-8xl font-bold tracking-tight text-white leading-[1.05]">
+        Premium laptops,
+        <span className="block text-white/90">
+          built for <span className="text-[#0071e3] inline-block border-r-4 border-[#0071e3] pr-2">{currentWord}</span>
+        </span>
+      </h1>
 
-            <div className="mt-14 lg:mt-20 mb-8">
-              <div className="rounded-[2rem] lg:rounded-[2.75rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
-                <div className="grid lg:grid-cols-3">
-                  <div className="lg:col-span-2 p-8 lg:p-12">
-                    <p className="text-white/70 text-xs lg:text-sm font-bold uppercase tracking-[0.25em]">
-                      What you get
-                    </p>
-                    <p className="mt-4 text-white text-xl lg:text-3xl font-bold tracking-tight leading-snug">
-                      Clean devices. Clear guidance. Confident purchase.
-                    </p>
-                    <p className="mt-4 text-white/75 text-base lg:text-lg leading-relaxed">
-                      Commercial laptops, accessories, and upgrades—plus straightforward service timelines
-                      for advanced repairs.
-                    </p>
-
-                    
-                  </div>
-
-                  <div className="relative h-48 sm:h-64 lg:h-auto">
-                    <img
-                      src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=1600"
-                      alt="Laptop workspace"
-                      className="absolute inset-0 h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 to-transparent" />
-                  </div>
-                </div>
+      {/* Info Card - mt-10 (max limit) mb-10 (max limit) */}
+      <div className="mt-10 mb-10">
+        <div className="group rounded-[2rem] overflow-hidden border border-white/15 bg-white/[0.03] backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all hover:border-white/25">
+          <div className="grid lg:grid-cols-5">
+            
+            {/* Text Side */}
+            <div className="lg:col-span-3 p-8 lg:p-10">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-[1px] w-8 bg-[#0071e3]" />
+                <p className="text-white/50 text-[10px] font-bold uppercase tracking-[0.3em]">
+                  The MITC Standard
+                </p>
               </div>
+              
+              <p className="text-white text-2xl lg:text-3xl font-semibold tracking-tight leading-tight">
+                Clean devices. Clear guidance. <br className="hidden lg:block" />
+                <span className="text-white/60 text-xl lg:text-2xl font-medium">Confident purchase.</span>
+              </p>
+              
+              <p className="mt-6 text-white/60 text-base lg:text-lg leading-relaxed max-w-xl">
+                Specializing in commercial-grade laptops and precision repairs. 
+                We bridge the gap between high-end tech and straightforward service.
+              </p>
             </div>
+
+            {/* Image Side */}
+            <div className="lg:col-span-2 relative h-52 lg:h-auto overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=1600"
+                alt="Workspace"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r lg:bg-gradient-to-l from-transparent via-black/20 to-black/60 lg:to-black/40" />
+            </div>
+
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* 2. ABOUT US SECTION */}
 <section
