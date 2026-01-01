@@ -106,9 +106,8 @@ export default function HomeClient() {
     {/* 1. HERO SECTION */}
 <section
   id="home"
-  className="relative min-h-[70vh] lg:min-h-[85vh] px-4 sm:px-6 lg:px-8 flex items-center"
+  className="relative min-h-[65vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
 >
-  {/* Background */}
   <div className="absolute inset-0">
     <img
       src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2400"
@@ -116,52 +115,50 @@ export default function HomeClient() {
       className="h-full w-full object-cover object-center"
       loading="eager"
     />
-    <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-black/20" />
+    <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-white/10" />
     <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.45),transparent_55%)]" />
   </div>
 
-  {/* Content */}
-  <div className="relative z-10 w-full text-center">
-    <div className="max-w-4xl lg:max-w-6xl mx-auto space-y-7 lg:space-y-10">
+  <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 w-full text-center">
+    <div className="max-w-3xl mx-auto pt-12 lg:pt-20 space-y-8 lg:space-y-12">
       
-      {/* Eyebrow */}
-      <div className="inline-flex items-center justify-center gap-3 px-5 py-2 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
-        <span className="flex h-2 w-2 rounded-full bg-[#0071e3]" />
+      {/* Eyebrow - Centered */}
+      <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
+        <span className="flex h-2 w-2 rounded-full bg-[#0071e3] animate-pulse" />
         <span className="text-[10px] lg:text-[11px] font-bold text-white/90 tracking-widest uppercase">
-          Kashmir&apos;s Tech Authority Since 2013
+          Kashmir's Tech Authority Since 2013
         </span>
       </div>
 
-      {/* Heading */}
+      {/* Main Heading - Centered */}
       <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08] mx-auto">
         Premium laptops, built for
-        <span className="block mt-3">
-          <span className="inline-grid place-items-center px-5 h-[1.25em] rounded-full bg-white/10 border border-white/20 backdrop-blur-md mx-auto">
-            <span className="flex items-center text-white whitespace-nowrap leading-none border-r-2 border-white/80 pr-2">
+        <span className="block mt-3 lg:mt-4">
+          <span className="inline-grid place-items-center px-5 h-[1.25em] lg:h-[1.15em] rounded-full bg-white/10 border border-white/20 backdrop-blur-md mx-auto">
+            <span className="flex items-center text-white whitespace-nowrap leading-none border-r-2 border-white/80 pr-2 animate-pulse">
               {currentWord}
             </span>
           </span>
         </span>
       </h1>
 
-      {/* Info Card */}
-      <div className="w-full flex justify-center">
-        <div className="rounded-[2rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_30px_90px_rgba(0,0,0,0.35)] max-w-3xl w-full">
-          <div className="p-7 lg:p-10 text-center space-y-4">
-            <p className="text-white/70 text-xs font-bold uppercase tracking-[0.25em]">
+      {/* Content Card - Full width centered */}
+      <div className="w-full mx-auto">
+        <div className="rounded-[2rem] lg:rounded-[2.75rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
+          <div className="p-8 lg:p-12 text-left max-w-2xl mx-auto">
+            <p className="text-white/70 text-xs lg:text-sm font-bold uppercase tracking-[0.25em] mb-4">
               What you get
             </p>
-            <p className="text-white text-xl lg:text-3xl font-bold tracking-tight leading-snug">
+            <p className="text-white text-xl lg:text-3xl font-bold tracking-tight leading-snug mb-4">
               Clean devices. Clear guidance. Confident purchase.
             </p>
-            <p className="text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl mx-auto">
+            <p className="text-white/75 text-base lg:text-lg leading-relaxed">
               Commercial laptops, accessories, and upgrades—plus straightforward service timelines
               for advanced repairs.
             </p>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </section>
