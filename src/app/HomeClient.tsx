@@ -195,7 +195,7 @@ export default function HomeClient() {
             </div>
 
             {/* Heading */}
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] -mt-2 lg:-mt-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08] -mt-2 lg:-mt-4">
               Technical excellence,
               <br className="hidden sm:inline" />
               <span className="block sm:inline"> </span>
