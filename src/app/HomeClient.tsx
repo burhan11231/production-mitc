@@ -106,7 +106,7 @@ export default function HomeClient() {
      {/* 1. HERO SECTION */}
 <section
   id="home"
-  className="relative min-h-[65vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
+  className="relative py-6 lg:py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center"
 >
   <div className="absolute inset-0">
     <img
