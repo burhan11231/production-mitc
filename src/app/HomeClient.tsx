@@ -252,116 +252,116 @@ export default function HomeClient() {
             Repeat customers who trust MITC for upgrades and replacements.
           </p>
         </div>
-
       </div>
     </div>
+  </div>
 
-    {/* Capabilities Marquee */}
-    <div className="relative mt-20 lg:mt-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 pb-8">
-          <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
-            <div className="cap-track">
-              {capabilities.map(({ label, icon: Icon }) => (
-                <div key={`a-${label}`} className="cap-card">
-                  <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
-                    <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
-                      <Icon className="text-gray-900 text-2xl lg:text-3xl" />
-                    </div>
-                    <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
-                      {label}
-                    </p>
+  {/* Capabilities Marquee - Full width on PC */}
+  <div className="relative mt-20 lg:mt-32 lg:-mx-8 lg:px-8">
+    <div className="max-w-none lg:max-w-none">
+      <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-0 pb-8 lg:pb-12">
+        <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
+          <div className="cap-track">
+            {capabilities.map(({ label, icon: Icon }) => (
+              <div key={`a-${label}`} className="cap-card">
+                <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
+                  <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
+                    <Icon className="text-gray-900 text-2xl lg:text-3xl" />
                   </div>
+                  <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
+                    {label}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
 
-            <div className="cap-track" aria-hidden="true">
-              {capabilities.map(({ label, icon: Icon }) => (
-                <div key={`b-${label}`} className="cap-card">
-                  <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
-                    <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
-                      <Icon className="text-gray-900 text-2xl lg:text-3xl" />
-                    </div>
-                    <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
-                      {label}
-                    </p>
+          <div className="cap-track" aria-hidden="true">
+            {capabilities.map(({ label, icon: Icon }) => (
+              <div key={`b-${label}`} className="cap-card">
+                <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
+                  <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
+                    <Icon className="text-gray-900 text-2xl lg:text-3xl" />
                   </div>
+                  <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
+                    {label}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .cap-marquee {
-          display: flex;
-          width: max-content;
-          gap: 1.5rem;
-          animation: cap-scroll 25s linear infinite;
-          will-change: transform;
-        }
-
-        .cap-track {
-          display: flex;
-          gap: 1.5rem;
-        }
-
-        .cap-card {
-          flex: 0 0 auto;
-          min-width: 220px;
-          max-width: 260px;
-          height: 180px;
-          border-radius: 2rem;
-          border: 1px solid rgb(229 231 235);
-          background: white;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-          transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .cap-card:hover {
-          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-          transform: translateY(-8px) scale(1.02);
-        }
-
-        @keyframes cap-scroll {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-
-        @media (min-width: 640px) {
-          .cap-card {
-            min-width: 240px;
-            max-width: 280px;
-          }
-        }
-
-        @media (min-width: 1024px) {
-          .cap-card {
-            min-width: 260px;
-            max-width: 300px;
-            height: 200px;
-          }
-        }
-
-        @media (min-width: 1280px) {
-          .cap-card {
-            min-width: 280px;
-            max-width: 320px;
-          }
-        }
-      `}</style>
     </div>
+
+    <style jsx>{`
+      .cap-marquee {
+        display: flex;
+        width: max-content;
+        gap: 1.5rem;
+        animation: cap-scroll 25s linear infinite;
+        will-change: transform;
+      }
+
+      .cap-track {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .cap-card {
+        flex: 0 0 auto;
+        min-width: 220px;
+        max-width: 260px;
+        height: 180px;
+        border-radius: 2rem;
+        border: 1px solid rgb(229 231 235);
+        background: white;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cap-card:hover {
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        transform: translateY(-8px) scale(1.02);
+      }
+
+      @keyframes cap-scroll {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      @media (min-width: 640px) {
+        .cap-card {
+          min-width: 240px;
+          max-width: 280px;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .cap-card {
+          min-width: 260px;
+          max-width: 300px;
+          height: 200px;
+        }
+      }
+
+      @media (min-width: 1280px) {
+        .cap-card {
+          min-width: 280px;
+          max-width: 320px;
+        }
+      }
+    `}</style>
   </div>
 </section>
+
 
 
 
