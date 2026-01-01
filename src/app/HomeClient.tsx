@@ -103,7 +103,7 @@ export default function HomeClient() {
 
   return (
     <main className="overflow-x-hidden">
-    {/* 1. HERO SECTION */}
+     {/* 1. HERO SECTION */}
 <section
   id="home"
   className="relative min-h-[65vh] lg:min-h-screen overflow-hidden flex flex-col justify-center"
@@ -120,7 +120,7 @@ export default function HomeClient() {
   </div>
 
   <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 w-full text-center">
-    <div className="max-w-3xl mx-auto pt-8 lg:pt-16 space-y-8 lg:space-y-12">
+    <div className="max-w-3xl mx-auto pt-12 lg:pt-20 space-y-8 lg:space-y-12">
       
       {/* Eyebrow - Centered */}
       <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
@@ -162,10 +162,6 @@ export default function HomeClient() {
     </div>
   </div>
 </section>
-
-
-
-
 
       {/* 2. ABOUT US SECTION */}
 <section
