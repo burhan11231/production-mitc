@@ -120,7 +120,7 @@ export default function HomeClient() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
-          <div className="max-w-4xl pt-12 lg:pt-20">
+          <div className="max-w-4xl pt-8 lg:pt-16">
             <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-[#0071e3] animate-pulse" />
               <span className="text-[10px] lg:text-[11px] font-bold text-white/90 tracking-widest uppercase">
@@ -176,15 +176,15 @@ export default function HomeClient() {
       {/* 2. ABOUT US SECTION */}
 <section
   id="about"
-  className="relative py-6 lg:py-12 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+  className="relative px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
 >
   {/* Soft curved separator */}
   <div className="absolute inset-x-0 -top-24 h-24 bg-white">
     <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
   </div>
 
-   <div className="relative max-w-4xl mx-auto px-6 lg:px-8 w-full text-center">
-    <div className="max-w-3xl mx-auto pt-8 lg:pt-16 space-y-8 lg:space-y-12">
+   <div className="relative max-w-4xl mx-auto px-6 lg:px-12 w-full text-center">
+    <div className="max-w-3xl mx-auto pt-8 lg:pt-16 space-y-8 lg:space-y-16">
   
       
       {/* Eyebrow */}
