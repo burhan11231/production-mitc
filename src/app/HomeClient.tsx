@@ -120,7 +120,7 @@ export default function HomeClient() {
   </div>
 
   <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 w-full text-center">
-    <div className="max-w-3xl mx-auto pt-12 lg:pt-20 space-y-8 lg:space-y-12">
+    <div className="max-w-3xl mx-auto pt-8 lg:pt-16 space-y-8 lg:space-y-12">
       
       {/* Eyebrow - Centered */}
       <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
@@ -177,10 +177,9 @@ export default function HomeClient() {
     <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
   </div>
 
-  <div className="relative max-w-4xl mx-auto">
-    
-    {/* MAIN CONTENT - Centered */}
-    <div className="text-center space-y-7 lg:space-y-9">
+   <div className="relative max-w-4xl mx-auto px-6 lg:px-8 w-full text-center">
+    <div className="max-w-3xl mx-auto pt-8 lg:pt-16 space-y-8 lg:space-y-12">
+  
       
       {/* Eyebrow */}
       <div className="inline-flex items-center justify-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 mx-auto max-w-max">
