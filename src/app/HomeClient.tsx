@@ -250,7 +250,7 @@ export default function HomeClient() {
             <div className="space-y-2 lg:space-y-3">
              
               {/* Info Cards */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-10 mt-10">
                 <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-32 lg:h-40 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                   <div>
                     <p className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3 group-hover:text-gray-700 transition-colors">
