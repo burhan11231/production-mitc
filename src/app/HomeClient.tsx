@@ -143,7 +143,7 @@ export default function HomeClient() {
       </h1>
 
       {/* Content Card - Full width centered */}
-      <div className="w-full mx-auto">
+      <div className="w-full mx-auto mb-10">
         <div className="rounded-[2rem] lg:rounded-[2.75rem] overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
           <div className="p-8 lg:p-12 text-left max-w-2xl mx-auto">
             <p className="text-white/70 text-xs lg:text-sm font-bold uppercase tracking-[0.25em] mb-4">
