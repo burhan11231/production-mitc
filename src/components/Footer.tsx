@@ -112,7 +112,7 @@ export default function Footer() {
 
           {/* Ratings – Compact & Modern */}
           <div className="flex flex-col items-center lg:items-end">
-            <div className="relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br from-gray-50/60 to-white border border-gray-100 shadow-2xl backdrop-blur-xl">
+            <div className="relative p-2 lg:p-4 rounded-3xl bg-gradient-to-br from-gray-50/60 to-white border border-gray-100 shadow-2xl backdrop-blur-xl">
               <div className="absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top_left,rgba(0,113,227,0.08),transparent_60%)]" />
               <div className="relative z-10 text-center">
                 {isLoading ? (
