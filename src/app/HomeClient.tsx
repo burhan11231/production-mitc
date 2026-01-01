@@ -186,7 +186,7 @@ export default function HomeClient() {
 {/* 2. ABOUT US SECTION */}
 <section
   id="about"
-  className="relative bg-[#f3f7fb] overflow-hidden py-10"
+  className="relative bg-[#f3f7fb] overflow-hidden py-20"
 >
   {/* Soft curved separator */}
   <div className="absolute inset-x-0 -top-24 h-24 bg-white">
@@ -200,7 +200,7 @@ export default function HomeClient() {
       {/* Left Side: Content */}
       <div className="space-y-6">
         {/* Eyebrow - mt-0 since section has py-10 */}
-        <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-4 py-10">
+        <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-4 py-2">
           <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
           <span className="text-[10px] lg:text-[11px] font-bold tracking-[0.2em] uppercase text-gray-500">
             About Mateen IT Corp
@@ -254,7 +254,7 @@ export default function HomeClient() {
   </div>
 
   {/* Capabilities Marquee - Full width on PC - mt-10 applied */}
-  <div className="relative mt-10 mb-10 lg:-mx-8 lg:px-8">
+  <div className="relative lg:-mx-8 lg:px-8">
     <div className="max-w-none lg:max-w-none">
       <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-0">
         <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
