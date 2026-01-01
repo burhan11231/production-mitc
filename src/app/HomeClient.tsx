@@ -224,6 +224,159 @@ export default function HomeClient() {
               buying.
             </p>
 
+
+<div className="max-w-7xl mx-auto px-6 mb-32">
+          {/* Marquee */}
+          <div className="relative overflow-hidden">
+            <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
+              <div className="cap-track">
+                {capabilities.map(({ label, icon: Icon }) => (
+                  <div key={`a-${label}`} className="cap-card">
+                    <div className="text-center px-4 sm:px-6">
+                      <div className="mx-auto mb-4 sm:mb-6 h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                        <Icon className="text-gray-900 text-2xl sm:text-3xl" />
+                      </div>
+                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                        {label}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cap-track" aria-hidden="true">
+                {capabilities.map(({ label, icon: Icon }) => (
+                  <div key={`b-${label}`} className="cap-card">
+                    <div className="text-center px-4 sm:px-6">
+                      <div className="mx-auto mb-4 sm:mb-6 h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gray-900/5 flex items-center justify-center">
+                        <Icon className="text-gray-900 text-2xl sm:text-3xl" />
+                      </div>
+                      <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                        {label}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Styles */}
+        <style jsx>{`
+          .cap-marquee {
+            display: flex;
+            width: max-content;
+            gap: 1.25rem;
+            animation: cap-scroll 18s linear infinite;
+            will-change: transform;
+          }
+
+          .cap-track {
+            display: flex;
+            gap: 1.25rem;
+            padding-right: 1.25rem;
+          }
+
+          .cap-card {
+            flex: 0 0 auto;
+            width: 58vw;
+            max-width: 280px;
+            height: 140px;
+            border-radius: 1.75rem;
+            border: 1px solid rgb(229 231 235);
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: transform 280ms ease, box-shadow 280ms ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .cap-card:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+          }
+
+          @keyframes cap-scroll {
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(-100%);
+            }
+          }
+
+          .pause-marquee {
+            animation-play-state: paused;
+          }
+
+          @media (min-width: 640px) {
+            .cap-card {
+              width: 46vw;
+              max-width: 380px;
+              height: 190px;
+            }
+          }
+
+          @media (min-width: 768px) {
+            .cap-card {
+              width: 32vw;
+              max-width: 380px;
+              height: 210px;
+            }
+          }
+
+          @media (min-width: 1024px) {
+            .cap-marquee {
+              animation-duration: 22s;
+            }
+            .cap-card {
+              width: 24vw;
+              max-width: 400px;
+              height: 230px;
+            }
+          }
+        `}</style>
+
+        {/* Pillars */}
+        <div className="grid gap-10 lg:grid-cols-2 mb-32">
+          {/* Pillar 1 – Warranty */}
+          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
+            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-900 text-white">
+              <FaShieldAlt className="text-2xl" />
+            </div>
+
+            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
+              15-Day Replacement Warranty
+            </h3>
+
+            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
+              Every laptop is covered with a 15-day replacement warranty. Basic
+              diagnostics and functionality checks are performed transparently in
+              front of the customer before delivery.
+            </p>
+          </div>
+
+          {/* Pillar 2 */}
+          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
+            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-bold">
+              ₹
+            </div>
+            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
+              Fair Market Pricing
+            </h3>
+            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
+              Pricing is aligned with real-time market conditions. We focus on value,
+              not inflated margins—ensuring competitive rates across imported,
+              open-box, and commercial-grade devices.
+            </p>
+          </div>
+        </div>
+
+
+
+            
             {/* Stats */}
             <div className="mt-14 grid grid-cols-2 gap-7 sm:gap-9 max-w-md">
               <div className="rounded-2xl border border-gray-200 bg-white p-7 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
