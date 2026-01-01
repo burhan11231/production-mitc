@@ -589,6 +589,24 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      {/* Ratings – small highlight section */}
+<section className="mt-10 flex justify-center">
+  <div className="rounded-3xl bg-blue-200/70 px-6 py-4 shadow-sm">
+    <div className="inline-flex items-center gap-2.5 rounded-full border border-blue-300/60 bg-white/60 px-4 py-2 backdrop-blur-md">
+      <FaStar className="text-amber-400 text-sm" />
+      <span className="text-sm font-semibold text-gray-900">
+        {isStatsLoading ? 'Loading…' : `${ratingStats.avg} / 5`}
+      </span>
+      {!isStatsLoading && (
+        <span className="text-xs text-gray-700">
+          ({ratingStats.count} reviews)
+        </span>
+      )}
+    </div>
+  </div>
+</section>
+
     </main>
   );
 }
