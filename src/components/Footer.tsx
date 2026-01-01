@@ -116,61 +116,66 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Premium Ratings Card */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="group relative p-10 lg:p-12 rounded-3xl bg-white/70 backdrop-blur-2xl border border-white/60 shadow-2xl hover:shadow-3xl transition-all duration-700 hover:-translate-y-3 max-w-md w-full overflow-hidden">
-              {/* Dynamic Background Accents */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0071e3]/8 via-transparent to-emerald-400/6" />
-              <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#0071e3]/10 blur-3xl -translate-y-1/3 translate-x-1/3" />
-              <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-emerald-400/8 blur-3xl translate-y-1/3 -translate-x-1/3" />
+         {/* PROFESSIONAL RATINGS CARD */}
+<div className="flex justify-center lg:justify-end">
+  <div className="relative max-w-md w-full rounded-3xl bg-white border border-gray-200 shadow-[0_20px_40px_rgba(15,23,42,0.08)] p-8 lg:p-10 transition-all duration-300 hover:shadow-[0_30px_60px_rgba(15,23,42,0.12)]">
 
-              {/* Inner Glow Ring */}
-              <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/30" />
+    {/* Subtle top accent */}
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#0071e3]/40 to-transparent" />
 
-              <div className="relative z-10 text-center space-y-6">
-                {isLoading ? (
-                  <div className="space-y-6">
-                    <div className="flex justify-center gap-3">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="w-14 h-14 bg-gray-200 rounded-lg animate-pulse" />
-                      ))}
-                    </div>
-                    <div className="h-12 w-32 mx-auto bg-gray-200 rounded animate-pulse" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                      <StarRating rating={ratingStats.avg} />
-                    </div>
-                    <StarRating rating={ratingStats.avg} />
-
-                    <div className="flex items-baseline justify-center gap-4">
-                      <span className="text-6xl lg:text-7xl font-black text-gray-900 tracking-tighter">
-                        {ratingStats.avg}
-                      </span>
-                      <span className="text-xl font-semibold text-gray-500">
-                        ({ratingStats.count} reviews)
-                      </span>
-                    </div>
-
-                    <p className="text-sm font-bold uppercase tracking-widest text-gray-400">
-                      Verified Customer Ratings
-                    </p>
-
-                    <Link
-                      href="/ratings"
-                      className="inline-flex items-center gap-3 text-base font-bold text-[#0071e3] hover:gap-4 transition-all duration-300"
-                    >
-                      View all reviews
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
+    <div className="relative text-center space-y-6">
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="h-5 w-40 mx-auto bg-gray-200 rounded animate-pulse" />
+          <div className="h-12 w-24 mx-auto bg-gray-200 rounded animate-pulse" />
+        </div>
+      ) : (
+        <>
+          {/* Stars */}
+          <div className="flex justify-center gap-1">
+            {[...Array(5)].map((_, i) => (
+              <svg
+                key={i}
+                className={`w-5 h-5 ${
+                  i < Math.round(ratingStats.avg)
+                    ? 'text-amber-400'
+                    : 'text-gray-300'
+                }`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
           </div>
+
+          {/* Rating */}
+          <div className="flex items-baseline justify-center gap-3">
+            <span className="text-5xl font-bold tracking-tight text-gray-900">
+              {ratingStats.avg}
+            </span>
+            <span className="text-base font-medium text-gray-500">
+              out of 5
+            </span>
+          </div>
+
+          {/* Reviews count */}
+          <p className="text-sm text-gray-500">
+            Based on <span className="font-semibold text-gray-700">{ratingStats.count}</span> verified reviews
+          </p>
+
+          {/* CTA */}
+          <Link
+            href="/ratings"
+            className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-[#0071e3] hover:underline"
+          >
+            Read customer reviews →
+          </Link>
+        </>
+      )}
+    </div>
+  </div>
+</div>
         </div>
 
         {/* Middle Section: Brand + Links */}
