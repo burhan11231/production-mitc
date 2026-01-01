@@ -154,25 +154,7 @@ export default function HomeClient() {
                       for advanced repairs.
                     </p>
 
-                    {/* Optional: ratings chip (kept lightweight) */}
-                    <div className="mt-7 flex flex-wrap items-center gap-3">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md">
-                        <FaStar className="text-amber-300" />
-                        <span className="text-sm text-white/90 font-semibold">
-                          {isStatsLoading ? 'Loading…' : `${ratingStats.avg} / 5`}
-                        </span>
-                        <span className="text-xs text-white/70">
-                          {isStatsLoading ? '' : `(${ratingStats.count} reviews)`}
-                        </span>
-                      </div>
-
-                      <Link
-                        href="/inventory"
-                        className="inline-flex items-center justify-center rounded-full bg-white text-gray-900 px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-white/90 transition-colors"
-                      >
-                        View inventory
-                      </Link>
-                    </div>
+                    
                   </div>
 
                   <div className="relative h-48 sm:h-64 lg:h-auto">
@@ -236,7 +218,7 @@ export default function HomeClient() {
                   <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3">
                     Experience
                   </div>
-                  <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-none">
+                  <div className="text-2xl lg:text-3xl xl:text-3xl font-bold text-gray-900 leading-none">
                     11+ Years
                   </div>
                 </div>
@@ -250,7 +232,7 @@ export default function HomeClient() {
                   <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3">
                     Clients Served
                   </div>
-                  <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-none">
+                  <div className="text-2xl lg:text-3xl xl:text-3xl font-bold text-gray-900 leading-none">
                     5,000+
                   </div>
                 </div>
@@ -275,17 +257,7 @@ export default function HomeClient() {
           {/* RIGHT VISUAL CONTENT */}
           <div className="order-1 lg:order-2 relative">
             <div className="space-y-6 lg:space-y-8">
-              {/* Main Image */}
-              <div className="relative rounded-3xl overflow-hidden border-2 border-gray-200/50 bg-white shadow-2xl group hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
-                <img
-                  src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1400"
-                  alt="MITC Showroom Interior"
-                  className="w-full h-64 sm:h-72 lg:h-80 xl:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
-              </div>
-
+             
               {/* Info Cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-32 lg:h-40 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -314,6 +286,18 @@ export default function HomeClient() {
                 </div>
               </div>
             </div>
+
+             {/* Main Image */}
+              <div className="relative rounded-3xl overflow-hidden border-2 border-gray-200/50 bg-white shadow-2xl group hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
+                <img
+                  src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1400"
+                  alt="MITC Showroom Interior"
+                  className="w-full h-64 sm:h-72 lg:h-80 xl:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+              </div>
+
           </div>
         </div>
 
