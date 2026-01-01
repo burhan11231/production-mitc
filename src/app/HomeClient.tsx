@@ -242,21 +242,12 @@ export default function HomeClient() {
               </div>
             </div>
 
-            {/* Pills */}
-            <div className="flex flex-wrap items-center gap-3 lg:gap-4 text-xs sm:text-sm">
-              <span className="inline-flex items-center gap-2 px-4 lg:px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Store &amp; service under one roof
-              </span>
-              <span className="px-4 lg:px-5 py-2.5 rounded-full bg-white border-2 border-gray-200 text-gray-700 font-medium shadow-sm hover:border-gray-300 transition-colors">
-                Imported, open-box &amp; commercial-grade laptops
-              </span>
-            </div>
+            
           </div>
 
           {/* RIGHT VISUAL CONTENT */}
           <div className="order-1 lg:order-2 relative">
-            <div className="space-y-3 lg:space-y-4">
+            <div className="space-y-2 lg:space-y-3">
              
               {/* Info Cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-10">
