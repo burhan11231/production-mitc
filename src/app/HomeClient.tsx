@@ -106,7 +106,7 @@ export default function HomeClient() {
      {/* 1. HERO SECTION */}
 <section
   id="home"
-  className="relative py-6 lg:py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center"
+  className="relative py-5 lg:py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center"
 >
   <div className="absolute inset-0">
     <img
@@ -120,7 +120,7 @@ export default function HomeClient() {
   </div>
 
   <div className="relative z-10 px-6 lg:px-8 w-full text-center">
-    <div className="relative max-w-4xl mx-auto">
+    <div className="max-w-4xl lg:max-w-7xl mx-auto pt-2 lg:pt-3 space-y-8 lg:space-y-12">
       
       {/* Eyebrow - Centered */}
       <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md shadow-sm mx-auto max-w-max">
