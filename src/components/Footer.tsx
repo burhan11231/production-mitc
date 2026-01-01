@@ -80,7 +80,7 @@ export default function Footer() {
     <footer className="relative mt-20 bg-white/80 backdrop-blur-2xl border-t border-gray-100">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-16 lg:py-20">
         {/* Top Section: Location + Ratings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16 lg:mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center mb-16 lg:mb-20">
           {/* Location */}
           <div className="text-center lg:text-left space-y-8">
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-blue-50/80 border border-blue-100 mx-auto lg:mx-0">
@@ -121,7 +121,7 @@ export default function Footer() {
                   <>
                     <StarRating rating={ratingStats.avg} />
                     <div className="mt-4 flex items-baseline justify-center gap-3">
-                      <span className="text-4xl lg:text-5xl font-black text-gray-900">
+                      <span className="text-3xl lg:text-3xl font-black text-gray-900">
                         {ratingStats.avg}
                       </span>
                       <span className="text-lg font-semibold text-gray-500">
