@@ -11,10 +11,13 @@ import {
   FaWindows,
   FaServer,
   FaMemory,
-  FaStar,
   FaShieldAlt,
+  FaStar,
 } from 'react-icons/fa';
 import { MdStorage } from 'react-icons/md';
+import { HiOutlineCurrencyRupee, HiOutlineSparkles } from 'react-icons/hi2';
+import { RiEyeLine } from 'react-icons/ri';
+import { TbArrowsUpRight, TbChecks } from 'react-icons/tb';
 import Link from 'next/link';
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
@@ -28,6 +31,39 @@ const capabilities = [
   { label: 'BIOS Update', icon: FaServer },
   { label: 'RAM Upgrade', icon: FaMemory },
   { label: 'SSD Upgrade', icon: MdStorage },
+];
+
+const whyChooseUs = [
+  {
+    title: '15-Day Replacement Warranty',
+    desc: 'Added peace of mind with a straightforward replacement policy on eligible devices.',
+    icon: FaShieldAlt,
+    accent: 'from-[#0071e3]/20 via-white/0 to-emerald-400/20',
+  },
+  {
+    title: 'Fair, Market-Aligned Pricing',
+    desc: 'Prices reflect real market value—no inflated tags, no artificial discounts.',
+    icon: HiOutlineCurrencyRupee,
+    accent: 'from-emerald-400/20 via-white/0 to-[#0071e3]/20',
+  },
+  {
+    title: 'Diagnostics Done in Front of You',
+    desc: 'Basic checks and demonstrations are performed openly before delivery.',
+    icon: RiEyeLine,
+    accent: 'from-[#0071e3]/20 via-white/0 to-white/0',
+  },
+  {
+    title: 'Upgrade-First Mindset',
+    desc: 'We recommend RAM, SSD, or OS upgrades when it makes more sense than replacement.',
+    icon: TbArrowsUpRight,
+    accent: 'from-white/0 via-white/0 to-emerald-400/20',
+  },
+  {
+    title: 'Transparent Buying Process',
+    desc: 'Specifications, condition, and limitations are clearly explained—no surprises after purchase.',
+    icon: TbChecks,
+    accent: 'from-emerald-400/20 via-white/0 to-white/0',
+  },
 ];
 
 export default function HomeClient() {
@@ -117,7 +153,28 @@ export default function HomeClient() {
                       Commercial laptops, accessories, and upgrades—plus straightforward service timelines
                       for advanced repairs.
                     </p>
+
+                    {/* Optional: ratings chip (kept lightweight) */}
+                    <div className="mt-7 flex flex-wrap items-center gap-3">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md">
+                        <FaStar className="text-amber-300" />
+                        <span className="text-sm text-white/90 font-semibold">
+                          {isStatsLoading ? 'Loading…' : `${ratingStats.avg} / 5`}
+                        </span>
+                        <span className="text-xs text-white/70">
+                          {isStatsLoading ? '' : `(${ratingStats.count} reviews)`}
+                        </span>
+                      </div>
+
+                      <Link
+                        href="/inventory"
+                        className="inline-flex items-center justify-center rounded-full bg-white text-gray-900 px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-white/90 transition-colors"
+                      >
+                        View inventory
+                      </Link>
+                    </div>
                   </div>
+
                   <div className="relative h-48 sm:h-64 lg:h-auto">
                     <img
                       src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=1600"
@@ -134,255 +191,240 @@ export default function HomeClient() {
         </div>
       </section>
 
-      
-
       {/* 2. ABOUT US SECTION */}
-<section
-  id="about"
-  className="relative py-20 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
->
-  {/* Soft curved separator */}
-  <div className="absolute inset-x-0 -top-24 h-24 bg-white">
-    <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
-  </div>
-
-  <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-start lg:items-center">
-    {/* LEFT CONTENT */}
-    <div className="space-y-8 lg:space-y-10 order-2 lg:order-1">
-      {/* Eyebrow */}
-      <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-2.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
-        <span className="text-xs lg:text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-500">
-          About Mateen IT Corp
-        </span>
-      </div>
-
-      {/* Heading */}
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] -mt-2 lg:-mt-4">
-        Technical excellence,
-        <br className="hidden sm:inline" />
-        <span className="block sm:inline"> </span>
-        built on trust.
-      </h2>
-
-      {/* Description */}
-      <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-lg leading-relaxed">
-        Founded in 2013, Mateen IT Corp is Kashmir's trusted destination for
-        premium laptops and professional IT services. We focus on transparent
-        guidance, reliable inventory, and service standards aligned with modern
-        commercial hardware—so customers always know exactly what they are
-        buying.
-      </p>
-
-      {/* Stats - Equal sized cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg">
-        <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-48 lg:h-52 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-          <div>
-            <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3">
-              Experience
-            </div>
-            <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-none">
-              11+ Years
-            </div>
-          </div>
-          <p className="mt-3 text-xs lg:text-sm text-gray-500 leading-relaxed">
-            Serving students, professionals, and businesses across Kashmir.
-          </p>
+      <section
+        id="about"
+        className="relative py-20 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+      >
+        {/* Soft curved separator */}
+        <div className="absolute inset-x-0 -top-24 h-24 bg-white">
+          <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
         </div>
 
-        <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-48 lg:h-52 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-          <div>
-            <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3">
-              Clients Served
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-start lg:items-center">
+          {/* LEFT CONTENT */}
+          <div className="space-y-8 lg:space-y-10 order-2 lg:order-1">
+            {/* Eyebrow */}
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-2.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
+              <span className="text-xs lg:text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-500">
+                About Mateen IT Corp
+              </span>
             </div>
-            <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-none">
-              5,000+
-            </div>
-          </div>
-          <p className="mt-3 text-xs lg:text-sm text-gray-500 leading-relaxed">
-            Repeat customers who trust MITC for upgrades and replacements.
-          </p>
-        </div>
-      </div>
 
-      {/* Pills */}
-      <div className="flex flex-wrap items-center gap-3 lg:gap-4 text-xs sm:text-sm">
-        <span className="inline-flex items-center gap-2 px-4 lg:px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium shadow-sm">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          Store & service under one roof
-        </span>
-        <span className="px-4 lg:px-5 py-2.5 rounded-full bg-white border-2 border-gray-200 text-gray-700 font-medium shadow-sm hover:border-gray-300 transition-colors">
-          Imported, open-box & commercial-grade laptops
-        </span>
-      </div>
-    </div>
+            {/* Heading */}
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] -mt-2 lg:-mt-4">
+              Technical excellence,
+              <br className="hidden sm:inline" />
+              <span className="block sm:inline"> </span>
+              built on trust.
+            </h2>
 
-    {/* RIGHT VISUAL CONTENT */}
-    <div className="order-1 lg:order-2 relative">
-      <div className="space-y-6 lg:space-y-8">
-        {/* Main Image */}
-        <div className="relative rounded-3xl overflow-hidden border-2 border-gray-200/50 bg-white shadow-2xl group hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
-          <img
-            src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1400"
-            alt="MITC Showroom Interior"
-            className="w-full h-64 sm:h-72 lg:h-80 xl:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
-        </div>
-
-        {/* Info Cards - Equal sized */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-32 lg:h-40 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div>
-              <p className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3 group-hover:text-gray-700 transition-colors">
-                Growth
-              </p>
-            </div>
-            <p className="text-sm lg:text-base text-gray-700 leading-relaxed font-medium">
-              Started in 2013 with a second branch added in 2025 to support
-              increasing demand and faster service turnaround.
+            {/* Description */}
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-lg leading-relaxed">
+              Founded in 2013, Mateen IT Corp is Kashmir&apos;s trusted destination for
+              premium laptops and professional IT services. We focus on transparent
+              guidance, reliable inventory, and service standards aligned with modern
+              commercial hardware—so customers always know exactly what they are
+              buying.
             </p>
-          </div>
 
-          <div className="group rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-900 to-black p-6 lg:p-8 h-32 lg:h-40 flex flex-col justify-between shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-            <div className="relative z-10">
-              <p className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-white/70 mb-3 group-hover:text-white transition-colors">
-                Our Promise
-              </p>
-            </div>
-            <p className="relative z-10 text-sm lg:text-base text-white/95 leading-relaxed font-medium">
-              Clean devices, clear guidance, and confident purchases—without
-              pressure or hidden trade-offs.
-            </p>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Capabilities Marquee - Fixed positioning & sizing */}
-  <div className="relative mt-20 lg:mt-32">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Marquee */}
-      <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 pb-8">
-        <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
-          <div className="cap-track">
-            {capabilities.map(({ label, icon: Icon }) => (
-              <div key={`a-${label}`} className="cap-card">
-                <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
-                  <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
-                    <Icon className="text-gray-900 text-2xl lg:text-3xl" />
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg">
+              <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-48 lg:h-52 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <div>
+                  <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3">
+                    Experience
                   </div>
-                  <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
-                    {label}
+                  <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-none">
+                    11+ Years
+                  </div>
+                </div>
+                <p className="mt-3 text-xs lg:text-sm text-gray-500 leading-relaxed">
+                  Serving students, professionals, and businesses across Kashmir.
+                </p>
+              </div>
+
+              <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-48 lg:h-52 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <div>
+                  <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3">
+                    Clients Served
+                  </div>
+                  <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-none">
+                    5,000+
+                  </div>
+                </div>
+                <p className="mt-3 text-xs lg:text-sm text-gray-500 leading-relaxed">
+                  Repeat customers who trust MITC for upgrades and replacements.
+                </p>
+              </div>
+            </div>
+
+            {/* Pills */}
+            <div className="flex flex-wrap items-center gap-3 lg:gap-4 text-xs sm:text-sm">
+              <span className="inline-flex items-center gap-2 px-4 lg:px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Store &amp; service under one roof
+              </span>
+              <span className="px-4 lg:px-5 py-2.5 rounded-full bg-white border-2 border-gray-200 text-gray-700 font-medium shadow-sm hover:border-gray-300 transition-colors">
+                Imported, open-box &amp; commercial-grade laptops
+              </span>
+            </div>
+          </div>
+
+          {/* RIGHT VISUAL CONTENT */}
+          <div className="order-1 lg:order-2 relative">
+            <div className="space-y-6 lg:space-y-8">
+              {/* Main Image */}
+              <div className="relative rounded-3xl overflow-hidden border-2 border-gray-200/50 bg-white shadow-2xl group hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
+                <img
+                  src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1400"
+                  alt="MITC Showroom Interior"
+                  className="w-full h-64 sm:h-72 lg:h-80 xl:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+              </div>
+
+              {/* Info Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="group rounded-2xl border border-gray-200 bg-white p-6 lg:p-8 h-32 lg:h-40 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div>
+                    <p className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 mb-3 group-hover:text-gray-700 transition-colors">
+                      Growth
+                    </p>
+                  </div>
+                  <p className="text-sm lg:text-base text-gray-700 leading-relaxed font-medium">
+                    Started in 2013 with a second branch added in 2025 to support
+                    increasing demand and faster service turnaround.
                   </p>
                 </div>
-              </div>
-            ))}
-          </div>
 
-          <div className="cap-track" aria-hidden="true">
-            {capabilities.map(({ label, icon: Icon }) => (
-              <div key={`b-${label}`} className="cap-card">
-                <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
-                  <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
-                    <Icon className="text-gray-900 text-2xl lg:text-3xl" />
+                <div className="group rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-900 to-black p-6 lg:p-8 h-32 lg:h-40 flex flex-col justify-between shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                  <div className="relative z-10">
+                    <p className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-white/70 mb-3 group-hover:text-white transition-colors">
+                      Our Promise
+                    </p>
                   </div>
-                  <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
-                    {label}
+                  <p className="relative z-10 text-sm lg:text-base text-white/95 leading-relaxed font-medium">
+                    Clean devices, clear guidance, and confident purchases—without
+                    pressure or hidden trade-offs.
                   </p>
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    {/* Marquee Styles */}
-    <style jsx>{`
-      .cap-marquee {
-        display: flex;
-        width: max-content;
-        gap: 1.5rem;
-        animation: cap-scroll 25s linear infinite;
-        will-change: transform;
-      }
+        {/* Capabilities Marquee */}
+        <div className="relative mt-20 lg:mt-32">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 pb-8">
+              <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
+                <div className="cap-track">
+                  {capabilities.map(({ label, icon: Icon }) => (
+                    <div key={`a-${label}`} className="cap-card">
+                      <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
+                        <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
+                          <Icon className="text-gray-900 text-2xl lg:text-3xl" />
+                        </div>
+                        <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
+                          {label}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-      .cap-track {
-        display: flex;
-        gap: 1.5rem;
-      }
+                <div className="cap-track" aria-hidden="true">
+                  {capabilities.map(({ label, icon: Icon }) => (
+                    <div key={`b-${label}`} className="cap-card">
+                      <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
+                        <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
+                          <Icon className="text-gray-900 text-2xl lg:text-3xl" />
+                        </div>
+                        <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
+                          {label}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
-      .cap-card {
-        flex: 0 0 auto;
-        min-width: 220px;
-        max-width: 260px;
-        height: 180px;
-        lg:height: 200px;
-        border-radius: 2rem;
-        border: 1px solid rgb(229 231 235);
-        background: white;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-        transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+          <style jsx>{`
+            .cap-marquee {
+              display: flex;
+              width: max-content;
+              gap: 1.5rem;
+              animation: cap-scroll 25s linear infinite;
+              will-change: transform;
+            }
 
-      .cap-card:hover {
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-        transform: translateY(-8px) scale(1.02);
-      }
+            .cap-track {
+              display: flex;
+              gap: 1.5rem;
+            }
 
-      @keyframes cap-scroll {
-        from {
-          transform: translateX(0);
-        }
-        to {
-          transform: translateX(-50%);
-        }
-      }
+            .cap-card {
+              flex: 0 0 auto;
+              min-width: 220px;
+              max-width: 260px;
+              height: 180px;
+              border-radius: 2rem;
+              border: 1px solid rgb(229 231 235);
+              background: white;
+              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+              transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
 
-      .cap-marquee:hover .pause-marquee {
-        animation-play-state: paused;
-      }
+            .cap-card:hover {
+              box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+              transform: translateY(-8px) scale(1.02);
+            }
 
-      @media (min-width: 640px) {
-        .cap-card {
-          min-width: 240px;
-          max-width: 280px;
-        }
-      }
+            @keyframes cap-scroll {
+              from {
+                transform: translateX(0);
+              }
+              to {
+                transform: translateX(-50%);
+              }
+            }
 
-      @media (min-width: 1024px) {
-        .cap-card {
-          min-width: 260px;
-          max-width: 300px;
-          height: 200px;
-        }
-      }
+            @media (min-width: 640px) {
+              .cap-card {
+                min-width: 240px;
+                max-width: 280px;
+              }
+            }
 
-      @media (min-width: 1280px) {
-        .cap-card {
-          min-width: 280px;
-          max-width: 320px;
-        }
-      }
-    `}</style>
-  </div>
-</section>
+            @media (min-width: 1024px) {
+              .cap-card {
+                min-width: 260px;
+                max-width: 300px;
+                height: 200px;
+              }
+            }
 
+            @media (min-width: 1280px) {
+              .cap-card {
+                min-width: 280px;
+                max-width: 320px;
+              }
+            }
+          `}</style>
+        </div>
+      </section>
 
-
-
-
-{/* 3. INVENTORY STATEMENT SECTION */}
+      {/* 3. INVENTORY STATEMENT SECTION */}
       <section className="relative py-24 sm:py-28 lg:py-32 px-6 overflow-hidden bg-white">
-
-        {/* Inventory Content */}
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-4xl mb-16">
             <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500 mb-4">
@@ -425,50 +467,144 @@ export default function HomeClient() {
                 <div className="text-xl lg:text-2xl font-medium text-gray-900">Keyboard</div>
                 <div className="text-xl lg:text-2xl font-medium text-gray-900">Mouse</div>
                 <div className="text-xl lg:text-2xl font-medium text-gray-900">HDMI Cable</div>
-                <div className="text-xl lg:text-2xl font-medium text-gray-900">Wi-Fi Dongle</div>
+                <div className="text-xl lg:text-2xl font-medium text-gray-900">Wi‑Fi Dongle</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-
- {/* Pillars */}
-        <div className="grid gap-10 lg:grid-cols-2 mb-32">
-          {/* Pillar 1 – Warranty */}
-          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
-            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-900 text-white">
-              <FaShieldAlt className="text-2xl" />
-            </div>
-
-            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
-              15-Day Replacement Warranty
-            </h3>
-
-            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
-              Every laptop is covered with a 15-day replacement warranty. Basic
-              diagnostics and functionality checks are performed transparently in
-              front of the customer before delivery.
-            </p>
-          </div>
-
-          {/* Pillar 2 */}
-          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
-            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-bold">
-              ₹
-            </div>
-            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
-              Fair Market Pricing
-            </h3>
-            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
-              Pricing is aligned with real-time market conditions. We focus on value,
-              not inflated margins—ensuring competitive rates across imported,
-              open-box, and commercial-grade devices.
-            </p>
-          </div>
+      {/* 4. WHY CHOOSE US SECTION (UPDATED) */}
+      <section
+        id="why-choose-us"
+        className="relative py-24 sm:py-28 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+      >
+        {/* Background accents */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(0,113,227,0.18),transparent_60%)] blur-2xl" />
+          <div className="absolute -bottom-40 right-[-120px] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.16),transparent_60%)] blur-2xl" />
         </div>
 
+        <div className="relative max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white/80 backdrop-blur px-5 py-2.5 shadow-sm">
+              <HiOutlineSparkles className="text-[#0071e3]" />
+              <span className="text-xs lg:text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-600">
+                Why choose us
+              </span>
+            </div>
 
+            <h2 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.06]">
+              A purchase that feels
+              <span className="block">clear, fair, and secure.</span>
+            </h2>
+
+            <p className="mt-6 text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-3xl">
+              Every device is sold with transparent checks, practical guidance, and policies designed for
+              confidence—especially when you’re buying premium, commercial hardware.
+            </p>
+          </div>
+
+          {/* Desktop-first grid */}
+          <div className="mt-14 lg:mt-16 grid gap-6 lg:gap-7 lg:grid-cols-12 items-stretch">
+            {/* Left: feature cards */}
+            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-7">
+              {whyChooseUs.map(({ title, desc, icon: Icon, accent }) => (
+                <div
+                  key={title}
+                  className="group relative rounded-3xl border border-gray-200/80 bg-white/80 backdrop-blur p-7 lg:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.10)] transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div
+                    className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                  />
+                  <div className="relative z-10 flex items-start gap-4">
+                    <div className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl bg-gray-900 text-white grid place-items-center shadow-sm">
+                      <Icon className="text-xl lg:text-2xl" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg lg:text-xl font-semibold text-gray-900 leading-snug">
+                        {title}
+                      </h3>
+                      <p className="mt-2 text-sm lg:text-base text-gray-600 leading-relaxed">
+                        {desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 mt-6 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+                  <div className="relative z-10 mt-5 flex items-center justify-between">
+                    <span className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-gray-500">
+                      MITC Standard
+                    </span>
+                    <span className="text-[11px] lg:text-xs font-semibold text-[#0071e3]">
+                      Learn more →
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: trust panel */}
+            <div className="lg:col-span-4">
+              <div className="relative h-full rounded-3xl border border-gray-200 bg-gradient-to-br from-gray-900 to-black p-8 lg:p-10 overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.35),transparent_60%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_80%_90%,rgba(16,185,129,0.18),transparent_60%)]" />
+
+                <div className="relative z-10 flex flex-col h-full">
+                  <p className="text-[11px] lg:text-xs font-semibold tracking-[0.28em] uppercase text-white/65">
+                    Desktop-first experience
+                  </p>
+                  <h3 className="mt-4 text-2xl lg:text-3xl font-semibold text-white leading-tight">
+                    Built to be evaluated.
+                    <span className="block text-white/80">Not just advertised.</span>
+                  </h3>
+
+                  <p className="mt-5 text-sm lg:text-base text-white/75 leading-relaxed">
+                    Walk in, check the device, see diagnostics, understand trade-offs, and then decide.
+                    The process stays clear from shortlist to delivery.
+                  </p>
+
+                  <div className="mt-8 space-y-3">
+                    <div className="flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 backdrop-blur">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      <p className="text-sm text-white/85">Open checks before delivery</p>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 backdrop-blur">
+                      <span className="h-2 w-2 rounded-full bg-[#0071e3]" />
+                      <p className="text-sm text-white/85">Transparent specs & condition</p>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 backdrop-blur">
+                      <span className="h-2 w-2 rounded-full bg-white/60" />
+                      <p className="text-sm text-white/85">Upgrade-first guidance</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                    <Link
+                      href="/contact"
+                      className="inline-flex items-center justify-center rounded-full bg-white text-gray-900 px-5 py-3 text-sm font-semibold shadow-sm hover:bg-white/90 transition-colors"
+                    >
+                      Talk to us
+                    </Link>
+                    <Link
+                      href="/inventory"
+                      className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/0 text-white px-5 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
+                    >
+                      Browse devices
+                    </Link>
+                  </div>
+
+                  <div className="mt-10 text-xs text-white/55 leading-relaxed">
+                    Note: Warranty applies to eligible devices as per replacement policy.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
