@@ -112,12 +112,7 @@ export default function Footer() {
               >
                 Get Directions <span className="text-xl">→</span>
               </a>
-              <a
-                href="tel:+918082754459"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-900 rounded-2xl font-bold text-base hover:border-[#0071e3] hover:text-[#0071e3] transition-all"
-              >
-                Call Concierge
-              </a>
+              
             </div>
           </div>
 
