@@ -200,7 +200,7 @@ export default function HomeClient() {
       {/* Left Side: Content */}
       <div className="space-y-6">
         {/* Eyebrow - mt-0 since section has py-10 */}
-        <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-4 py-2">
+        <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-4 py-10">
           <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
           <span className="text-[10px] lg:text-[11px] font-bold tracking-[0.2em] uppercase text-gray-500">
             About Mateen IT Corp
