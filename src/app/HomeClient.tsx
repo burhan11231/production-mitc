@@ -247,7 +247,7 @@ export default function HomeClient() {
 
           {/* RIGHT VISUAL CONTENT */}
           <div className="order-1 lg:order-2 relative">
-            <div className="space-y-2 lg:space-y-3">
+            <div className="space-y-3 lg:space-y-4">
              
               {/* Info Cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-10 mt-10">
