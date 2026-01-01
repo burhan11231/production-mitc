@@ -183,13 +183,13 @@ export default function HomeClient() {
     <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
   </div>
 
-  <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-start lg:items-center xl:items-start">
+  <div className="relative max-w-4xl mx-auto">
     
-    {/* LEFT CONTENT */}
-    <div className="space-y-7 lg:space-y-9 order-2 lg:order-1">
+    {/* MAIN CONTENT - Centered */}
+    <div className="text-center space-y-7 lg:space-y-9">
       
       {/* Eyebrow */}
-      <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-2.5">
+      <div className="inline-flex items-center justify-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 mx-auto max-w-max">
         <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
         <span className="text-xs lg:text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-500">
           About Mateen IT Corp
@@ -197,7 +197,7 @@ export default function HomeClient() {
       </div>
 
       {/* Heading */}
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] -mt-2 lg:-mt-4">
+      <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] max-w-4xl mx-auto">
         Technical excellence,
         <br className="hidden sm:inline" />
         <span className="block sm:inline"> </span>
@@ -205,15 +205,15 @@ export default function HomeClient() {
       </h2>
 
       {/* Description */}
-      <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-lg leading-relaxed">
-        Founded in 2013, Mateen IT Corp is Kashmir&apos;s trusted destination for
+      <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
+        Founded in 2013, Mateen IT Corp is Kashmir's trusted destination for
         premium laptops and professional IT services. We focus on transparent
         guidance, reliable inventory, and service standards aligned with modern
         commercial hardware—so customers always know exactly what they are buying.
       </p>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg">
+      {/* Stats Grid - Centered */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
         
         {/* Experience */}
         <div className="group rounded-2xl border border-gray-200 bg-white 
@@ -234,7 +234,7 @@ export default function HomeClient() {
           </p>
         </div>
 
-        {/* Clients */}
+        {/* Customers */}
         <div className="group rounded-2xl border border-gray-200 bg-white 
                         p-7 lg:p-9 
                         flex flex-col gap-4
@@ -242,7 +242,7 @@ export default function HomeClient() {
                         transition-all duration-300 hover:-translate-y-1">
           <div>
             <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
-              Clients Served
+              Customers
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-gray-900 leading-none">
               5,000+
@@ -256,171 +256,111 @@ export default function HomeClient() {
       </div>
     </div>
 
-    {/* RIGHT VISUAL CONTENT */}
-    <div className="order-1 lg:order-2 relative">
-      
-      {/* Info Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-12 mt-12">
-        
-        {/* Growth */}
-        <div className="group rounded-2xl border border-gray-200 bg-white 
-                        p-7 lg:p-9 
-                        flex flex-col gap-3 lg:gap-4
-                        shadow-lg hover:shadow-xl 
-                        transition-all duration-300 hover:-translate-y-1">
-          <p className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-gray-500 
-                        group-hover:text-gray-700 transition-colors">
-            Growth
-          </p>
-          <p className="text-sm lg:text-base text-gray-700 leading-relaxed font-medium">
-            Started in 2013 with a second branch added in 2025 to support increasing
-            demand and faster service turnaround.
-          </p>
-        </div>
-
-        {/* Our Promise */}
-        <div className="group relative rounded-2xl border border-gray-200 
-                        bg-gradient-to-br from-gray-900 to-black 
-                        p-7 lg:p-9 
-                        flex flex-col gap-3 lg:gap-4
-                        shadow-2xl hover:shadow-3xl 
-                        transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-          <p className="relative z-10 text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase 
-                        text-white/70 group-hover:text-white transition-colors">
-            Our Promise
-          </p>
-          <p className="relative z-10 text-sm lg:text-base text-white/95 leading-relaxed font-medium">
-            Clean devices, clear guidance, and confident purchases—without pressure
-            or hidden trade-offs.
-          </p>
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent 
-                          opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        </div>
-
-      </div>
-
-      {/* Main Image */}
-      <div className="relative rounded-3xl overflow-hidden 
-                      border border-gray-200/40 bg-white 
-                      shadow-2xl group hover:shadow-3xl 
-                      transition-all duration-500 hover:scale-[1.02]">
-        <img
-          src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=1400"
-          alt="MITC Showroom Interior"
-          className="w-full h-64 sm:h-72 lg:h-80 xl:h-96 object-cover 
-                     group-hover:scale-105 transition-transform duration-700"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
-      </div>
-
-    </div>
-  </div>
-
-{/* Capabilities Marquee */}
-        <div className="relative mt-20 lg:mt-32">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 pb-8">
-              <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
-                <div className="cap-track">
-                  {capabilities.map(({ label, icon: Icon }) => (
-                    <div key={`a-${label}`} className="cap-card">
-                      <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
-                        <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
-                          <Icon className="text-gray-900 text-2xl lg:text-3xl" />
-                        </div>
-                        <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
-                          {label}
-                        </p>
-                      </div>
+    {/* Capabilities Marquee */}
+    <div className="relative mt-20 lg:mt-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 pb-8">
+          <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
+            <div className="cap-track">
+              {capabilities.map(({ label, icon: Icon }) => (
+                <div key={`a-${label}`} className="cap-card">
+                  <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
+                    <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
+                      <Icon className="text-gray-900 text-2xl lg:text-3xl" />
                     </div>
-                  ))}
+                    <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
+                      {label}
+                    </p>
+                  </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="cap-track" aria-hidden="true">
-                  {capabilities.map(({ label, icon: Icon }) => (
-                    <div key={`b-${label}`} className="cap-card">
-                      <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
-                        <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
-                          <Icon className="text-gray-900 text-2xl lg:text-3xl" />
-                        </div>
-                        <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
-                          {label}
-                        </p>
-                      </div>
+            <div className="cap-track" aria-hidden="true">
+              {capabilities.map(({ label, icon: Icon }) => (
+                <div key={`b-${label}`} className="cap-card">
+                  <div className="text-center px-6 lg:px-8 py-6 h-full flex flex-col items-center justify-center">
+                    <div className="mx-auto mb-6 h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900/5 to-gray-100 flex items-center justify-center shadow-lg">
+                      <Icon className="text-gray-900 text-2xl lg:text-3xl" />
                     </div>
-                  ))}
+                    <p className="text-base lg:text-lg font-semibold text-gray-900 leading-tight px-2">
+                      {label}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          <style jsx>{`
-            .cap-marquee {
-              display: flex;
-              width: max-content;
-              gap: 1.5rem;
-              animation: cap-scroll 25s linear infinite;
-              will-change: transform;
-            }
+      <style jsx>{`
+        .cap-marquee {
+          display: flex;
+          width: max-content;
+          gap: 1.5rem;
+          animation: cap-scroll 25s linear infinite;
+          will-change: transform;
+        }
 
-            .cap-track {
-              display: flex;
-              gap: 1.5rem;
-            }
+        .cap-track {
+          display: flex;
+          gap: 1.5rem;
+        }
 
-            .cap-card {
-              flex: 0 0 auto;
-              min-width: 220px;
-              max-width: 260px;
-              height: 180px;
-              border-radius: 2rem;
-              border: 1px solid rgb(229 231 235);
-              background: white;
-              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-              transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
+        .cap-card {
+          flex: 0 0 auto;
+          min-width: 220px;
+          max-width: 260px;
+          height: 180px;
+          border-radius: 2rem;
+          border: 1px solid rgb(229 231 235);
+          background: white;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+          transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-            .cap-card:hover {
-              box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-              transform: translateY(-8px) scale(1.02);
-            }
+        .cap-card:hover {
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+          transform: translateY(-8px) scale(1.02);
+        }
 
-            @keyframes cap-scroll {
-              from {
-                transform: translateX(0);
-              }
-              to {
-                transform: translateX(-50%);
-              }
-            }
+        @keyframes cap-scroll {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
 
-            @media (min-width: 640px) {
-              .cap-card {
-                min-width: 240px;
-                max-width: 280px;
-              }
-            }
+        @media (min-width: 640px) {
+          .cap-card {
+            min-width: 240px;
+            max-width: 280px;
+          }
+        }
 
-            @media (min-width: 1024px) {
-              .cap-card {
-                min-width: 260px;
-                max-width: 300px;
-                height: 200px;
-              }
-            }
+        @media (min-width: 1024px) {
+          .cap-card {
+            min-width: 260px;
+            max-width: 300px;
+            height: 200px;
+          }
+        }
 
-            @media (min-width: 1280px) {
-              .cap-card {
-                min-width: 280px;
-                max-width: 320px;
-              }
-            }
-          `}</style>
-        </div> 
+        @media (min-width: 1280px) {
+          .cap-card {
+            min-width: 280px;
+            max-width: 320px;
+          }
+        }
+      `}</style>
+    </div>
+  </div>
 </section>
 
 
