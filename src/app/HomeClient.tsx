@@ -254,7 +254,7 @@ export default function HomeClient() {
   </div>
 
   {/* Capabilities Marquee - Full width on PC - mt-10 applied */}
-  <div className="relative lg:-mx-8 lg:px-8">
+  <div className="relative mt-10 lg:-mx-8 lg:px-8">
     <div className="max-w-none lg:max-w-none">
       <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-0">
         <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
@@ -335,7 +335,7 @@ export default function HomeClient() {
 
 
       {/* 3. INVENTORY STATEMENT SECTION */}
-      <section className="relative py-24 sm:py-28 lg:py-32 px-6 overflow-hidden bg-white">
+      <section className="relative py-20 px-6 overflow-hidden bg-white">
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-4xl mb-16">
             <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500 mb-4">
