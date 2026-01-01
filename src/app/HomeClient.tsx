@@ -385,121 +385,129 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. WHY CHOOSE US SECTION (UPDATED) */}
+      {/* 4. WHY CHOOSE US SECTION (UPDATED - Modern & Dynamic) */}
 <section
   id="why-choose-us"
-  className="relative py-6 lg:py-12 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+  className="relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
 >
-  {/* Background accents */}
+  {/* Enhanced background accents */}
   <div className="pointer-events-none absolute inset-0">
-    <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(0,113,227,0.18),transparent_60%)] blur-2xl" />
-    <div className="absolute -bottom-40 right-[-120px] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.16),transparent_60%)] blur-2xl" />
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] -translate-y-1/3 rounded-full bg-[radial-gradient(circle,rgba(0,113,227,0.15),transparent_70%)] blur-3xl" />
+    <div className="absolute bottom-0 right-0 w-[700px] h-[700px] translate-x-1/4 translate-y-1/4 rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.14),transparent_70%)] blur-3xl" />
   </div>
 
   <div className="relative max-w-7xl mx-auto">
-    {/* Header */}
+    {/* Header - Unchanged */}
     <div className="max-w-4xl">
       <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white/80 backdrop-blur px-5 py-2.5 shadow-sm">
-        <HiOutlineSparkles className="text-[#0071e3]" />
+        <HiOutlineSparkles className="text-[#0071e3] text-lg" />
         <span className="text-xs lg:text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-600">
           Why choose us
         </span>
       </div>
-
       <h2 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.06]">
         A purchase that feels
         <span className="block">clear, fair, and secure.</span>
       </h2>
-
       <p className="mt-6 text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-3xl">
         Every device is sold with transparent checks, practical guidance, and policies designed for
         confidence—especially when you're buying premium, commercial hardware.
       </p>
     </div>
 
-    {/* Desktop-first grid */}
-    <div className="mt-14 lg:mt-16 grid gap-6 lg:gap-7 lg:grid-cols-12 items-stretch">
-      {/* Left: feature cards */}
-      <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-7">
-        {whyChooseUs.map(({ title, desc, icon: Icon, accent }) => (
+    {/* Grid Layout - Desktop First */}
+    <div className="mt-16 lg:mt-20 grid gap-8 lg:gap-10 lg:grid-cols-12 items-start">
+      {/* Left: Feature Cards */}
+      <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+        {whyChooseUs.map(({ title, desc, icon: Icon, accent }, idx) => (
           <div
             key={title}
-            className="group relative rounded-3xl border border-gray-200/80 bg-white/80 backdrop-blur p-7 lg:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.10)] transition-all duration-300 hover:-translate-y-1"
+            className="group relative rounded-3xl overflow-hidden bg-white border border-gray-200/70 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
           >
+            {/* Dynamic Gradient Background on Hover */}
             <div
-              className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+              className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
             />
-            <div className="relative z-10 flex items-start gap-4">
-              <div className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl bg-gray-900 text-white grid place-items-center shadow-sm">
-                <Icon className="text-xl lg:text-2xl" />
+            <div className="relative z-10 p-8 lg:p-10 flex flex-col h-full">
+              <div className="flex items-start gap-5">
+                <div className="relative h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900 to-black grid place-items-center shadow-xl ring-4 ring-white/50">
+                  <Icon className="text-white text-2xl lg:text-3xl" />
+                  {/* Subtle glow on hover */}
+                  <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl lg:text-2xl font-bold text-gray-900 leading-tight">
+                    {title}
+                  </h3>
+                  <p className="mt-3 text-base text-gray-600 leading-relaxed">
+                    {desc}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <h3 className="text-lg lg:text-xl font-semibold text-gray-900 leading-snug">
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm lg:text-base text-gray-600 leading-relaxed">
-                  {desc}
-                </p>
+
+              {/* Bottom Accent */}
+              <div className="mt-8 flex items-center justify-between">
+                <div className="h-px flex-1 bg-gradient-to-r from-gray-300 via-gray-200 to-transparent" />
+                <span className="ml-4 text-xs font-bold tracking-[0.3em] uppercase text-gray-400">
+                  MITC Standard
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-l from-gray-300 via-gray-200 to-transparent" />
               </div>
             </div>
 
-            <div className="relative z-10 mt-6 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-
-            <div className="relative z-10 mt-5 flex flex-col items-center gap-1">
-              <span className="text-[11px] lg:text-xs font-semibold tracking-[0.24em] uppercase text-gray-500">
-                MITC Standard
-              </span>
-            </div>
+            {/* Hover scale effect layer */}
+            <div className="absolute inset-0 scale-95 group-hover:scale-100 transition-transform duration-700 rounded-3xl bg-white/50 opacity-0 group-hover:opacity-100 pointer-events-none" />
           </div>
         ))}
       </div>
 
-      {/* Right: trust panel */}
+      {/* Right: Trust Panel - Elevated & Dynamic */}
       <div className="lg:col-span-4">
-        <div className="relative h-full rounded-3xl border border-gray-200 bg-gradient-to-br from-gray-900 to-black p-8 lg:p-10 overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.35),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_80%_90%,rgba(16,185,129,0.18),transparent_60%)]" />
+        <div className="relative h-full min-h-[600px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
+          {/* Inner glow accents */}
+          <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_30%_20%,rgba(0,113,227,0.4),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_70%_80%,rgba(16,185,129,0.25),transparent_60%)]" />
 
-          <div className="relative z-10 flex flex-col h-full">
-            <p className="text-[11px] lg:text-xs font-semibold tracking-[0.28em] uppercase text-white/65">
-              Desktop-first experience
-            </p>
-            <h3 className="mt-4 text-2xl lg:text-3xl font-semibold text-white leading-tight">
-              Built to be evaluated.
-              <span className="block text-white/80">Not just advertised.</span>
-            </h3>
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div>
+              <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
+                Built for confidence
+              </p>
+              <h3 className="mt-5 text-3xl lg:text-4xl font-bold text-white leading-tight">
+                Evaluated in person.
+                <span className="block text-white/80">Trusted by choice.</span>
+              </h3>
+              <p className="mt-6 text-base lg:text-lg text-white/80 leading-relaxed">
+                Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
+                No pressure. No surprises. Just clarity.
+              </p>
 
-            <p className="mt-5 text-sm lg:text-base text-white/75 leading-relaxed">
-              Walk in, check the device, see diagnostics, understand trade-offs, and then decide.
-              The process stays clear from shortlist to delivery.
-            </p>
-
-            <div className="mt-8 space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 backdrop-blur">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                <p className="text-sm text-white/85">Open checks before delivery</p>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 backdrop-blur">
-                <span className="h-2 w-2 rounded-full bg-[#0071e3]" />
-                <p className="text-sm text-white/85">Transparent specs & condition</p>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 backdrop-blur">
-                <span className="h-2 w-2 rounded-full bg-white/60" />
-                <p className="text-sm text-white/85">Upgrade-first guidance</p>
+              <div className="mt-10 space-y-4">
+                <div className="flex items-center gap-4 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur-sm">
+                  <div className="h-3 w-3 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" />
+                  <p className="text-white/90 font-medium">Live diagnostics in front of you</p>
+                </div>
+                <div className="flex items-center gap-4 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur-sm">
+                  <div className="h-3 w-3 rounded-full bg-[#0071e3] shadow-lg shadow-[#0071e3]/50" />
+                  <p className="text-white/90 font-medium">Full transparency on condition</p>
+                </div>
+                <div className="flex items-center gap-4 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur-sm">
+                  <div className="h-3 w-3 rounded-full bg-white/70" />
+                  <p className="text-white/90 font-medium">Upgrade recommendations first</p>
+                </div>
               </div>
             </div>
 
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-12">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center rounded-full bg-white text-gray-900 px-5 py-3 text-sm font-semibold shadow-sm hover:bg-white/90 transition-colors"
+                className="inline-flex items-center justify-center w-full rounded-full bg-white text-gray-900 px-8 py-4 text-base font-bold shadow-xl hover:shadow-white/30 hover:bg-white/95 transition-all duration-300"
               >
-                Talk to us
+                Visit us today
               </Link>
-            </div>
-
-            <div className="mt-10 text-xs text-white/55 leading-relaxed">
-              Note: Warranty applies to eligible devices as per replacement policy.
+              <p className="mt-6 text-xs text-white/50 text-center leading-relaxed">
+                Warranty applies to eligible devices • Replacement policy in place
+              </p>
             </div>
           </div>
         </div>
@@ -507,7 +515,6 @@ export default function HomeClient() {
     </div>
   </div>
 </section>
-
 
       {/* Ratings – small highlight section */}
 <section className="mt-10 flex justify-center">
