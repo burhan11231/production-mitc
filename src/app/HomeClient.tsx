@@ -134,60 +134,9 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 2. INVENTORY STATEMENT SECTION */}
-      <section className="relative py-24 sm:py-28 lg:py-32 px-6 overflow-hidden bg-white">
+      
 
-        {/* Inventory Content */}
-        <div className="relative max-w-7xl mx-auto">
-          <div className="max-w-4xl mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500 mb-4">
-              Inventory
-            </p>
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] text-gray-900">
-              Hardware that
-              <br className="hidden sm:block" />
-              meets standards.
-            </h2>
-          </div>
-
-          <div className="space-y-24 sm:space-y-28">
-            <div className="grid lg:grid-cols-5 gap-12 items-start">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
-                Laptops
-              </div>
-              <div className="lg:col-span-4 space-y-7 sm:space-y-9">
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Dell Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">HP Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Acer Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Lenovo ThinkPad</div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-5 gap-12 items-start border-t border-gray-200 pt-20">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
-                Systems
-              </div>
-              <div className="lg:col-span-4 space-y-7 sm:space-y-9">
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">All-in-One PC</div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-5 gap-12 items-start border-t border-gray-200 pt-20">
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
-                Accessories
-              </div>
-              <div className="lg:col-span-4 space-y-5 sm:space-y-7">
-                <div className="text-xl lg:text-2xl font-medium text-gray-900">Keyboard</div>
-                <div className="text-xl lg:text-2xl font-medium text-gray-900">Mouse</div>
-                <div className="text-xl lg:text-2xl font-medium text-gray-900">HDMI Cable</div>
-                <div className="text-xl lg:text-2xl font-medium text-gray-900">Wi-Fi Dongle</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. ABOUT US SECTION */}
+      {/* 2. ABOUT US SECTION */}
       <section
         id="about"
         className="relative py-32 px-6 bg-[#f3f7fb] overflow-hidden"
@@ -339,41 +288,6 @@ export default function HomeClient() {
           }
         `}</style>
 
-        {/* Pillars */}
-        <div className="grid gap-10 lg:grid-cols-2 mb-32">
-          {/* Pillar 1 – Warranty */}
-          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
-            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-900 text-white">
-              <FaShieldAlt className="text-2xl" />
-            </div>
-
-            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
-              15-Day Replacement Warranty
-            </h3>
-
-            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
-              Every laptop is covered with a 15-day replacement warranty. Basic
-              diagnostics and functionality checks are performed transparently in
-              front of the customer before delivery.
-            </p>
-          </div>
-
-          {/* Pillar 2 */}
-          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
-            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-bold">
-              ₹
-            </div>
-            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
-              Fair Market Pricing
-            </h3>
-            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
-              Pricing is aligned with real-time market conditions. We focus on value,
-              not inflated margins—ensuring competitive rates across imported,
-              open-box, and commercial-grade devices.
-            </p>
-          </div>
-        </div>
-
 
 
             
@@ -455,85 +369,100 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. LOCATION / SHOWROOM SECTION */}
-      <section
-        id="location"
-        className="relative py-32 px-6 bg-white"
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Section Header */}
-          <div className="max-w-3xl mb-24">
-            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500 mb-5">
-              Location
+
+
+
+
+{/* 3. INVENTORY STATEMENT SECTION */}
+      <section className="relative py-24 sm:py-28 lg:py-32 px-6 overflow-hidden bg-white">
+
+        {/* Inventory Content */}
+        <div className="relative max-w-7xl mx-auto">
+          <div className="max-w-4xl mb-16">
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-gray-500 mb-4">
+              Inventory
             </p>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08]">
-              Visit our showroom.<br className="hidden sm:block" />
-              Experience it in person.
+            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] text-gray-900">
+              Hardware that
+              <br className="hidden sm:block" />
+              meets standards.
             </h2>
           </div>
 
-          {/* Content */}
-          <div className="grid lg:grid-cols-2 gap-14 items-stretch">
-            {/* Left: Address & Actions */}
-            <div className="flex flex-col justify-between rounded-3xl border border-gray-200 bg-white p-10 sm:p-12 lg:p-14">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500 mb-5">
-                  Mateen IT Corp
-                </p>
-
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-7">
-                  Srinagar Showroom
-                </h3>
-
-                <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-md">
-                  Gaw Kadal, Maisuma,<br />
-                  Srinagar, Jammu &amp; Kashmir — 190001
-                </p>
-
-                <div className="mt-7 text-base sm:text-lg">
-                  <p className="text-gray-500 mb-1">Phone</p>
-                  <p className="font-semibold text-gray-900">
-                    +91 80827 54459
-                  </p>
-                </div>
+          <div className="space-y-24 sm:space-y-28">
+            <div className="grid lg:grid-cols-5 gap-12 items-start">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
+                Laptops
               </div>
-
-              {/* CTAs */}
-              <div className="mt-12 flex flex-wrap gap-5">
-                <a
-                  href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-gray-900 text-white font-semibold text-base hover:bg-gray-800 transition"
-                >
-                  Open in Google Maps
-                </a>
-
-                <a
-                  href="tel:+918082754459"
-                  className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-gray-300 text-gray-900 font-semibold text-base hover:border-gray-900 transition"
-                >
-                  Call Showroom
-                </a>
+              <div className="lg:col-span-4 space-y-7 sm:space-y-9">
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Dell Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">HP Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Acer Laptops</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Lenovo ThinkPad</div>
               </div>
             </div>
 
-            {/* Right: Map */}
-            <div className="relative rounded-3xl overflow-hidden border border-gray-200 h-[450px] sm:h-[500px] lg:h-[550px]">
-              <div className="absolute inset-0 w-full h-full">
-                <iframe
-                  className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition duration-500"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3304.8450556905805!2d74.809277!3d34.073485999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzTCsDA0JzI0LjYiTiA3NMKwNDgnMzMuNCJF!5e0!3m2!1sen!2sin!4v1767205829652!5m2!1sen!2sin"
-                  title="MITC Srinagar Showroom Location"
-                />
+            <div className="grid lg:grid-cols-5 gap-12 items-start border-t border-gray-200 pt-20">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
+                Systems
               </div>
-              <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-gray-200" />
+              <div className="lg:col-span-4 space-y-7 sm:space-y-9">
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">All-in-One PC</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-5 gap-12 items-start border-t border-gray-200 pt-20">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-400">
+                Accessories
+              </div>
+              <div className="lg:col-span-4 space-y-5 sm:space-y-7">
+                <div className="text-xl lg:text-2xl font-medium text-gray-900">Keyboard</div>
+                <div className="text-xl lg:text-2xl font-medium text-gray-900">Mouse</div>
+                <div className="text-xl lg:text-2xl font-medium text-gray-900">HDMI Cable</div>
+                <div className="text-xl lg:text-2xl font-medium text-gray-900">Wi-Fi Dongle</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+
+ {/* Pillars */}
+        <div className="grid gap-10 lg:grid-cols-2 mb-32">
+          {/* Pillar 1 – Warranty */}
+          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
+            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-900 text-white">
+              <FaShieldAlt className="text-2xl" />
+            </div>
+
+            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
+              15-Day Replacement Warranty
+            </h3>
+
+            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
+              Every laptop is covered with a 15-day replacement warranty. Basic
+              diagnostics and functionality checks are performed transparently in
+              front of the customer before delivery.
+            </p>
+          </div>
+
+          {/* Pillar 2 */}
+          <div className="group relative rounded-3xl border border-gray-200 bg-white p-10 lg:p-12 transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
+            <div className="mb-7 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-bold">
+              ₹
+            </div>
+            <h3 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-5 leading-tight">
+              Fair Market Pricing
+            </h3>
+            <p className="text-gray-600 leading-relaxed text-base lg:text-lg">
+              Pricing is aligned with real-time market conditions. We focus on value,
+              not inflated margins—ensuring competitive rates across imported,
+              open-box, and commercial-grade devices.
+            </p>
+          </div>
+        </div>
+
+
     </main>
   );
 }
