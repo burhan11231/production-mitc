@@ -142,7 +142,7 @@ export default function HomeClient() {
       </h1>
 
       {/* Info Card - mt-10 (max limit) mb-10 (max limit) */}
-      <div className="mt-10 mb-10">
+      <div className="mt-10">
         <div className="group rounded-[2rem] overflow-hidden border border-white/15 bg-white/[0.03] backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all hover:border-white/25">
           <div className="grid lg:grid-cols-5">
             
@@ -184,92 +184,81 @@ export default function HomeClient() {
   </div>
 </section>
 
-      {/* 2. ABOUT US SECTION */}
+      
+{/* 2. ABOUT US SECTION */}
 <section
   id="about"
-  className="relative px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+  className="relative bg-[#f3f7fb] overflow-hidden py-10"
 >
   {/* Soft curved separator */}
   <div className="absolute inset-x-0 -top-24 h-24 bg-white">
     <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
   </div>
 
-   <div className="relative max-w-4xl mx-auto px-6 lg:px-12 w-full text-center">
-    <div className="max-w-3xl mx-auto pt-8 lg:pt-16 space-y-8 lg:space-y-16">
-  
+  <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full">
+    {/* Layout Grid: Text on Left, Stats on Right (Full Wide) */}
+    <div className="grid lg:grid-cols-2 gap-10 items-end">
       
-      {/* Eyebrow */}
-      <div className="inline-flex items-center justify-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 mx-auto max-w-max">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
-        <span className="text-xs lg:text-[11px] font-semibold tracking-[0.28em] uppercase text-gray-500">
-          About Mateen IT Corp
-        </span>
+      {/* Left Side: Content */}
+      <div className="space-y-6">
+        {/* Eyebrow - mt-0 since section has py-10 */}
+        <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-4 py-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
+          <span className="text-[10px] lg:text-[11px] font-bold tracking-[0.2em] uppercase text-gray-500">
+            About Mateen IT Corp
+          </span>
+        </div>
+
+        {/* Heading - mt-10 limit applied via spacing in grid/flex */}
+        <h2 className="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+          Technical excellence,
+          <span className="block text-gray-400">built on trust.</span>
+        </h2>
+
+        {/* Description */}
+        <p className="text-lg text-gray-600 max-w-xl leading-relaxed">
+          Founded in 2013, Mateen IT Corp is Kashmir's trusted destination for
+          premium laptops and professional IT services. We focus on transparent
+          guidance and service standards aligned with modern commercial hardware.
+        </p>
       </div>
 
-      {/* Heading */}
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] max-w-4xl mx-auto">
-        Technical excellence,
-        <br className="hidden sm:inline" />
-        <span className="block sm:inline"> </span>
-        built on trust.
-      </h2>
-
-      {/* Description */}
-      <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
-        Founded in 2013, Mateen IT Corp is Kashmir's trusted destination for
-        premium laptops and professional IT services. We focus on transparent
-        guidance, reliable inventory, and service standards aligned with modern
-        commercial hardware—so customers always know exactly what they are buying.
-      </p>
-
-      {/* Stats Grid - Centered */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+      {/* Right Side: Stats Grid (Left aligned within its column) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10 lg:mt-0">
         
-        {/* Experience */}
-        <div className="group rounded-2xl border border-gray-200 bg-white 
-                        p-7 lg:p-9 
-                        flex flex-col gap-4
-                        shadow-lg hover:shadow-2xl 
-                        transition-all duration-300 hover:-translate-y-1">
-          <div>
-            <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
-              Experience
-            </div>
-            <div className="text-2xl lg:text-3xl font-bold text-gray-900 leading-none">
-              11+ Years
-            </div>
+        {/* Experience Card */}
+        <div className="group rounded-3xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:shadow-xl">
+          <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#0071e3] mb-3">
+            Experience
           </div>
-          <p className="text-xs lg:text-sm text-gray-500 leading-relaxed">
-            Serving students, professionals, and businesses across Kashmir.
+          <div className="text-4xl font-bold text-gray-900 mb-2">
+            11+ Years
+          </div>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Serving professionals and businesses across Kashmir.
           </p>
         </div>
 
-        {/* Customers */}
-        <div className="group rounded-2xl border border-gray-200 bg-white 
-                        p-7 lg:p-9 
-                        flex flex-col gap-4
-                        shadow-lg hover:shadow-2xl 
-                        transition-all duration-300 hover:-translate-y-1">
-          <div>
-            <div className="text-xs lg:text-sm font-semibold tracking-[0.24em] uppercase text-gray-500 mb-2">
-              Customers
-            </div>
-            <div className="text-2xl lg:text-3xl font-bold text-gray-900 leading-none">
-              5,000+
-            </div>
+        {/* Customers Card */}
+        <div className="group rounded-3xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:shadow-xl">
+          <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#0071e3] mb-3">
+            Customers
           </div>
-          <p className="text-xs lg:text-sm text-gray-500 leading-relaxed">
-            Repeat customers who trust MITC for upgrades and replacements.
+          <div className="text-4xl font-bold text-gray-900 mb-2">
+            5,000+
+          </div>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Repeat clients who trust MITC for long-term support.
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  {/* Capabilities Marquee - Full width on PC */}
-  <div className="relative mt-20 lg:mt-32 lg:-mx-8 lg:px-8">
+  {/* Capabilities Marquee - Full width on PC - mt-10 applied */}
+  <div className="relative mt-10 mb-10 lg:-mx-8 lg:px-8">
     <div className="max-w-none lg:max-w-none">
-      <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-0 pb-8 lg:pb-12">
+      <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-0">
         <div className="cap-marquee hover:pause-marquee motion-reduce:animate-none">
           <div className="cap-track">
             {capabilities.map(({ label, icon: Icon }) => (
@@ -312,12 +301,10 @@ export default function HomeClient() {
         animation: cap-scroll 25s linear infinite;
         will-change: transform;
       }
-
       .cap-track {
         display: flex;
         gap: 1.5rem;
       }
-
       .cap-card {
         flex: 0 0 auto;
         min-width: 220px;
@@ -332,46 +319,20 @@ export default function HomeClient() {
         align-items: center;
         justify-content: center;
       }
-
       .cap-card:hover {
         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
         transform: translateY(-8px) scale(1.02);
       }
-
       @keyframes cap-scroll {
-        from {
-          transform: translateX(0);
-        }
-        to {
-          transform: translateX(-50%);
-        }
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
       }
-
-      @media (min-width: 640px) {
-        .cap-card {
-          min-width: 240px;
-          max-width: 280px;
-        }
-      }
-
-      @media (min-width: 1024px) {
-        .cap-card {
-          min-width: 260px;
-          max-width: 300px;
-          height: 200px;
-        }
-      }
-
-      @media (min-width: 1280px) {
-        .cap-card {
-          min-width: 280px;
-          max-width: 320px;
-        }
-      }
+      @media (min-width: 640px) { .cap-card { min-width: 240px; max-width: 280px; } }
+      @media (min-width: 1024px) { .cap-card { min-width: 260px; max-width: 300px; height: 200px; } }
+      @media (min-width: 1280px) { .cap-card { min-width: 280px; max-width: 320px; } }
     `}</style>
   </div>
 </section>
-
 
 
 
