@@ -1,21 +1,29 @@
 // src/app/team/page.tsx
-// Team page displaying all salespersons
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSalespersons } from '@/hooks/useSalespersons';
 import SalespersonModal from '@/components/SalespersonModal';
+import FirestoreErrorDialog from '@/components/FirestoreErrorDialog';
 import { Salesperson } from '@/lib/firestore-models';
 import Link from 'next/link';
 
 export default function TeamPage() {
-  const { salespersons, isLoading } = useSalespersons();
+  const { salespersons, isLoading, indexError } = useSalespersons();
   const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
   const activeSalespersons = salespersons.filter((p) => p.isActive);
+
+  // Auto-open error dialog when indexError occurs
+  useEffect(() => {
+    if (indexError) {
+      setShowErrorDialog(true);
+    }
+  }, [indexError]);
 
   const handleCardClick = (person: Salesperson) => {
     setSelectedPerson(person);
@@ -60,11 +68,33 @@ export default function TeamPage() {
       {/* TEAM GRID */}
       <section className="relative py-24 lg:py-32 px-6 lg:px-12 bg-white">
         <div className="max-w-7xl mx-auto">
+          {/* ERROR BANNER */}
+          {indexError && (
+            <div className="mb-12 bg-red-50 border-2 border-red-200 rounded-2xl p-8 shadow-lg">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div>
+                  <h3 className="font-bold text-red-900 text-2xl mb-3 flex items-center gap-2">
+                    ⚠️ Database Index Required
+                  </h3>
+                  <p className="text-red-800 text-lg">
+                    A Firestore composite index is required to load the team members. Click the button to create it in Firebase Console.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowErrorDialog(true)}
+                  className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+                >
+                  🔧 Create Index
+                </button>
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="text-center py-20">
               <p className="text-gray-600 text-lg">Loading team...</p>
             </div>
-          ) : activeSalespersons.length === 0 ? (
+          ) : activeSalespersons.length === 0 && !indexError ? (
             <div className="text-center py-20">
               <p className="text-gray-600 text-lg">No team members available yet</p>
               <Link href="/contact" className="text-blue-600 hover:text-blue-700 font-medium mt-4 inline-block">
@@ -79,7 +109,6 @@ export default function TeamPage() {
                   onClick={() => handleCardClick(person)}
                   className="group relative rounded-2xl border border-gray-200 bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden text-left"
                 >
-                  {/* Image */}
                   {person.imageUrl && (
                     <div className="relative w-full h-64 bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden">
                       <Image
@@ -92,7 +121,6 @@ export default function TeamPage() {
                     </div>
                   )}
 
-                  {/* Content */}
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                       {person.name}
@@ -107,7 +135,6 @@ export default function TeamPage() {
                       </p>
                     )}
 
-                    {/* Contact Icons */}
                     <div className="flex gap-2">
                       <a
                         href={`tel:${person.phone}`}
@@ -145,7 +172,6 @@ export default function TeamPage() {
                       </a>
                     </div>
 
-                    {/* Click hint */}
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">
                         Click to view details →
@@ -175,20 +201,19 @@ export default function TeamPage() {
             >
               Contact Us
             </Link>
-            <a
-              href="https://wa.me/919876543210"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
-            >
-              WhatsApp
-            </a>
           </div>
         </div>
       </section>
 
-      {/* Modal */}
+      {/* Modals */}
       <SalespersonModal isOpen={modalOpen} salesperson={selectedPerson} onClose={() => setModalOpen(false)} />
+      
+      <FirestoreErrorDialog
+        error={indexError}
+        projectId={projectId}
+        isOpen={showErrorDialog}
+        onDismiss={() => setShowErrorDialog(false)}
+      />
     </main>
   );
 }
