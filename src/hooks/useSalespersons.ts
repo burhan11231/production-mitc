@@ -35,6 +35,7 @@ export function useSalespersons(): UseSalespersonsReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
   const [indexError, setIndexError] = useState<any>(null);
+  const [hasShownError, setHasShownError] = useState(false);
   const { parseIndexError } = useFirestoreIndexError();
 
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
@@ -43,6 +44,7 @@ export function useSalespersons(): UseSalespersonsReturn {
     setIsLoading(true);
     setError(null);
     setIndexError(null);
+    setHasShownError(false);
 
     try {
       // This query requires a composite index!
@@ -63,6 +65,7 @@ export function useSalespersons(): UseSalespersonsReturn {
           setIsLoading(false);
           setError(null);
           setIndexError(null);
+          setHasShownError(false);
         },
         (err: any) => {
           setIsLoading(false);
@@ -72,12 +75,20 @@ export function useSalespersons(): UseSalespersonsReturn {
 
           if (errorInfo.isIndexError) {
             setIndexError(err);
-            toast.error(
-              'Composite index required for salespersons. Check the error dialog.',
-              { duration: 8000 }
-            );
+            // Only show toast once per error
+            if (!hasShownError) {
+              toast.error(
+                'Composite index required for salespersons. Check the error dialog.',
+                { duration: 8000 }
+              );
+              setHasShownError(true);
+            }
           } else {
-            toast.error('Failed to load salespersons');
+            // Only show toast once per error
+            if (!hasShownError) {
+              toast.error('Failed to load salespersons');
+              setHasShownError(true);
+            }
           }
         }
       );
@@ -90,9 +101,13 @@ export function useSalespersons(): UseSalespersonsReturn {
 
       if (errorInfo.isIndexError) {
         setIndexError(err);
+        if (!hasShownError) {
+          toast.error('Composite index required for salespersons');
+          setHasShownError(true);
+        }
       }
     }
-  }, [parseIndexError, projectId]);
+  }, [projectId, parseIndexError, hasShownError]);
 
   const addSalesperson = useCallback(
     async (data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -107,8 +122,10 @@ export function useSalespersons(): UseSalespersonsReturn {
         const errorInfo = parseIndexError(err, projectId);
         if (errorInfo.isIndexError) {
           setIndexError(err);
+          toast.error('Index required. Please create it first.');
+        } else {
+          toast.error('Failed to add salesperson');
         }
-        toast.error('Failed to add salesperson');
         throw err;
       }
     },
@@ -127,8 +144,10 @@ export function useSalespersons(): UseSalespersonsReturn {
         const errorInfo = parseIndexError(err, projectId);
         if (errorInfo.isIndexError) {
           setIndexError(err);
+          toast.error('Index required. Please create it first.');
+        } else {
+          toast.error('Failed to update salesperson');
         }
-        toast.error('Failed to update salesperson');
         throw err;
       }
     },
@@ -144,8 +163,10 @@ export function useSalespersons(): UseSalespersonsReturn {
         const errorInfo = parseIndexError(err, projectId);
         if (errorInfo.isIndexError) {
           setIndexError(err);
+          toast.error('Index required. Please create it first.');
+        } else {
+          toast.error('Failed to delete salesperson');
         }
-        toast.error('Failed to delete salesperson');
         throw err;
       }
     },
@@ -169,8 +190,10 @@ export function useSalespersons(): UseSalespersonsReturn {
         const errorInfo = parseIndexError(err, projectId);
         if (errorInfo.isIndexError) {
           setIndexError(err);
+          toast.error('Index required. Please create it first.');
+        } else {
+          toast.error('Failed to reorder salespersons');
         }
-        toast.error('Failed to reorder salespersons');
         throw err;
       }
     },
