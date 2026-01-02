@@ -401,21 +401,7 @@ export default function HomeClient() {
                       Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
                       No pressure. No surprises. Just clarity.
                     </p>
-                    <div className="mt-10 space-y-4">
-                      <div className="flex items-center gap-4 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur-sm">
-                        <div className="h-3 w-3 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" />
-                        <p className="text-white/90 font-medium">Live diagnostics in front of you</p>
-                      </div>
-                      <div className="flex items-center gap-4 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur-sm">
-                        <div className="h-3 w-3 rounded-full bg-[#0071e3] shadow-lg shadow-[#0071e3]/50" />
-                        <p className="text-white/90 font-medium">Full transparency on condition</p>
-                      </div>
-                      <div className="flex items-center gap-4 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur-sm">
-                        <div className="h-3 w-3 rounded-full bg-white/70" />
-                        <p className="text-white/90 font-medium">Upgrade recommendations first</p>
-                      </div>
-                    </div>
-                  </div>
+                    
                   <div className="mt-12">
                     <Link
                       href="/contact"
