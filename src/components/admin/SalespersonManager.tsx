@@ -1,8 +1,6 @@
-// src/components/admin/SalespersonManager.tsx
-// src/components/admin/SalespersonManager.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useSalespersons } from '@/hooks/useSalespersons';
 import { Salesperson } from '@/lib/firestore-models';
@@ -13,11 +11,20 @@ import FirestoreErrorDialog from '@/components/FirestoreErrorDialog';
 interface FormData extends Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export default function SalespersonManager() {
-  const { salespersons, isLoading, indexError, addSalesperson, updateSalesperson, deleteSalesperson } = useSalespersons();
+  const { salespersons, isLoading, indexError, addSalesperson, updateSalesperson, deleteSalesperson } =
+    useSalespersons();
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showErrorDialog, setShowErrorDialog] = useState(!!indexError);
+
+  // ✅ FIX: dialog open state should not be derived directly from indexError on every render
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+
+  useEffect(() => {
+    if (indexError) setShowErrorDialog(true);
+  }, [indexError]);
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     role: 'Sales',
@@ -49,8 +56,25 @@ export default function SalespersonManager() {
       toast.dismiss();
       toast.success('Image compressed and ready!');
     } catch (error) {
+      toast.dismiss();
       toast.error((error as Error).message || 'Failed to compress image');
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      role: 'Sales',
+      imageUrl: '',
+      email: '',
+      phone: '',
+      whatsapp: '',
+      bio: '',
+      isActive: true,
+      order: salespersons.length,
+    });
+    setEditingId(null);
+    setShowForm(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,26 +96,10 @@ export default function SalespersonManager() {
 
       resetForm();
     } catch (error) {
-      // Error is handled in the hook
+      // errors are handled in hook
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      role: 'Sales',
-      imageUrl: '',
-      email: '',
-      phone: '',
-      whatsapp: '',
-      bio: '',
-      isActive: true,
-      order: salespersons.length,
-    });
-    setEditingId(null);
-    setShowForm(false);
   };
 
   const handleEdit = (person: Salesperson) => {
@@ -101,12 +109,11 @@ export default function SalespersonManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this salesperson?')) {
-      try {
-        await deleteSalesperson(id);
-      } catch (error) {
-        // Error is handled in the hook
-      }
+    if (!confirm('Are you sure you want to delete this salesperson?')) return;
+    try {
+      await deleteSalesperson(id);
+    } catch (error) {
+      // errors are handled in hook
     }
   };
 
@@ -134,7 +141,7 @@ export default function SalespersonManager() {
         {indexError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex justify-between items-center">
             <div>
-              <p className="font-semibold text-red-900">📌 Composite Index Error</p>
+              <p className="font-semibold text-red-900">Composite Index Error</p>
               <p className="text-sm text-red-800 mt-1">A database index is required to fetch salespersons</p>
             </div>
             <button
@@ -218,9 +225,7 @@ export default function SalespersonManager() {
 
                 {/* WhatsApp */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    WhatsApp (optional)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp (optional)</label>
                   <input
                     type="tel"
                     value={formData.whatsapp}
@@ -232,9 +237,7 @@ export default function SalespersonManager() {
 
                 {/* Display Order */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Display Order
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
                   <input
                     type="number"
                     value={formData.order}
@@ -246,9 +249,7 @@ export default function SalespersonManager() {
 
               {/* Bio */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bio
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
                 <textarea
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
@@ -260,9 +261,7 @@ export default function SalespersonManager() {
 
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Image (Max 700KB)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Profile Image (Max 700KB)</label>
                 <div className="flex gap-4 items-start">
                   <input
                     type="file"
@@ -272,13 +271,7 @@ export default function SalespersonManager() {
                   />
                   {formData.imageUrl && (
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
-                      <Image
-                        src={formData.imageUrl}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                      <Image src={formData.imageUrl} alt="Preview" fill className="object-cover" unoptimized />
                     </div>
                   )}
                 </div>
@@ -330,13 +323,7 @@ export default function SalespersonManager() {
               <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-6 flex gap-4">
                 {person.imageUrl && (
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image
-                      src={person.imageUrl}
-                      alt={person.name}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                    <Image src={person.imageUrl} alt={person.name} fill className="object-cover" unoptimized />
                   </div>
                 )}
 
