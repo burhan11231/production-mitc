@@ -387,7 +387,7 @@ export default function HomeClient() {
             </div>
 
             <div className="lg:col-span-4">
-              <div className="relative h-full min-h-[600px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
+              <div className="relative h-full min-h-[400px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
                 <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_30%_20%,rgba(0,113,227,0.4),transparent_60%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_70%_80%,rgba(16,185,129,0.25),transparent_60%)]" />
                 <div className="relative z-10 flex flex-col h-full justify-between">
@@ -406,17 +406,12 @@ export default function HomeClient() {
 
                   </div>
                     
-                  <div className="mt-12">
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center justify-center w-full rounded-full bg-white text-gray-900 px-8 py-4 text-base font-bold shadow-xl hover:shadow-white/30 hover:bg-white/95 transition-all duration-300"
-                    >
-                      Visit us today
-                    </Link>
+                  
+                    
                     <p className="mt-6 text-xs text-white/50 text-center leading-relaxed">
                       Warranty applies to eligible devices • Replacement policy in place
                     </p>
-                  </div>
+                  
                 </div>
               </div>
             </div>
