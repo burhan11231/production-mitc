@@ -14,8 +14,8 @@ export default function Footer() {
         
         {/* Middle Section: Brand + Links */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 py-12">
-          {/* Brand */}
-          <div className="text-center md:text-left">
+          {/* Brand - Changed text-center to text-left */}
+          <div className="text-left">
             <Link href="/" className="inline-flex items-center gap-4 mb-8">
               <Image
                 src="https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg"
@@ -26,13 +26,14 @@ export default function Footer() {
               />
               <span className="text-3xl font-bold tracking-tighter text-gray-900">MITC</span>
             </Link>
-            <p className="text-base leading-relaxed text-gray-500 max-w-sm mx-auto md:mx-0">
+            {/* Changed mx-auto to mx-0 */}
+            <p className="text-base leading-relaxed text-gray-500 max-w-sm mx-0">
               Kashmir's trusted authority for premium commercial laptops and professional IT services since 2013.
             </p>
           </div>
 
-          {/* Company Links */}
-          <div className="text-center md:text-left">
+          {/* Company Links - Changed text-center to text-left */}
+          <div className="text-left">
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">Company</h4>
             <ul className="space-y-5">
               {['About', 'Services', 'Ratings', 'Contact'].map((item) => (
@@ -48,10 +49,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Social Connect */}
-          <div className="text-center md:text-left">
+          {/* Social Connect - Changed text-center to text-left and justify-center to justify-start */}
+          <div className="text-left">
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">Connect</h4>
-            <div className="flex gap-4 justify-center md:justify-start">
+            <div className="flex gap-4 justify-start">
               {['Facebook', 'Instagram', 'Twitter', 'LinkedIn'].map((social) => (
                 <a
                   key={social}
@@ -68,8 +69,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Legal */}
-        <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+        {/* Bottom Legal - Changed items-center to items-start (mobile) and text-center to text-left */}
+        <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
           <p className="text-sm font-medium text-gray-400">
             © {currentYear} Mateen IT Corp. All rights reserved.
           </p>
