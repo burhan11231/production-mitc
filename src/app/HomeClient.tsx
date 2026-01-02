@@ -387,7 +387,7 @@ export default function HomeClient() {
             </div>
 
             <div className="lg:col-span-4">
-              <div className="relative h-full min-h-[300px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
+              <div className="relative h-full min-h-[200px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
                 <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_30%_20%,rgba(0,113,227,0.4),transparent_60%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_70%_80%,rgba(16,185,129,0.25),transparent_60%)]" />
                 <div className="relative z-10 flex flex-col h-full justify-between">
@@ -395,11 +395,11 @@ export default function HomeClient() {
                     <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
                       Built for confidence
                     </p>
-                    <h3 className="mt-5 text-3xl lg:text-4xl font-bold text-white leading-tight">
+                    <h3 className="mt-2 text-2xl lg:text-3xl font-bold text-white leading-tight">
                       Evaluated in person.
                       <span className="block text-white/80">Trusted by choice.</span>
                     </h3>
-                    <p className="mt-2 text-base lg:text-lg text-white/80 leading-relaxed">
+                    <p className="mt-2 text-sm text-white/80 leading-relaxed">
                       Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
                       No pressure. No surprises. Just clarity.
                     </p>
@@ -408,9 +408,7 @@ export default function HomeClient() {
                     
                   
                     
-                    <p className="mt-6 text-xs text-white/50 text-left leading-relaxed">
-                      Warranty applies to eligible devices • Replacement policy in place
-                    </p>
+                    
                   
                 </div>
               </div>
