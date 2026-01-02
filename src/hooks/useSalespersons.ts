@@ -48,9 +48,8 @@ export function useSalespersons(): UseSalespersonsReturn {
 
     setIsLoading(true);
     setError(null);
-    setIndexError(null);
+    // ❌ do NOT clear indexError here (prevents blinking)
 
-    // ✅ Only read active documents (prevents permission-denied on inactive docs)
     const q = query(
       collection(db, 'salespersons'),
       where('isActive', '==', true),
@@ -65,6 +64,8 @@ export function useSalespersons(): UseSalespersonsReturn {
         setSalespersons(data);
         setIsLoading(false);
         setError(null);
+
+        // ✅ clear only on success
         setIndexError(null);
 
         globalErrorShown = false;
@@ -83,14 +84,14 @@ export function useSalespersons(): UseSalespersonsReturn {
         setError(err);
 
         const info = parseIndexError(err, projectId);
+        const isPermissionDenied = err?.code === 'permission-denied' || err?.code === 'PERMISSION_DENIED';
 
-        // show dialog for index/rules errors
-        if (info.isIndexError || info.isPermissionError) {
+        if (info.isIndexError || isPermissionDenied) {
           setIndexError(err);
         }
 
         if (!globalErrorShown) {
-          if (info.isPermissionError) {
+          if (isPermissionDenied) {
             toast.error('Permission denied (Firestore rules).', { duration: 8000 });
           } else if (info.isIndexError) {
             toast.error('Composite index required for salespersons.', { duration: 8000 });
