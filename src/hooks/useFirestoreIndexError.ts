@@ -14,10 +14,13 @@ export function useFirestoreIndexError() {
     const errorMessage = error?.message || '';
     const code = error?.code || '';
 
-    // 1) Detect index error
+    // Detect index error
     const isIndexError =
       errorMessage.includes('composite index') ||
       errorMessage.includes('missing index') ||
+      errorMessage.includes('index') ||
+      code === 'failed-precondition' ||
+      code === 'FAILED_PRECONDITION' ||
       (code === 'PERMISSION_DENIED' && errorMessage.includes('index'));
 
     if (!isIndexError) {
@@ -27,23 +30,21 @@ export function useFirestoreIndexError() {
       };
     }
 
-    // 2) Extract collection (best-effort)
+    // Extract collection - PROPER REGEX WITH CAPTURE GROUP
     let collection = '';
-
     const collectionMatch =
-      // "... in collection 'salespersons' ..." or "collection \"salespersons\""
-      errorMessage.match(/collection\s*['"]([^'"]+)['"]/i) ||
-      errorMessage.match(/in\s+collection\s*['"]([^'"]+)['"]/i);
+      errorMessage.match(/collection\s+['"`]([^'"`]+)['"`]/i) ||
+      errorMessage.match(/in\s+collection\s+['"`]([^'"`]+)['"`]/i) ||
+      errorMessage.match(/on\s+collection\s+['"`]([^'"`]+)['"`]/i) ||
+      errorMessage.match(/for\s+collection\s+['"`]([^'"`]+)['"`]/i);
 
-    if (collectionMatch) {
+    if (collectionMatch && collectionMatch[1]) {
       collection = collectionMatch[1];
     }
 
-    // 3) Extract fields if present in the message
+    // Extract fields
     let fields: Array<{ field: string; direction: 'asc' | 'desc' }> = [];
-    const fieldsMatch = errorMessage.match(
-      /fields?:\s*([^,\n]+(?:,\s*[^,\n]+)*)/i
-    );
+    const fieldsMatch = errorMessage.match(/fields?:\s*([^.\n]+)/i);
     if (fieldsMatch) {
       const fieldStr = fieldsMatch[1];
       const fieldPairs = fieldStr.split(',').map((f: string) => f.trim());
@@ -53,7 +54,7 @@ export function useFirestoreIndexError() {
       }));
     }
 
-    // 4) Fallback patterns for your known collections
+    // Fallback patterns for known collections
     if (!collection || fields.length === 0) {
       const commonPatterns: Record<
         string,
@@ -76,20 +77,6 @@ export function useFirestoreIndexError() {
             { field: 'createdAt', direction: 'desc' },
           ],
         },
-        reviews: {
-          collection: 'reviews',
-          fields: [
-            { field: 'published', direction: 'asc' },
-            { field: 'createdAt', direction: 'desc' },
-          ],
-        },
-        siteVisits: {
-          collection: 'siteVisits',
-          fields: [
-            { field: 'path', direction: 'asc' },
-            { field: 'timestamp', direction: 'desc' },
-          ],
-        },
       };
 
       for (const [key, pattern] of Object.entries(commonPatterns)) {
@@ -101,11 +88,11 @@ export function useFirestoreIndexError() {
       }
     }
 
-    // 5) Build Firebase Console link
+    // Build Firebase link
     let createIndexLink = '';
     if (collection && fields.length > 0 && projectId) {
       const fieldString = fields
-        .map((f) => `${f.direction === 'desc' ? 'desc' : 'asc'}:${f.field}`)
+        .map((f) => `${f.direction}:${f.field}`)
         .join('|');
       createIndexLink = `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=${collection}|${fieldString}`;
     }
@@ -126,7 +113,7 @@ export function useFirestoreIndexError() {
   ): string => {
     if (!collection || fields.length === 0 || !projectId) return '';
     const fieldString = fields
-      .map((f) => `${f.direction === 'desc' ? 'desc' : 'asc'}:${f.field}`)
+      .map((f) => `${f.direction}:${f.field}`)
       .join('|');
     return `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=${collection}|${fieldString}`;
   };
