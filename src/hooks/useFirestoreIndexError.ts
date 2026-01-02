@@ -37,13 +37,14 @@ export function useFirestoreIndexError() {
       collection = collectionMatch[1];
     }
 
-    // Extract fields from error
+    // Extract fields from error - look for patterns like "order, createdAt"
     let fields: Array<{ field: string; direction: 'asc' | 'desc' }> = [];
     const fieldsMatch = errorMessage.match(/fields?:\s*([^,\n]+(?:,\s*[^,\n]+)*)/i);
     if (fieldsMatch) {
       const fieldStr = fieldsMatch[1];
-      const fieldPairs = fieldStr.split(',').map(f => f.trim());
-      fields = fieldPairs.map((f, idx) => ({
+      // Parse field directions if specified
+      const fieldPairs = fieldStr.split(',').map((f: string) => f.trim());
+      fields = fieldPairs.map((f: string, idx: number) => ({
         field: f.replace(/\s*\([^)]*\)/g, '').trim(),
         direction: idx === fieldPairs.length - 1 ? 'desc' : 'asc'
       }));
