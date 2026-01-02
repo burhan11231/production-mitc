@@ -1,3 +1,4 @@
+// src/hooks/useFirestoreIndexError.ts
 'use client';
 
 import { FirestoreError } from 'firebase/firestore';
@@ -36,12 +37,11 @@ export function useFirestoreIndexError() {
       collection = collectionMatch[1];
     }
 
-    // Extract fields from error - look for patterns like "order, createdAt"
+    // Extract fields from error
     let fields: Array<{ field: string; direction: 'asc' | 'desc' }> = [];
     const fieldsMatch = errorMessage.match(/fields?:\s*([^,\n]+(?:,\s*[^,\n]+)*)/i);
     if (fieldsMatch) {
       const fieldStr = fieldsMatch[1];
-      // Parse field directions if specified
       const fieldPairs = fieldStr.split(',').map(f => f.trim());
       fields = fieldPairs.map((f, idx) => ({
         field: f.replace(/\s*\([^)]*\)/g, '').trim(),
@@ -83,9 +83,9 @@ export function useFirestoreIndexError() {
     let createIndexLink = '';
     if (collection && fields.length > 0 && projectId) {
       const fieldString = fields
-        .map(f => \`\${f.direction === 'desc' ? 'desc' : 'asc'}:\${f.field}\`)
+        .map(f => `${f.direction === 'desc' ? 'desc' : 'asc'}:${f.field}`)
         .join('|');
-      createIndexLink = \`https://console.firebase.google.com/project/\${projectId}/firestore/indexes?create_composite=\${collection}|\${fieldString}\`;
+      createIndexLink = `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=${collection}|${fieldString}`;
     }
 
     return {
@@ -104,9 +104,9 @@ export function useFirestoreIndexError() {
   ): string => {
     if (!collection || fields.length === 0 || !projectId) return '';
     const fieldString = fields
-      .map(f => \`\${f.direction === 'desc' ? 'desc' : 'asc'}:\${f.field}\`)
+      .map(f => `${f.direction === 'desc' ? 'desc' : 'asc'}:${f.field}`)
       .join('|');
-    return \`https://console.firebase.google.com/project/\${projectId}/firestore/indexes?create_composite=\${collection}|\${fieldString}\`;
+    return `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=${collection}|${fieldString}`;
   };
 
   return { parseIndexError, buildIndexLink };
