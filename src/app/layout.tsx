@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Provider } from './provider';
 import Header from '@/components/Header';
-import { FloatingButtons } from '@/components/FloatingButtons';
 import Footer from '@/components/Footer';
 import './globals.css';
 
@@ -33,7 +32,7 @@ export default function RootLayout({
         <Provider>
           <Header />
           <main className="min-h-screen">{children}</main>
-          <FloatingButtons />
+          
           <Footer />
         </Provider>
       </body>
