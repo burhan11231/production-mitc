@@ -106,7 +106,7 @@ export default function HomeClient() {
           </div>
 
           {/* Main Heading */}
-          <h1 className="mt-8 text-3xl sm:text-5xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
+          <h1 className="mt-8 text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
             Premium laptops, <span className="text-white/70">built for</span>{' '}
             <span className="text-[#0071e3] inline-flex border-r-4 border-[#0071e3] pr-2">
               {currentWord}
