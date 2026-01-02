@@ -1,6 +1,7 @@
+// src/components/FirestoreErrorDialog.tsx
 'use client';
 
-import { useFirestoreIndexError, IndexErrorInfo } from '@/hooks/useFirestoreIndexError';
+import { useFirestoreIndexError } from '@/hooks/useFirestoreIndexError';
 
 interface FirestoreErrorDialogProps {
   error: any;
@@ -62,7 +63,11 @@ export default function FirestoreErrorDialog({
                         <p className="text-blue-600 font-mono bg-white px-3 py-2 rounded border border-blue-200 flex-1">
                           {f.field}
                         </p>
-                        <span className={`px-3 py-2 rounded text-sm font-semibold \${f.direction === 'asc' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}\`}>
+                        <span className={`px-3 py-2 rounded text-sm font-semibold ${
+                          f.direction === 'asc' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-purple-100 text-purple-700'
+                        }`}>
                           {f.direction === 'asc' ? '↑ ASC' : '↓ DESC'}
                         </span>
                       </div>
