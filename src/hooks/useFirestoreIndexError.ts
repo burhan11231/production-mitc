@@ -13,20 +13,20 @@ export function useFirestoreIndexError() {
   const parseIndexError = (error: any, projectId: string): IndexErrorInfo => {
     const message: string = error?.message || '';
     const code: string = (error?.code || '').toString();
+    const msgLower = message.toLowerCase();
 
     const isPermissionError =
       code === 'permission-denied' ||
       code === 'PERMISSION_DENIED' ||
-      message.toLowerCase().includes('missing or insufficient permissions');
+      msgLower.includes('missing or insufficient permissions');
 
     const isIndexError =
       code === 'failed-precondition' ||
       code === 'FAILED_PRECONDITION' ||
-      message.toLowerCase().includes('requires an index') ||
-      message.toLowerCase().includes('missing index') ||
-      message.toLowerCase().includes('composite index');
+      msgLower.includes('requires an index') ||
+      msgLower.includes('missing index') ||
+      msgLower.includes('composite index');
 
-    // If neither, return basic
     if (!isIndexError && !isPermissionError) {
       return {
         isIndexError: false,
@@ -35,16 +35,26 @@ export function useFirestoreIndexError() {
       };
     }
 
-    // Default to known query for salespersons
-    // Because Firebase error messages differ between environments
-    const collection = 'salespersons';
-    const fields: Array<{ field: string; direction: 'asc' | 'desc' }> = [
-      { field: 'order', direction: 'asc' },
-      { field: 'createdAt', direction: 'desc' },
-    ];
-
+    // ✅ Best: Firebase includes an actual console link in the error message sometimes
+    // Example: https://console.firebase.google.com/v1/r/project/<project>/firestore/indexes?create_composite=...
     let createIndexLink = '';
-    if (projectId) {
+    const urlMatch = message.match(/https://console.firebase.google.com/[^s]+/);
+    if (urlMatch?.[0]) {
+      createIndexLink = urlMatch[0];
+    }
+
+    // Fallback: build link if message didn't contain one
+    let collection = '';
+    let fields: Array<{ field: string; direction: 'asc' | 'desc' }> = [];
+
+    if (!createIndexLink && projectId) {
+      // Fallback to your known query (salespersons)
+      collection = 'salespersons';
+      fields = [
+        { field: 'order', direction: 'asc' },
+        { field: 'createdAt', direction: 'desc' },
+      ];
+
       const fieldString = fields.map((f) => `${f.direction}:${f.field}`).join('|');
       createIndexLink = `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=${collection}|${fieldString}`;
     }
@@ -53,8 +63,8 @@ export function useFirestoreIndexError() {
       isIndexError,
       isPermissionError,
       message: message || 'Unknown error',
-      collection,
-      fields,
+      collection: collection || undefined,
+      fields: fields.length ? fields : undefined,
       createIndexLink: isIndexError ? createIndexLink : '',
     };
   };
