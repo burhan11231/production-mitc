@@ -15,7 +15,7 @@ export default function TeamPage() {
   const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
-  const activeSalespersons = salespersons.filter((p) => p.isActive);
+  const activeSalespersons = salespersons;
 
   useEffect(() => {
     if (indexError) setShowErrorDialog(true);
