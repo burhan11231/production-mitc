@@ -106,21 +106,42 @@ export default function HomeClient() {
           </div>
 
           {/* Main Heading */}
-<h1 className="mt-8 text-5xl sm:text-6xl lg:text-[2.75rem] xl:text-6xl font-bold tracking-tight text-white leading-tight">
-  Premium laptops, <span className="text-white/70">built for</span>{' '}
-  
-  <span className="relative inline-flex items-center text-[#0071e3] pr-3 align-middle">
-    <span className="inline-block leading-none relative top-[0.04em]">
+<h1 className="mt-16 text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
+  Premium laptops, <span className="text-white/70">built for</span>
+
+  <span
+    className="
+      relative inline-flex items-center
+      text-[#0071e3]
+      pr-3
+      align-middle
+      mt-2
+      sm:mt-0
+      block
+      sm:inline-flex
+    "
+  >
+    <span className="inline-block leading-none">
       {currentWord}
     </span>
 
-    <span className="absolute right-0 top-1/2 -translate-y-1/2 h-[1em] border-r-[3px]" />
+    <span
+      className="
+        absolute right-0
+        top-1/2
+        -translate-y-1/2
+        h-[1em]
+        border-r-[3px]
+        border-[#0071e3]
+      "
+    />
   </span>
 </h1>
 
 
+
           {/* Info Card */}
-          <div className="mt-10">
+          <div className="mt-4">
             <div className="group rounded-[2rem] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] transition-all hover:border-white/20">
               <div className="grid lg:grid-cols-5 items-stretch">
                 <div className="lg:col-span-3 p-8 lg:p-12 flex flex-col justify-center">
