@@ -29,12 +29,17 @@ export function useFirestoreIndexError() {
       };
     }
 
-    // Extract collection from error
+    // Extract collection from error - FIXED REGEX
     let collection = '';
-    const collectionMatch = errorMessage.match(/collection\s*['"]([^'"]+)['"]/i) ||
-                           errorMessage.match(/in collection ['"]([^'"]+)['"]/i);
+    const collectionMatch = errorMessage.match(/collection\s*[`'""]([^`'""]+)[`'""]/) ||
+                           errorMessage.match(/in\s+collection\s*[`'""]([^`'""]+)[`'""]/) ||
+                           errorMessage.match(/collection\s*['"]([^'"]+)['"]/) ||
+                           errorMessage.match(/in\s+collection\s*['"]([^'"]+)['"]/) ||
+                           errorMessage.match(/collection\s+(['"]?)([a-zA-Z0-9_]+)\1/) ||
+                           errorMessage.match(/\(([a-zA-Z0-9_]+)\)/);
+    
     if (collectionMatch) {
-      collection = collectionMatch[1];
+      collection = collectionMatch[1] || collectionMatch[2] || '';
     }
 
     // Extract fields from error - look for patterns like "order, createdAt"
