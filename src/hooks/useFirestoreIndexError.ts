@@ -38,10 +38,11 @@ export function useFirestoreIndexError() {
     // ✅ Best: Firebase includes an actual console link in the error message sometimes
     // Example: https://console.firebase.google.com/v1/r/project/<project>/firestore/indexes?create_composite=...
     let createIndexLink = '';
-    const urlMatch = message.match(/https://console.firebase.google.com/[^s]+/);
-    if (urlMatch?.[0]) {
-      createIndexLink = urlMatch[0];
-    }
+const urlMatch = message.match(/https?://console.firebase.google.com/S+/);
+
+if (urlMatch?.[0]) {
+  createIndexLink = urlMatch[0];
+}
 
     // Fallback: build link if message didn't contain one
     let collection = '';
