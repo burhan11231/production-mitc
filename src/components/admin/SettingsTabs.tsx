@@ -1,5 +1,5 @@
-// src/components/admin/SettingsTabs.tsx 
-// Admin Settings UI with all tabs
+// src/components/admin/SettingsTabs.tsx - FIXED VERSION
+// Admin Settings UI with all tabs - TypeScript properly typed
 
 'use client';
 
@@ -12,6 +12,7 @@ import SalespersonManager from './SalespersonManager';
 import PasswordChangeModal from '@/components/PasswordChangeModal';
 import Image from 'next/image';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
+import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 
 type SettingsTab = 'seo' | 'business' | 'branding' | 'hours' | 'founder' | 'salespersons' | 'password';
 
@@ -21,7 +22,7 @@ export default function SettingsTabs() {
   const { settings, updateSettings } = useSettings();
   const [activeTab, setActiveTab] = useState<SettingsTab>('branding');
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState(settings || {});
+  const [formData, setFormData] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function SettingsTabs() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof SiteSettings) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -394,7 +395,9 @@ export default function SettingsTabs() {
                           value={hours.open || '09:00'}
                           onChange={(e) => {
                             const updated = { ...formData };
-                            updated.workingHours.summer[day] = { ...hours, open: e.target.value };
+                            if (updated.workingHours) {
+                              updated.workingHours.summer[day] = { ...hours, open: e.target.value };
+                            }
                             setFormData(updated);
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -405,7 +408,9 @@ export default function SettingsTabs() {
                           value={hours.close || '18:00'}
                           onChange={(e) => {
                             const updated = { ...formData };
-                            updated.workingHours.summer[day] = { ...hours, close: e.target.value };
+                            if (updated.workingHours) {
+                              updated.workingHours.summer[day] = { ...hours, close: e.target.value };
+                            }
                             setFormData(updated);
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -429,7 +434,9 @@ export default function SettingsTabs() {
                           value={hours.open || '09:00'}
                           onChange={(e) => {
                             const updated = { ...formData };
-                            updated.workingHours.winter[day] = { ...hours, open: e.target.value };
+                            if (updated.workingHours) {
+                              updated.workingHours.winter[day] = { ...hours, open: e.target.value };
+                            }
                             setFormData(updated);
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -440,7 +447,9 @@ export default function SettingsTabs() {
                           value={hours.close || '17:00'}
                           onChange={(e) => {
                             const updated = { ...formData };
-                            updated.workingHours.winter[day] = { ...hours, close: e.target.value };
+                            if (updated.workingHours) {
+                              updated.workingHours.winter[day] = { ...hours, close: e.target.value };
+                            }
                             setFormData(updated);
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
