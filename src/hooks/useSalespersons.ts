@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   collection,
   query,
+  where,
   orderBy,
   onSnapshot,
   addDoc,
@@ -49,8 +50,10 @@ export function useSalespersons(): UseSalespersonsReturn {
     setError(null);
     setIndexError(null);
 
+    // ✅ Only read active documents (prevents permission-denied on inactive docs)
     const q = query(
       collection(db, 'salespersons'),
+      where('isActive', '==', true),
       orderBy('order', 'asc'),
       orderBy('createdAt', 'desc')
     );
@@ -68,7 +71,6 @@ export function useSalespersons(): UseSalespersonsReturn {
         clearTimeout(globalErrorTimeout);
       },
       (err: any) => {
-        // IMPORTANT: see the true error once
         if (!globalErrorShown) {
           console.log('salespersons snapshot error:', {
             code: err?.code,
@@ -82,7 +84,7 @@ export function useSalespersons(): UseSalespersonsReturn {
 
         const info = parseIndexError(err, projectId);
 
-        // Put all “actionable” errors into indexError so dialog/banner can show
+        // show dialog for index/rules errors
         if (info.isIndexError || info.isPermissionError) {
           setIndexError(err);
         }
