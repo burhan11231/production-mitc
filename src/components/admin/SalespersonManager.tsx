@@ -1,4 +1,5 @@
 // src/components/admin/SalespersonManager.tsx
+// src/components/admin/SalespersonManager.tsx
 'use client';
 
 import { useState } from 'react';
@@ -65,10 +66,8 @@ export default function SalespersonManager() {
 
       if (editingId) {
         await updateSalesperson(editingId, formData);
-        toast.success('Salesperson updated!');
       } else {
         await addSalesperson(formData);
-        toast.success('Salesperson added!');
       }
 
       resetForm();
