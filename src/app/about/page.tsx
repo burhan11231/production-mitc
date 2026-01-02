@@ -1,9 +1,13 @@
+// src/app/about/page.tsx
 'use client';
 
-import { FaShieldAlt, FaTools, FaMicrochip, FaStar } from 'react-icons/fa';
+import { FaShieldAlt, FaTools, FaMicrochip } from 'react-icons/fa';
 import { MdStorage } from 'react-icons/md';
+import { useSettings } from '@/hooks/useSettings';
 
 export default function AboutPage() {
+  const { settings } = useSettings();
+
   return (
     <main className="overflow-x-hidden">
       {/* HERO SECTION */}
@@ -67,7 +71,7 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">Diagnostics</h3>
                   <p className="text-lg text-gray-600 leading-relaxed">
-                    45-minute comprehensive hardware scan using OEM diagnostic tools. Full transparency—results shown live before any work begins.
+                    45-minute comprehensive hardware scan using OEM diagnostic tools. Full transparency on parts and labor.
                   </p>
                 </div>
               </div>
@@ -81,7 +85,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="relative grid md:grid-cols-2 gap-12 items-center md:grid-cols-2-reverse">
+            <div className="relative grid md:grid-cols-2 gap-12 items-center">
               <img
                 src="https://images.unsplash.com/photo-1517437814251-b4ca3b1e2529?auto=format&fit=crop&q=85&w=1400"
                 alt="Chip-level repair precision"
@@ -178,29 +182,33 @@ export default function AboutPage() {
           </div>
           
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight mb-6">
-            Gaw Kadal, Maisuma
+            {settings?.businessName || 'MITC'}
             <br />
-            <span className="text-2xl font-light text-white/80">Srinagar, J&K — 190001</span>
+            <span className="text-2xl font-light text-white/80">{settings?.addressText || 'Srinagar, J&K - 190001'}</span>
           </h2>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-6 justify-center">
-            <a
-              href="tel:+918082754459"
-              className="group inline-flex items-center gap-3 px-8 py-5 rounded-2xl bg-white text-gray-900 font-bold text-lg hover:bg-gray-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1"
-            >
-              Call Now
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-            <a
-              href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-5 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-xl text-white font-bold text-lg hover:border-white hover:bg-white/20 transition-all duration-300"
-            >
-              View on Maps →
-            </a>
+            {settings?.primaryPhone && (
+              <a
+                href={`tel:${settings.primaryPhone}`}
+                className="group inline-flex items-center gap-3 px-8 py-5 rounded-2xl bg-white text-gray-900 font-bold text-lg hover:bg-gray-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1"
+              >
+                Call Now
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            )}
+            {settings?.mapEmbedUrl && (
+              <a
+                href={settings.mapEmbedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-8 py-5 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-xl text-white font-bold text-lg hover:border-white hover:bg-white/20 transition-all duration-300"
+              >
+                View on Maps →
+              </a>
+            )}
           </div>
         </div>
       </section>
