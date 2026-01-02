@@ -106,12 +106,18 @@ export default function HomeClient() {
           </div>
 
           {/* Main Heading */}
-          <h1 className="mt-8 text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
-            Premium laptops, <span className="text-white/70">built for</span>{' '}
-            <span className="text-[#0071e3] inline-flex border-r-4 border-[#0071e3] pr-2">
-              {currentWord}
-            </span>
-          </h1>
+<h1 className="mt-8 text-5xl sm:text-6xl lg:text-[2.75rem] xl:text-6xl font-bold tracking-tight text-white leading-tight">
+  Premium laptops, <span className="text-white/70">built for</span>{' '}
+  
+  <span className="relative inline-flex items-center text-[#0071e3] pr-3 align-middle">
+    <span className="inline-block leading-none relative top-[0.04em]">
+      {currentWord}
+    </span>
+
+    <span className="absolute right-0 top-1/2 -translate-y-1/2 h-[1em] border-r-[3px]" />
+  </span>
+</h1>
+
 
           {/* Info Card */}
           <div className="mt-10">
