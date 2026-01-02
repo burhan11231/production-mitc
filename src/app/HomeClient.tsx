@@ -401,6 +401,8 @@ export default function HomeClient() {
                       Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
                       No pressure. No surprises. Just clarity.
                     </p>
+
+                  </div>
                     
                   <div className="mt-12">
                     <Link
