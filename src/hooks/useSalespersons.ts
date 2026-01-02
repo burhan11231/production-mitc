@@ -1,7 +1,7 @@
 // src/hooks/useSalespersons.ts
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   collection,
   query,
@@ -30,24 +30,31 @@ interface UseSalespersonsReturn {
   reorderSalespersons: (salespersons: Salesperson[]) => Promise<void>;
 }
 
+// Global to track if we've already shown the error
+let globalErrorShown = false;
+let globalErrorTimeout: NodeJS.Timeout;
+
 export function useSalespersons(): UseSalespersonsReturn {
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
   const [indexError, setIndexError] = useState<any>(null);
-  const [hasShownError, setHasShownError] = useState(false);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
   const { parseIndexError } = useFirestoreIndexError();
 
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
 
   useEffect(() => {
+    // If we already have an active subscription, don't create another
+    if (unsubscribeRef.current) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setIndexError(null);
-    setHasShownError(false);
 
     try {
-      // This query requires a composite index!
       const q = query(
         collection(db, 'salespersons'),
         orderBy('order', 'asc'),
@@ -65,35 +72,55 @@ export function useSalespersons(): UseSalespersonsReturn {
           setIsLoading(false);
           setError(null);
           setIndexError(null);
-          setHasShownError(false);
+          
+          // Clear error flag on success
+          globalErrorShown = false;
+          clearTimeout(globalErrorTimeout);
         },
         (err: any) => {
           setIsLoading(false);
-          
           const errorInfo = parseIndexError(err, projectId);
           setError(err);
 
           if (errorInfo.isIndexError) {
             setIndexError(err);
-            // Only show toast once per error
-            if (!hasShownError) {
+            
+            // Show toast only once, then wait 10 seconds before allowing another
+            if (!globalErrorShown) {
               toast.error(
                 'Composite index required for salespersons. Check the error dialog.',
                 { duration: 8000 }
               );
-              setHasShownError(true);
+              globalErrorShown = true;
+              
+              // Reset after 10 seconds
+              clearTimeout(globalErrorTimeout);
+              globalErrorTimeout = setTimeout(() => {
+                globalErrorShown = false;
+              }, 10000);
             }
           } else {
-            // Only show toast once per error
-            if (!hasShownError) {
-              toast.error('Failed to load salespersons');
-              setHasShownError(true);
+            if (!globalErrorShown) {
+              toast.error('Failed to load salespersons', { duration: 8000 });
+              globalErrorShown = true;
+              
+              clearTimeout(globalErrorTimeout);
+              globalErrorTimeout = setTimeout(() => {
+                globalErrorShown = false;
+              }, 10000);
             }
           }
         }
       );
 
-      return unsubscribe;
+      unsubscribeRef.current = unsubscribe;
+
+      return () => {
+        if (unsubscribeRef.current) {
+          unsubscribeRef.current();
+          unsubscribeRef.current = null;
+        }
+      };
     } catch (err: any) {
       setIsLoading(false);
       const errorInfo = parseIndexError(err, projectId);
@@ -101,13 +128,9 @@ export function useSalespersons(): UseSalespersonsReturn {
 
       if (errorInfo.isIndexError) {
         setIndexError(err);
-        if (!hasShownError) {
-          toast.error('Composite index required for salespersons');
-          setHasShownError(true);
-        }
       }
     }
-  }, [projectId, parseIndexError, hasShownError]);
+  }, [projectId, parseIndexError]);
 
   const addSalesperson = useCallback(
     async (data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>) => {
