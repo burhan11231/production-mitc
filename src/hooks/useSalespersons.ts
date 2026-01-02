@@ -40,15 +40,18 @@ export function useSalespersons(): UseSalespersonsReturn {
   const [indexError, setIndexError] = useState<any>(null);
 
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  const hasLoadedOnceRef = useRef(false);
+
   const { parseIndexError } = useFirestoreIndexError();
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
 
   useEffect(() => {
     if (unsubscribeRef.current) return;
 
-    setIsLoading(true);
+    // ✅ Only show loading on the first ever subscription.
+    if (!hasLoadedOnceRef.current) setIsLoading(true);
     setError(null);
-    // ❌ do NOT clear indexError here (prevents blinking)
+    // ❌ do NOT clear indexError here (prevents dialog/banner flicker)
 
     const q = query(
       collection(db, 'salespersons'),
@@ -61,37 +64,36 @@ export function useSalespersons(): UseSalespersonsReturn {
       q,
       (snapshot) => {
         const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Salesperson[];
+
         setSalespersons(data);
+        hasLoadedOnceRef.current = true;
+
         setIsLoading(false);
         setError(null);
-
-        // ✅ clear only on success
         setIndexError(null);
 
         globalErrorShown = false;
         clearTimeout(globalErrorTimeout);
       },
       (err: any) => {
-        if (!globalErrorShown) {
-          console.log('salespersons snapshot error:', {
-            code: err?.code,
-            message: err?.message,
-            name: err?.name,
-          });
-        }
-
+        // ✅ Stop showing loading forever once an error happens.
+        hasLoadedOnceRef.current = true;
         setIsLoading(false);
+
         setError(err);
 
         const info = parseIndexError(err, projectId);
         const isPermissionDenied = err?.code === 'permission-denied' || err?.code === 'PERMISSION_DENIED';
 
-        if (info.isIndexError || isPermissionDenied) {
+        if (info.isIndexError || info.isPermissionError || isPermissionDenied) {
           setIndexError(err);
         }
 
+        // ✅ Keep existing salespersons data to avoid UI jumping.
+        // (do NOT setSalespersons([]) here)
+
         if (!globalErrorShown) {
-          if (isPermissionDenied) {
+          if (info.isPermissionError || isPermissionDenied) {
             toast.error('Permission denied (Firestore rules).', { duration: 8000 });
           } else if (info.isIndexError) {
             toast.error('Composite index required for salespersons.', { duration: 8000 });
@@ -116,40 +118,77 @@ export function useSalespersons(): UseSalespersonsReturn {
 
   const addSalesperson = useCallback(
     async (data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>) => {
-      await addDoc(collection(db, 'salespersons'), {
-        ...data,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      toast.success('Salesperson added successfully!');
+      try {
+        await addDoc(collection(db, 'salespersons'), {
+          ...data,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        toast.success('Salesperson added successfully!');
+      } catch (err: any) {
+        const info = parseIndexError(err, projectId);
+        if (info.isIndexError || info.isPermissionError) setIndexError(err);
+        toast.error(info.isIndexError ? 'Index required. Please create it first.' : 'Failed to add salesperson');
+        throw err;
+      }
     },
-    []
+    [parseIndexError, projectId]
   );
 
-  const updateSalesperson = useCallback(async (id: string, updates: any) => {
-    await updateDoc(doc(db, 'salespersons', id), {
-      ...updates,
-      updatedAt: serverTimestamp(),
-    });
-    toast.success('Salesperson updated successfully!');
-  }, []);
+  const updateSalesperson = useCallback(
+    async (id: string, updates: Partial<Omit<Salesperson, 'id' | 'createdAt'>>) => {
+      try {
+        await updateDoc(doc(db, 'salespersons', id), {
+          ...updates,
+          updatedAt: serverTimestamp(),
+        });
+        toast.success('Salesperson updated successfully!');
+      } catch (err: any) {
+        const info = parseIndexError(err, projectId);
+        if (info.isIndexError || info.isPermissionError) setIndexError(err);
+        toast.error(info.isIndexError ? 'Index required. Please create it first.' : 'Failed to update salesperson');
+        throw err;
+      }
+    },
+    [parseIndexError, projectId]
+  );
 
-  const deleteSalesperson = useCallback(async (id: string) => {
-    await deleteDoc(doc(db, 'salespersons', id));
-    toast.success('Salesperson deleted successfully!');
-  }, []);
+  const deleteSalesperson = useCallback(
+    async (id: string) => {
+      try {
+        await deleteDoc(doc(db, 'salespersons', id));
+        toast.success('Salesperson deleted successfully!');
+      } catch (err: any) {
+        const info = parseIndexError(err, projectId);
+        if (info.isIndexError || info.isPermissionError) setIndexError(err);
+        toast.error(info.isIndexError ? 'Index required. Please create it first.' : 'Failed to delete salesperson');
+        throw err;
+      }
+    },
+    [parseIndexError, projectId]
+  );
 
-  const reorderSalespersons = useCallback(async (items: Salesperson[]) => {
-    const updates = items.map((p, index) => {
-      if (!p.id) return Promise.resolve();
-      return updateDoc(doc(db, 'salespersons', p.id), {
-        order: index,
-        updatedAt: serverTimestamp(),
-      });
-    });
-    await Promise.all(updates);
-    toast.success('Salespersons reordered successfully!');
-  }, []);
+  const reorderSalespersons = useCallback(
+    async (items: Salesperson[]) => {
+      try {
+        const updates = items.map((p, index) => {
+          if (!p.id) return Promise.resolve();
+          return updateDoc(doc(db, 'salespersons', p.id), {
+            order: index,
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await Promise.all(updates);
+        toast.success('Salespersons reordered successfully!');
+      } catch (err: any) {
+        const info = parseIndexError(err, projectId);
+        if (info.isIndexError || info.isPermissionError) setIndexError(err);
+        toast.error(info.isIndexError ? 'Index required. Please create it first.' : 'Failed to reorder salespersons');
+        throw err;
+      }
+    },
+    [parseIndexError, projectId]
+  );
 
   return {
     salespersons,
