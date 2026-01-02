@@ -16,6 +16,8 @@ import { RiEyeLine } from 'react-icons/ri';
 import { TbArrowsUpRight, TbChecks } from 'react-icons/tb';
 import Link from 'next/link';
 
+import TopFooter from '@/components/topFooter';
+
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
 
 const capabilities = [
@@ -421,6 +423,9 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      {/* 5. TOP FOOTER SECTION */}
+      <TopFooter />
     </main>
   );
 }
