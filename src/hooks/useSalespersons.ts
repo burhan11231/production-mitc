@@ -1,4 +1,3 @@
-// src/hooks/useSalespersons.ts
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -30,7 +29,6 @@ interface UseSalespersonsReturn {
   reorderSalespersons: (salespersons: Salesperson[]) => Promise<void>;
 }
 
-// Global to track if we've already shown the error
 let globalErrorShown = false;
 let globalErrorTimeout: NodeJS.Timeout;
 
@@ -39,189 +37,116 @@ export function useSalespersons(): UseSalespersonsReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
   const [indexError, setIndexError] = useState<any>(null);
+
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const { parseIndexError } = useFirestoreIndexError();
-
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
 
   useEffect(() => {
-    // If we already have an active subscription, don't create another
-    if (unsubscribeRef.current) {
-      return;
-    }
+    if (unsubscribeRef.current) return;
 
     setIsLoading(true);
     setError(null);
     setIndexError(null);
 
-    try {
-      const q = query(
-        collection(db, 'salespersons'),
-        orderBy('order', 'asc'),
-        orderBy('createdAt', 'desc')
-      );
+    const q = query(
+      collection(db, 'salespersons'),
+      orderBy('order', 'asc'),
+      orderBy('createdAt', 'desc')
+    );
 
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          const data = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })) as Salesperson[];
-          setSalespersons(data);
-          setIsLoading(false);
-          setError(null);
-          setIndexError(null);
-          
-          // Clear error flag on success
-          globalErrorShown = false;
-          clearTimeout(globalErrorTimeout);
-        },
-        (err: any) => {
-          setIsLoading(false);
-          const errorInfo = parseIndexError(err, projectId);
-          setError(err);
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Salesperson[];
+        setSalespersons(data);
+        setIsLoading(false);
+        setError(null);
+        setIndexError(null);
 
-          if (errorInfo.isIndexError) {
-            setIndexError(err);
-            
-            // Show toast only once, then wait 10 seconds before allowing another
-            if (!globalErrorShown) {
-              toast.error(
-                'Composite index required for salespersons. Check the error dialog.',
-                { duration: 8000 }
-              );
-              globalErrorShown = true;
-              
-              // Reset after 10 seconds
-              clearTimeout(globalErrorTimeout);
-              globalErrorTimeout = setTimeout(() => {
-                globalErrorShown = false;
-              }, 10000);
-            }
+        globalErrorShown = false;
+        clearTimeout(globalErrorTimeout);
+      },
+      (err: any) => {
+        // IMPORTANT: see the true error once
+        if (!globalErrorShown) {
+          console.log('salespersons snapshot error:', {
+            code: err?.code,
+            message: err?.message,
+            name: err?.name,
+          });
+        }
+
+        setIsLoading(false);
+        setError(err);
+
+        const info = parseIndexError(err, projectId);
+
+        // Put all “actionable” errors into indexError so dialog/banner can show
+        if (info.isIndexError || info.isPermissionError) {
+          setIndexError(err);
+        }
+
+        if (!globalErrorShown) {
+          if (info.isPermissionError) {
+            toast.error('Permission denied (Firestore rules).', { duration: 8000 });
+          } else if (info.isIndexError) {
+            toast.error('Composite index required for salespersons.', { duration: 8000 });
           } else {
-            if (!globalErrorShown) {
-              toast.error('Failed to load salespersons', { duration: 8000 });
-              globalErrorShown = true;
-              
-              clearTimeout(globalErrorTimeout);
-              globalErrorTimeout = setTimeout(() => {
-                globalErrorShown = false;
-              }, 10000);
-            }
+            toast.error('Failed to load salespersons', { duration: 8000 });
           }
+
+          globalErrorShown = true;
+          clearTimeout(globalErrorTimeout);
+          globalErrorTimeout = setTimeout(() => (globalErrorShown = false), 10000);
         }
-      );
-
-      unsubscribeRef.current = unsubscribe;
-
-      return () => {
-        if (unsubscribeRef.current) {
-          unsubscribeRef.current();
-          unsubscribeRef.current = null;
-        }
-      };
-    } catch (err: any) {
-      setIsLoading(false);
-      const errorInfo = parseIndexError(err, projectId);
-      setError(err);
-
-      if (errorInfo.isIndexError) {
-        setIndexError(err);
       }
-    }
+    );
+
+    unsubscribeRef.current = unsubscribe;
+
+    return () => {
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = null;
+    };
   }, [projectId, parseIndexError]);
 
   const addSalesperson = useCallback(
     async (data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>) => {
-      try {
-        await addDoc(collection(db, 'salespersons'), {
-          ...data,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-        toast.success('Salesperson added successfully!');
-      } catch (err: any) {
-        const errorInfo = parseIndexError(err, projectId);
-        if (errorInfo.isIndexError) {
-          setIndexError(err);
-          toast.error('Index required. Please create it first.');
-        } else {
-          toast.error('Failed to add salesperson');
-        }
-        throw err;
-      }
+      await addDoc(collection(db, 'salespersons'), {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      toast.success('Salesperson added successfully!');
     },
-    [parseIndexError, projectId]
+    []
   );
 
-  const updateSalesperson = useCallback(
-    async (id: string, updates: Partial<Omit<Salesperson, 'id' | 'createdAt'>>) => {
-      try {
-        await updateDoc(doc(db, 'salespersons', id), {
-          ...updates,
-          updatedAt: serverTimestamp(),
-        });
-        toast.success('Salesperson updated successfully!');
-      } catch (err: any) {
-        const errorInfo = parseIndexError(err, projectId);
-        if (errorInfo.isIndexError) {
-          setIndexError(err);
-          toast.error('Index required. Please create it first.');
-        } else {
-          toast.error('Failed to update salesperson');
-        }
-        throw err;
-      }
-    },
-    [parseIndexError, projectId]
-  );
+  const updateSalesperson = useCallback(async (id: string, updates: any) => {
+    await updateDoc(doc(db, 'salespersons', id), {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+    toast.success('Salesperson updated successfully!');
+  }, []);
 
-  const deleteSalesperson = useCallback(
-    async (id: string) => {
-      try {
-        await deleteDoc(doc(db, 'salespersons', id));
-        toast.success('Salesperson deleted successfully!');
-      } catch (err: any) {
-        const errorInfo = parseIndexError(err, projectId);
-        if (errorInfo.isIndexError) {
-          setIndexError(err);
-          toast.error('Index required. Please create it first.');
-        } else {
-          toast.error('Failed to delete salesperson');
-        }
-        throw err;
-      }
-    },
-    [parseIndexError, projectId]
-  );
+  const deleteSalesperson = useCallback(async (id: string) => {
+    await deleteDoc(doc(db, 'salespersons', id));
+    toast.success('Salesperson deleted successfully!');
+  }, []);
 
-  const reorderSalespersons = useCallback(
-    async (salespersons: Salesperson[]) => {
-      try {
-        const updates = salespersons.map(async (person, index) => {
-          if (person.id) {
-            await updateDoc(doc(db, 'salespersons', person.id), {
-              order: index,
-              updatedAt: serverTimestamp(),
-            });
-          }
-        });
-        await Promise.all(updates);
-        toast.success('Salespersons reordered successfully!');
-      } catch (err: any) {
-        const errorInfo = parseIndexError(err, projectId);
-        if (errorInfo.isIndexError) {
-          setIndexError(err);
-          toast.error('Index required. Please create it first.');
-        } else {
-          toast.error('Failed to reorder salespersons');
-        }
-        throw err;
-      }
-    },
-    [parseIndexError, projectId]
-  );
+  const reorderSalespersons = useCallback(async (items: Salesperson[]) => {
+    const updates = items.map((p, index) => {
+      if (!p.id) return Promise.resolve();
+      return updateDoc(doc(db, 'salespersons', p.id), {
+        order: index,
+        updatedAt: serverTimestamp(),
+      });
+    });
+    await Promise.all(updates);
+    toast.success('Salespersons reordered successfully!');
+  }, []);
 
   return {
     salespersons,
