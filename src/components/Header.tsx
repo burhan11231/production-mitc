@@ -1,3 +1,6 @@
+// src/components/Header.tsx - UPDATED VERSION
+// Connects to real-time settings and salespersons
+
 'use client'
 
 import Link from 'next/link'
@@ -5,6 +8,10 @@ import Image from 'next/image'
 import { Fragment, useEffect, useState } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel, Transition, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useAuth } from '@/lib/auth-context'
+import { useSettings } from '@/hooks/useSettings'
+import { useSalespersons } from '@/hooks/useSalespersons'
+import SalespersonModal from './SalespersonModal'
+import { Salesperson } from '@/lib/firestore-models'
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -12,6 +19,7 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/ratings', label: 'Ratings' },
   { href: '/contact', label: 'Contact' },
+  { href: '/team', label: 'Team' },
 ]
 
 // --- Icons ---
@@ -35,10 +43,27 @@ const IconLogout = () => (
 
 export default function Header() {
   const { user, isLoading } = useAuth()
+  const { settings } = useSettings()
+  const { salespersons } = useSalespersons()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [showTeamModal, setShowTeamModal] = useState(false)
+  const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin'
   const showCallButton = !isLoading && !isAdmin
+
+  // Get top 5 active salespersons
+  const topSalespersons = salespersons
+    .filter((p) => p.isActive)
+    .sort((a, b) => a.order - b.order)
+    .slice(0, 5)
+
+  const handleSalespersonClick = (person: Salesperson) => {
+    setSelectedPerson(person)
+    setModalOpen(true)
+    setShowTeamModal(false)
+  }
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
@@ -61,16 +86,23 @@ export default function Header() {
           </button>
 
           <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
-            <Image
-              src="https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg"
-              alt="MITC"
-              width={40}
-              height={40}
-              className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
-            />
+            {settings?.logoUrl && (
+              <Image
+                src={settings.logoUrl}
+                alt={settings.businessName || 'Logo'}
+                width={40}
+                height={40}
+                className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
+                unoptimized
+              />
+            )}
             <div className="leading-tight">
-              <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">MITC</div>
-              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500">Mateen IT Corp</div>
+              <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
+                {settings?.businessName || 'MITC'}
+              </div>
+              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500">
+                {settings?.tagline || 'Mateen IT Corp'}
+              </div>
             </div>
           </Link>
         </div>
@@ -87,15 +119,15 @@ export default function Header() {
         {/* RIGHT: Call & Profile Dropdown (Mobile + PC) */}
         <div className="flex items-center gap-2 lg:gap-4">
           
-          {/* Call Button */}
+          {/* Call Button - Opens Team Modal */}
           {showCallButton && (
-            <a 
-              href="tel:+919876543210" 
+            <button 
+              onClick={() => setShowTeamModal(true)}
               className="p-2 lg:px-4 lg:py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition-all flex items-center gap-2"
             >
               <IconPhone />
               <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider">Call MITC</span>
-            </a>
+            </button>
           )}
 
           {/* Profile Dropdown */}
@@ -119,7 +151,7 @@ export default function Header() {
             >
               <MenuItems className="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none divide-y divide-gray-50 overflow-hidden">
                 
-                {/* User Info Header (If logged in) */}
+                {/* User Info Header */}
                 {user && (
                   <div className="px-4 py-4 bg-gray-50/50">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Signed in as</p>
@@ -143,7 +175,6 @@ export default function Header() {
                           )}
                         </MenuItem>
                       ) : (
-                        /* Standard User Link */
                         <MenuItem>
                           {({ active }) => (
                             <Link href="/profile" className={`${active ? 'bg-blue-50 text-blue-700' : 'text-gray-700'} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold transition`}>
@@ -187,7 +218,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* MOBILE NAV DRAWER (Hamburger Items Only) */}
+      {/* MOBILE NAV DRAWER */}
       <Transition show={menuOpen} as={Fragment}>
         <Dialog open={menuOpen} onClose={setMenuOpen} className="relative z-[60] lg:hidden">
           <DialogBackdrop transition className="fixed inset-0 bg-black/40 backdrop-blur-sm duration-200 data-[closed]:opacity-0" />
@@ -210,6 +241,84 @@ export default function Header() {
           </div>
         </Dialog>
       </Transition>
+
+      {/* TEAM MODAL (Shows top 5 salespersons) */}
+      <Transition show={showTeamModal} as={Fragment}>
+        <Dialog open={showTeamModal} onClose={() => setShowTeamModal(false)} className="relative z-50">
+          <DialogBackdrop
+            transition
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm duration-300 data-[closed]:opacity-0"
+          />
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+              <DialogPanel
+                transition
+                className="w-full max-w-md transform bg-white rounded-2xl shadow-xl duration-300 data-[closed]:scale-95 data-[closed]:opacity-0"
+              >
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Team</h2>
+                    <button
+                      onClick={() => setShowTeamModal(false)}
+                      className="p-2 rounded-full hover:bg-gray-100 transition"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {topSalespersons.length === 0 ? (
+                    <p className="text-gray-600 text-center py-8">No team members available</p>
+                  ) : (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {topSalespersons.map((person) => (
+                        <button
+                          key={person.id}
+                          onClick={() => handleSalespersonClick(person)}
+                          className="w-full p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            {person.imageUrl && (
+                              <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={person.imageUrl}
+                                  alt={person.name}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-gray-900 truncate">{person.name}</h3>
+                              <p className="text-xs text-blue-600 font-medium">{person.role}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+
+                      {salespersons.filter(p => p.isActive).length > 5 && (
+                        <Link
+                          href="/team"
+                          onClick={() => setShowTeamModal(false)}
+                          className="block w-full p-4 text-center text-blue-600 hover:text-blue-700 font-bold rounded-lg border-2 border-blue-100 hover:border-blue-200 transition"
+                        >
+                          See All Team Members →
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </DialogPanel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Individual Person Modal */}
+      <SalespersonModal isOpen={modalOpen} salesperson={selectedPerson} onClose={() => setModalOpen(false)} />
 
       <style jsx>{`
         .nav-link {
