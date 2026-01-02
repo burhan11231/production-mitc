@@ -349,7 +349,7 @@ export default function HomeClient() {
           </div>
 
           <div className="mt-16 lg:mt-20 grid gap-8 lg:gap-10 lg:grid-cols-12 items-start">
-            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+            <div className="lg:col-span-8 grid grid-cols-1 gap-6 lg:gap-8">
               {whyChooseUs.map(({ title, desc, icon: Icon, accent }) => (
                 <div
                   key={title}
