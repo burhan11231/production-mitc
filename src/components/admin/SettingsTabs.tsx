@@ -1,4 +1,4 @@
-// src/components/admin/SettingsTabs.tsx
+// src/components/admin/SettingsTabs.tsx 
 // Admin Settings UI with all tabs
 
 'use client';
@@ -55,7 +55,7 @@ export default function SettingsTabs() {
 
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      toast.error(validation.error);
+      toast.error(validation.error || 'Invalid image file');
       return;
     }
 
@@ -66,7 +66,7 @@ export default function SettingsTabs() {
       toast.dismiss();
       toast.success('Image ready!');
     } catch (error) {
-      toast.error((error as Error).message);
+      toast.error((error as Error).message || 'Failed to compress image');
     }
   };
 
