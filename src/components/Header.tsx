@@ -42,6 +42,24 @@ const IconLogout = () => (
   </svg>
 )
 
+// Modern Info / Details icon (Heroicons-style)
+const IconInfo = ({ className = 'w-5 h-5' }) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+    />
+  </svg>
+)
+
+
 export default function Header() {
   const { user, isLoading } = useAuth()
   const { settings } = useSettings()
@@ -342,12 +360,13 @@ export default function Header() {
                     </a>
 
                     <button
-                      onClick={() => handleSalespersonClick(person)}
-                      className="p-2 rounded-xl border hover:bg-gray-100"
-                      title="View details"
-                    >
-                      ℹ️
-                    </button>
+  onClick={() => handleSalespersonClick(person)}
+  className="group p-2 rounded-xl border border-gray-200 transition
+             hover:bg-blue-50 hover:border-blue-200"
+  title="View details"
+>
+  <IconInfo className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition" />
+</button>
                   </div>
                 </div>
               ))}
