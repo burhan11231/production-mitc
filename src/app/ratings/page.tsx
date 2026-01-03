@@ -27,15 +27,9 @@ interface Review {
 }
 
 function extractIndexUrl(err: unknown): string | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const msg = (err as any)?.message || String(err);
-
-  // Matches:
-  // https://console.firebase.google.com/...
-  // https://console.cloud.google.com/...
-  // Captures until whitespace using S (non-whitespace) [web:98]
-  const match = msg.match(/https://console.(firebase|cloud).google.com/S+/);
-  return match?.[0] ?? null;
+  const msg = err instanceof Error ? err.message : String(err);
+  const match = msg.match(/https:\/\/console\.(firebase|cloud)\.google\.com\/[^\s]+/);
+  return match ? match[0] : null;
 }
 
 export default function RatingsPage() {
