@@ -9,17 +9,12 @@ import SalespersonModal from '@/components/SalespersonModal';
 import { Salesperson } from '@/lib/firestore-models';
 
 type ViewMode = 'grid' | 'list';
-type SortMode = 'recommended' | 'az';
+type SortMode = 'recommended' | 'name-asc';
 
-function cleanPhoneForWa(phone: string) {
-  return phone.replace(/D/g, '');
-}
-
-function toWhatsAppLink(person: Salesperson) {
-  const raw = person.whatsapp || person.phone || '';
-  if (!raw) return '';
-  if (raw.includes('wa.me')) return raw;
-  return `https://wa.me/${cleanPhoneForWa(raw)}`;
+function toWaLink(phone: string) {
+  if (!phone) return '';
+  if (phone.includes('wa.me')) return phone;
+  return `https://wa.me/${phone.replace(/D/g, '')}`;
 }
 
 export default function TeamPage() {
@@ -32,9 +27,8 @@ export default function TeamPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [activeOnly, setActiveOnly] = useState(true);
-
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortMode, setSortMode] = useState<SortMode>('recommended');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
 
@@ -44,17 +38,17 @@ export default function TeamPage() {
 
   const roles = useMemo(() => {
     const set = new Set<string>();
-    salespersons.forEach((p) => p.role && set.add(p.role));
-    return Array.from(set);
+    salespersons.forEach(p => p.role && set.add(p.role));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [salespersons]);
 
   const filteredTeam = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    const base = salespersons.filter((p) => {
+    const list = salespersons.filter(p => {
       const matchesSearch =
         !q ||
-        p.name.toLowerCase().includes(q) ||
+        p.name?.toLowerCase().includes(q) ||
         (p.role || '').toLowerCase().includes(q);
 
       const matchesRole = roleFilter === 'all' || p.role === roleFilter;
@@ -63,166 +57,178 @@ export default function TeamPage() {
       return matchesSearch && matchesRole && matchesActive;
     });
 
-    const sorted = [...base].sort((a, b) => {
-      if (sortMode === 'az') return a.name.localeCompare(b.name);
-      // recommended: active first, then order asc
-      const aActive = a.isActive ? 0 : 1;
-      const bActive = b.isActive ? 0 : 1;
-      if (aActive !== bActive) return aActive - bActive;
-      return (a.order ?? 9999) - (b.order ?? 9999);
-    });
+    if (sortMode === 'name-asc') {
+      return list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
 
-    return sorted;
+    // recommended: order asc, then name
+    return list.sort((a, b) => {
+      const ao = Number.isFinite(a.order) ? a.order : 9999;
+      const bo = Number.isFinite(b.order) ? b.order : 9999;
+      if (ao !== bo) return ao - bo;
+      return (a.name || '').localeCompare(b.name || '');
+    });
   }, [salespersons, search, roleFilter, activeOnly, sortMode]);
 
-  const handleOpen = (person: Salesperson) => {
+  const handleCardClick = (person: Salesperson) => {
     setSelectedPerson(person);
     setModalOpen(true);
   };
 
+  const resultsLabel = isLoading ? 'Loading…' : `${filteredTeam.length} team member(s)`;
+
   return (
     <main className="overflow-x-hidden bg-white">
-      {/* HERO */}
-      <section className="relative min-h-[58vh] flex flex-col justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* ================= HERO ================= */}
+      <section className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" />
         <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.10),transparent_55%)]" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-12">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-10">
           <div className="max-w-4xl">
-            <p className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 border border-white/60 backdrop-blur font-bold tracking-widest uppercase text-sm text-gray-900">
-              Team Directory
+            <p className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 border border-white/60 backdrop-blur font-bold tracking-widest uppercase text-xs text-gray-900">
+              Team
             </p>
 
             <h1 className="mt-8 text-5xl sm:text-7xl font-black tracking-tight text-gray-900 leading-[0.95]">
-              Talk to the right expert,
+              Talk to a real person.
               <br />
-              <span className="text-gray-600 font-light">in one click</span>
+              <span className="text-gray-600 font-light">Close faster.</span>
             </h1>
 
-            <p className="mt-6 text-base sm:text-lg text-gray-700 max-w-2xl">
-              Choose Sales, Support, or Management and contact instantly via Call, WhatsApp, or Email.
+            <p className="mt-5 text-base sm:text-lg text-gray-700 max-w-2xl leading-relaxed">
+              Find the right point of contact by role, then call or WhatsApp instantly—no forms, no delays.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-2">
-              <span className="px-3 py-1.5 rounded-full bg-white/80 border border-white/60 text-xs font-semibold text-gray-700">
-                Direct calling
-              </span>
-              <span className="px-3 py-1.5 rounded-full bg-white/80 border border-white/60 text-xs font-semibold text-gray-700">
-                WhatsApp chat
-              </span>
-              <span className="px-3 py-1.5 rounded-full bg-white/80 border border-white/60 text-xs font-semibold text-gray-700">
-                Verified contacts
-              </span>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href="/contact"
+                className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+              >
+                Talk to sales
+              </Link>
+              <a
+                href="#team"
+                className="px-5 py-3 rounded-xl bg-white/80 hover:bg-white text-gray-900 font-semibold border border-white/60 backdrop-blur transition"
+              >
+                Browse team
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CONTROLS */}
-      <section className="relative py-8 px-6 lg:px-12 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex-1 flex flex-col gap-3">
-            <input
-              type="text"
-              placeholder="Search by name or role…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full lg:max-w-lg rounded-2xl border border-gray-200 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <div className="flex items-center gap-3 flex-wrap">
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+      {/* ================= CONTROLS (Sticky) ================= */}
+      <section id="team" className="sticky top-16 lg:top-20 z-40 bg-white/85 backdrop-blur-xl border-y border-black/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            {/* Search */}
+            <div className="w-full lg:max-w-md">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+                  </svg>
+                </span>
                 <input
-                  type="checkbox"
-                  checked={activeOnly}
-                  onChange={(e) => setActiveOnly(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300"
+                  type="text"
+                  placeholder="Search name, role…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-2xl border border-gray-200 bg-white px-10 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                Active only
-              </label>
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-gray-500">{resultsLabel}</p>
+            </div>
 
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-3">
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="rounded-2xl border border-gray-200 px-4 py-3 text-sm bg-white"
               >
                 <option value="all">All roles</option>
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
+                {roles.map(role => (
+                  <option key={role} value={role}>{role}</option>
                 ))}
               </select>
+
+              <label className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={activeOnly}
+                  onChange={(e) => setActiveOnly(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                Active only
+              </label>
 
               <select
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value as SortMode)}
                 className="rounded-2xl border border-gray-200 px-4 py-3 text-sm bg-white"
               >
-                <option value="recommended">Recommended</option>
-                <option value="az">A–Z</option>
+                <option value="recommended">Sort: Recommended</option>
+                <option value="name-asc">Sort: Name A–Z</option>
               </select>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3 justify-between lg:justify-end">
-            <div className="text-sm text-gray-500">
-              {isLoading ? 'Loading…' : `${filteredTeam.length} members`}
-            </div>
-
-            <div className="flex rounded-2xl border border-gray-200 overflow-hidden">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`px-4 py-3 text-sm font-semibold ${
-                  viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
-                }`}
-              >
-                Grid
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-4 py-3 text-sm font-semibold ${
-                  viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
-                }`}
-              >
-                List
-              </button>
+              <div className="flex rounded-2xl border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-4 py-3 text-sm font-semibold ${
+                    viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                  }`}
+                >
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-4 py-3 text-sm font-semibold ${
+                    viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                  }`}
+                >
+                  List
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* RESULTS */}
+      {/* ================= RESULTS ================= */}
       <section className="relative py-12 px-6 lg:px-12 bg-white">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
             <p className="text-center text-gray-600 py-20">Loading team…</p>
           ) : filteredTeam.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-900 font-bold text-xl">No matching team members.</p>
-              <p className="text-gray-600 mt-2">
-                Try removing filters, or contact the company directly.
-              </p>
-              <Link href="/contact" className="mt-6 inline-flex items-center rounded-2xl bg-blue-600 px-5 py-3 text-white font-semibold hover:bg-blue-700">
-                Contact us
+              <p className="text-gray-600">No matching team members found.</p>
+              <Link href="/contact" className="mt-4 inline-block text-blue-600 font-medium">
+                Contact us instead →
               </Link>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {filteredTeam.map((person) => {
-                const wa = toWhatsAppLink(person);
-                const hasPhone = !!person.phone;
-                const hasEmail = !!person.email;
-
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredTeam.map(person => {
+                const wa = toWaLink(person.whatsapp || person.phone || '');
                 return (
                   <div
                     key={person.id}
-                    className="group rounded-3xl border border-gray-200 bg-white overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-1"
+                    className="group rounded-3xl border border-gray-200 bg-white hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden"
                   >
-                    <button
-                      onClick={() => handleOpen(person)}
-                      className="w-full text-left"
-                      aria-label={`Open ${person.name} details`}
-                    >
-                      <div className="relative h-56 bg-gray-100">
+                    <button onClick={() => handleCardClick(person)} className="text-left w-full">
+                      <div className="relative h-56 bg-gray-50">
                         {person.imageUrl ? (
                           <Image
                             src={person.imageUrl}
@@ -232,26 +238,24 @@ export default function TeamPage() {
                             unoptimized
                           />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+                          <div className="h-full w-full flex items-center justify-center text-gray-400 text-sm">
                             No photo
                           </div>
                         )}
-
-                        {!person.isActive && (
-                          <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold bg-black/70 text-white">
-                            Offline
-                          </div>
+                        {person.isActive === false && (
+                          <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-gray-900/70 text-white text-xs font-semibold">
+                            Inactive
+                          </span>
                         )}
                       </div>
 
                       <div className="p-6">
-                        <h3 className="text-xl font-black tracking-tight text-gray-900 group-hover:text-blue-700">
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600">
                           {person.name}
                         </h3>
-                        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mt-1">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mt-1">
                           {person.role}
                         </p>
-
                         {person.bio && (
                           <p className="mt-3 text-sm text-gray-600 line-clamp-2">
                             {person.bio}
@@ -261,53 +265,21 @@ export default function TeamPage() {
                     </button>
 
                     {/* Quick actions */}
-                    <div className="px-6 pb-6">
-                      <div className="grid grid-cols-3 gap-2">
-                        <a
-                          href={hasPhone ? `tel:${person.phone}` : '#'}
-                          aria-disabled={!hasPhone}
-                          className={`rounded-2xl px-3 py-2 text-sm font-bold text-center transition ${
-                            hasPhone
-                              ? 'bg-blue-600 text-white hover:bg-blue-700'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
-                          }`}
-                        >
-                          Call
-                        </a>
-
-                        <a
-                          href={wa || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-disabled={!wa}
-                          className={`rounded-2xl px-3 py-2 text-sm font-bold text-center transition ${
-                            wa
-                              ? 'bg-green-600 text-white hover:bg-green-700'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
-                          }`}
-                        >
-                          WhatsApp
-                        </a>
-
-                        <a
-                          href={hasEmail ? `mailto:${person.email}` : '#'}
-                          aria-disabled={!hasEmail}
-                          className={`rounded-2xl px-3 py-2 text-sm font-bold text-center transition ${
-                            hasEmail
-                              ? 'bg-gray-900 text-white hover:bg-black'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
-                          }`}
-                        >
-                          Email
-                        </a>
-                      </div>
-
-                      <button
-                        onClick={() => handleOpen(person)}
-                        className="mt-3 w-full rounded-2xl px-4 py-2 text-sm font-semibold border border-gray-200 hover:bg-gray-50 text-gray-800"
+                    <div className="px-6 pb-6 flex items-center gap-3">
+                      <a
+                        href={`tel:${person.phone}`}
+                        className="flex-1 text-center rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 transition"
                       >
-                        View details
-                      </button>
+                        Call
+                      </a>
+                      <a
+                        href={wa}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-center rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold py-3 transition"
+                      >
+                        WhatsApp
+                      </a>
                     </div>
                   </div>
                 );
@@ -315,52 +287,43 @@ export default function TeamPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredTeam.map((person) => {
-                const wa = toWhatsAppLink(person);
+              {filteredTeam.map(person => {
+                const wa = toWaLink(person.whatsapp || person.phone || '');
                 return (
                   <div
                     key={person.id}
                     className="rounded-3xl border border-gray-200 bg-white p-5 hover:shadow-lg transition"
                   >
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={() => handleOpen(person)}
-                        className="flex items-center gap-4 text-left flex-1"
-                      >
-                        <div className="relative h-14 w-14 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <button onClick={() => handleCardClick(person)} className="flex items-center gap-4 text-left flex-1">
+                        <div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-gray-50 flex-shrink-0">
                           {person.imageUrl ? (
                             <Image src={person.imageUrl} alt={person.name} fill className="object-cover" unoptimized />
                           ) : null}
                         </div>
-
                         <div className="min-w-0">
-                          <p className="font-black text-gray-900 truncate">{person.name}</p>
-                          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mt-1">
-                            {person.role}
-                          </p>
+                          <p className="font-bold text-gray-900 truncate">{person.name}</p>
+                          <p className="text-xs font-semibold text-blue-600 uppercase truncate">{person.role}</p>
+                          {person.bio && <p className="mt-1 text-sm text-gray-600 line-clamp-1">{person.bio}</p>}
                         </div>
                       </button>
 
-                      <div className="hidden sm:flex items-center gap-2">
-                        <a className="rounded-xl bg-blue-600 text-white px-3 py-2 text-sm font-bold hover:bg-blue-700" href={`tel:${person.phone}`}>
+                      <div className="flex gap-3 sm:justify-end">
+                        <a
+                          href={`tel:${person.phone}`}
+                          className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
+                        >
                           Call
                         </a>
-                        <a className="rounded-xl bg-green-600 text-white px-3 py-2 text-sm font-bold hover:bg-green-700" href={wa} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={wa}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold transition"
+                        >
                           WhatsApp
                         </a>
                       </div>
-                    </div>
-
-                    <div className="sm:hidden grid grid-cols-3 gap-2 mt-4">
-                      <a className="rounded-2xl bg-blue-600 text-white px-3 py-2 text-sm font-bold text-center" href={`tel:${person.phone}`}>
-                        Call
-                      </a>
-                      <a className="rounded-2xl bg-green-600 text-white px-3 py-2 text-sm font-bold text-center" href={wa} target="_blank" rel="noopener noreferrer">
-                        WhatsApp
-                      </a>
-                      <button onClick={() => handleOpen(person)} className="rounded-2xl border border-gray-200 px-3 py-2 text-sm font-bold text-center">
-                        Details
-                      </button>
                     </div>
                   </div>
                 );
@@ -370,7 +333,7 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* MODALS */}
+      {/* ================= MODALS ================= */}
       <SalespersonModal
         isOpen={modalOpen}
         salesperson={selectedPerson}
