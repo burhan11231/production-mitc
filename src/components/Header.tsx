@@ -22,6 +22,7 @@ const navItems = [
   { href: '/team', label: 'Team' },
 ]
 
+
 // --- Icons ---
 const IconPhone = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,19 +46,30 @@ export default function Header() {
   const { user, isLoading } = useAuth()
   const { settings } = useSettings()
   const { salespersons } = useSalespersons()
+
   const [menuOpen, setMenuOpen] = useState(false)
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
+  // 🔹 Search state
+  const [search, setSearch] = useState('')
+
+  // 🔹 Role logic (ONLY ONCE)
   const isAdmin = user?.role === 'admin'
   const showCallButton = !isLoading && !isAdmin
 
-  // Get top 5 active salespersons
+  // 🔹 Top active salespersons
   const topSalespersons = salespersons
-    .filter((p) => p.isActive)
+    .filter(p => p.isActive)
     .sort((a, b) => a.order - b.order)
     .slice(0, 5)
+
+  // 🔹 Search filter (SAFE)
+  const filteredSalespersons = topSalespersons.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.role?.toLowerCase().includes(search.toLowerCase())
+  )
 
   const handleSalespersonClick = (person: Salesperson) => {
     setSelectedPerson(person)
@@ -242,80 +254,130 @@ export default function Header() {
         </Dialog>
       </Transition>
 
-      {/* TEAM MODAL (Shows top 5 salespersons) */}
-      <Transition show={showTeamModal} as={Fragment}>
-        <Dialog open={showTeamModal} onClose={() => setShowTeamModal(false)} className="relative z-50">
-          <DialogBackdrop
-            transition
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm duration-300 data-[closed]:opacity-0"
-          />
+      {/* TEAM MODAL – IMPROVED */}
+<Transition show={showTeamModal} as={Fragment}>
+  <Dialog open={showTeamModal} onClose={() => setShowTeamModal(false)} className="relative z-50">
+    <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-              <DialogPanel
-                transition
-                className="w-full max-w-md transform bg-white rounded-2xl shadow-xl duration-300 data-[closed]:scale-95 data-[closed]:opacity-0"
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <DialogPanel className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl">
+
+          {/* HEADER */}
+          <div className="px-6 py-5 border-b">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Talk to our team
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Choose a specialist to assist you
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTeamModal(false)}
+                className="p-2 rounded-full hover:bg-gray-100"
               >
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Team</h2>
-                    <button
-                      onClick={() => setShowTeamModal(false)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
+                ✕
+              </button>
+            </div>
 
-                  {topSalespersons.length === 0 ? (
-                    <p className="text-gray-600 text-center py-8">No team members available</p>
-                  ) : (
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {topSalespersons.map((person) => (
-                        <button
-                          key={person.id}
-                          onClick={() => handleSalespersonClick(person)}
-                          className="w-full p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-left"
-                        >
-                          <div className="flex items-center gap-3">
-                            {person.imageUrl && (
-                              <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                                <Image
-                                  src={person.imageUrl}
-                                  alt={person.name}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
-                                />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-gray-900 truncate">{person.name}</h3>
-                              <p className="text-xs text-blue-600 font-medium">{person.role}</p>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-
-                      {salespersons.filter(p => p.isActive).length > 5 && (
-                        <Link
-                          href="/team"
-                          onClick={() => setShowTeamModal(false)}
-                          className="block w-full p-4 text-center text-blue-600 hover:text-blue-700 font-bold rounded-lg border-2 border-blue-100 hover:border-blue-200 transition"
-                        >
-                          See All Team Members →
-                        </Link>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </DialogPanel>
+            {/* SEARCH */}
+            <div className="mt-4">
+              <input
+                type="text"
+                placeholder="Search by name or role..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-xl border px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
             </div>
           </div>
-        </Dialog>
-      </Transition>
+
+          {/* BODY */}
+          <div className="p-6 max-h-[420px] overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {filteredSalespersons.map((person) => (
+                <div
+                  key={person.id}
+                  className="rounded-2xl border p-4 hover:shadow-md transition bg-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={person.imageUrl || '/avatar.png'}
+                      alt={person.name}
+                      width={48}
+                      height={48}
+                      className="rounded-xl object-cover"
+                      unoptimized
+                    />
+
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 truncate">
+                        {person.name}
+                      </p>
+                      <p className="text-xs text-blue-600 font-medium truncate">
+                        {person.role}
+                      </p>
+                    </div>
+
+                    <span className="w-2 h-2 rounded-full bg-green-500" />
+                  </div>
+
+                  {/* ACTIONS */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <a
+                      href={`tel:${person.phone}`}
+                      className="flex-1 text-center rounded-xl bg-blue-600 text-white text-sm font-bold py-2 hover:bg-blue-700 transition"
+                    >
+                      Call
+                    </a>
+
+                    <a
+                      href={`https://wa.me/${person.whatsapp || person.phone}`}
+                      target="_blank"
+                      className="flex-1 text-center rounded-xl bg-green-500 text-white text-sm font-bold py-2 hover:bg-green-600 transition"
+                    >
+                      WhatsApp
+                    </a>
+
+                    <button
+                      onClick={() => handleSalespersonClick(person)}
+                      className="p-2 rounded-xl border hover:bg-gray-100"
+                      title="View details"
+                    >
+                      ℹ️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredSalespersons.length === 0 && (
+              <p className="text-center text-gray-500 py-10">
+                No team member found
+              </p>
+            )}
+          </div>
+
+          {/* FOOTER */}
+          {salespersons.filter(p => p.isActive).length > 5 && (
+            <div className="px-6 py-4 border-t">
+              <Link
+                href="/team"
+                onClick={() => setShowTeamModal(false)}
+                className="block text-center font-bold text-blue-600 hover:text-blue-700"
+              >
+                View full team →
+              </Link>
+            </div>
+          )}
+
+        </DialogPanel>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
 
       {/* Individual Person Modal */}
       <SalespersonModal isOpen={modalOpen} salesperson={selectedPerson} onClose={() => setModalOpen(false)} />
