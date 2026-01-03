@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 
@@ -12,14 +12,13 @@ export function useSettings() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsLoading(true);
+    const ref = doc(db, 'siteSettings', 'global');
 
-    // Real-time listener
     const unsubscribe = onSnapshot(
-      doc(db, 'siteSettings', 'global'),
-      (doc) => {
-        if (doc.exists()) {
-          setSettings(doc.data() as SiteSettings);
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          setSettings(snap.data() as SiteSettings);
         } else {
           setSettings(DEFAULT_SETTINGS);
         }
@@ -37,17 +36,16 @@ export function useSettings() {
   }, []);
 
   const updateSettings = async (updates: Partial<SiteSettings>) => {
-    try {
-      const settingsRef = doc(db, 'siteSettings', 'global');
-      await updateDoc(settingsRef, {
+    const ref = doc(db, 'siteSettings', 'global');
+
+    await setDoc(
+      ref,
+      {
         ...updates,
         updatedAt: new Date(),
-      });
-      // Local state will update via listener
-    } catch (err) {
-      console.error('Error updating settings:', err);
-      throw err;
-    }
+      },
+      { merge: true } // 🔑 THIS is the fix
+    );
   };
 
   return { settings, isLoading, error, updateSettings };
