@@ -57,11 +57,22 @@ export default function SalespersonModal({
               </button>
 
               {/* ================= TOP SECTION ================= */}
-              <div className="grid grid-cols-[220px_1fr] gap-6 px-6 pt-8 sm:px-8 lg:px-10 lg:pt-10">
-                {/* LEFT: PROFILE */}
+              <div
+                className="
+                  grid
+                  grid-cols-[30%_70%]
+                  gap-4
+                  px-5 pt-7
+                  sm:px-6
+                  lg:gap-6
+                  lg:px-10
+                  lg:pt-10
+                "
+              >
+                {/* LEFT – PROFILE (30%) */}
                 <div className="flex flex-col items-center text-center">
                   {salesperson.imageUrl && (
-                    <div className="mb-4 h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-lg">
+                    <div className="mb-3 h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-lg">
                       <Image
                         src={salesperson.imageUrl}
                         alt={salesperson.name}
@@ -73,26 +84,26 @@ export default function SalespersonModal({
                     </div>
                   )}
 
-                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
+                  <h2 className="text-sm sm:text-base lg:text-2xl font-bold text-gray-900 leading-tight">
                     {salesperson.name}
                   </h2>
 
                   {salesperson.role && (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold uppercase tracking-wide text-blue-600">
+                    <p className="mt-1 text-[10px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wide text-blue-600">
                       {salesperson.role}
                     </p>
                   )}
                 </div>
 
-                {/* RIGHT: CONTACT */}
-                <div className="space-y-3">
+                {/* RIGHT – CONTACT LINKS (70%) */}
+                <div className="space-y-2 sm:space-y-3">
                   {/* Email */}
                   <a
                     href={`mailto:${salesperson.email}`}
-                    className="flex items-center gap-4 rounded-xl bg-gray-50 p-3 sm:p-4 hover:bg-gray-100 transition"
+                    className="flex items-center gap-3 rounded-xl bg-gray-50 p-3 sm:p-4 hover:bg-gray-100 transition"
                   >
                     <svg
-                      className="h-5 w-5 text-gray-600"
+                      className="h-5 w-5 text-gray-600 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -115,10 +126,10 @@ export default function SalespersonModal({
                   {/* Phone */}
                   <a
                     href={`tel:${salesperson.phone}`}
-                    className="flex items-center gap-4 rounded-xl bg-blue-50 p-3 sm:p-4 hover:bg-blue-100 transition"
+                    className="flex items-center gap-3 rounded-xl bg-blue-50 p-3 sm:p-4 hover:bg-blue-100 transition"
                   >
                     <svg
-                      className="h-5 w-5 text-blue-600"
+                      className="h-5 w-5 text-blue-600 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -143,10 +154,10 @@ export default function SalespersonModal({
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 rounded-xl bg-green-50 p-3 sm:p-4 hover:bg-green-100 transition"
+                    className="flex items-center gap-3 rounded-xl bg-green-50 p-3 sm:p-4 hover:bg-green-100 transition"
                   >
                     <svg
-                      className="h-5 w-5 text-green-600"
+                      className="h-5 w-5 text-green-600 flex-shrink-0"
                       viewBox="0 0 24 24"
                       fill="currentColor"
                     >
@@ -164,9 +175,9 @@ export default function SalespersonModal({
                 </div>
               </div>
 
-              {/* ================= BIO SECTION ================= */}
+              {/* ================= BIO ================= */}
               {salesperson.bio && (
-                <div className="mt-8 border-t border-gray-100 bg-gray-50 px-6 py-6 sm:px-8 lg:px-10">
+                <div className="mt-6 border-t border-gray-100 bg-gray-50 px-5 py-6 sm:px-6 lg:px-10">
                   <p className="text-sm sm:text-base leading-relaxed text-gray-700">
                     {salesperson.bio}
                   </p>
