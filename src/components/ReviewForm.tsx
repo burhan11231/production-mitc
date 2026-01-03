@@ -33,6 +33,7 @@ export default function ReviewForm({ onSuccess, onCancel }: ReviewFormProps) {
         rating,
         comment,
         createdAt: serverTimestamp(),
+        published: false
       });
       toast.success('Review submitted successfully!');
       onSuccess();
