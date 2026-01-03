@@ -361,8 +361,7 @@ export default function Header() {
 
                     <button
   onClick={() => handleSalespersonClick(person)}
-  className="group p-2 rounded-xl border border-gray-200 transition
-             hover:bg-blue-50 hover:border-blue-200"
+  className="group p-2 rounded-xl border border-gray-200 transition hover:bg-blue-50 hover:border-blue-200"
   title="View details"
 >
   <IconInfo className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition" />
