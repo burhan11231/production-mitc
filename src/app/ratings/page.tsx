@@ -1,62 +1,139 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+  Timestamp,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
-import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { FaStar, FaPlus } from 'react-icons/fa'; // Used react-icons
-import { MdMessage } from 'react-icons/md';      // Used react-icons
+import { FaStar, FaPlus } from 'react-icons/fa';
+import { MdMessage } from 'react-icons/md';
 import ReviewForm from '@/components/ReviewForm';
 
 interface Review {
   id: string;
-  userName: string;
+  userName?: string;
   rating: number;
   comment: string;
-  createdAt: any;
+  createdAt?: Timestamp | Date | string | number | null;
+  published?: boolean;
+}
+
+function extractIndexUrl(err: unknown): string | null {
+  const msg =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (err as any)?.message ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (err as any)?.toString?.() ||
+    '';
+
+  // Typical Firestore message contains:
+  // "The query requires an index. You can create it here: https://console.firebase.google.com/..."
+  const match = msg.match(/https://console.firebase.google.com[^s]+/);
+  return match?.[0] ?? null;
 }
 
 export default function RatingsPage() {
   const { user } = useAuth();
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [stats, setStats] = useState({ avg: 0, count: 0, distribution: [0, 0, 0, 0, 0] });
+
+  // For showing missing-index link to yourself
+  const [indexUrl, setIndexUrl] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchReviews = async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    setIndexUrl(null);
+
     try {
-      const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
+      // ✅ Public page: only show published reviews.
+      // This also matches rules like: allow read if published == true || isAdmin. [web:1]
+      // Composite index may be required for where(published==true) + orderBy(createdAt). [web:1]
+      const q = query(
+        collection(db, 'reviews'),
+        where('published', '==', true),
+        orderBy('createdAt', 'desc'),
+        limit(200)
+      );
+
       const snap = await getDocs(q);
-      const reviewsData = snap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+
+      const reviewsData = snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Review, 'id'>),
       })) as Review[];
 
       setReviews(reviewsData);
+    } catch (err) {
+      console.error('Failed to load reviews:', err);
 
-      if (reviewsData.length > 0) {
-        const avg = reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length;
-        const dist = [0, 0, 0, 0, 0];
-        reviewsData.forEach(r => {
-          if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++;
-        });
-        setStats({ 
-          avg: Math.round(avg * 10) / 10, 
-          count: reviewsData.length,
-          distribution: [...dist].reverse() 
-        });
+      const url = extractIndexUrl(err);
+      if (url) {
+        setIndexUrl(url);
+        toast.error('Missing Firestore index. Use the link shown below.');
+        // Also log it so you can ctrl+click in console
+        console.error('Create the missing Firestore index here:', url);
+      } else {
+        toast.error('Failed to load reviews');
       }
-    } catch (error) {
-      toast.error('Failed to load reviews');
+
+      // Keep raw error message visible (helps debugging permissions vs index etc.)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setLoadError((err as any)?.message || String(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const stats = useMemo(() => {
+    if (!reviews.length) return { avg: 0, count: 0, distribution: [0, 0, 0, 0, 0] };
+
+    const count = reviews.length;
+    const avgRaw = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / count;
+
+    const dist = [0, 0, 0, 0, 0]; // 1..5
+    for (const r of reviews) {
+      const rating = Number(r.rating);
+      if (rating >= 1 && rating <= 5) dist[rating - 1] += 1;
+    }
+
+    return {
+      avg: Math.round(avgRaw * 10) / 10,
+      count,
+      distribution: [...dist].reverse(), // 5..1 for UI
+    };
+  }, [reviews]);
+
+  const formatDate = (createdAt: Review['createdAt']) => {
+    try {
+      // Firestore Timestamp
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (createdAt && typeof (createdAt as any).toDate === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (createdAt as any).toDate().toLocaleDateString();
+      }
+      if (createdAt instanceof Date) return createdAt.toLocaleDateString();
+      if (typeof createdAt === 'number') return new Date(createdAt).toLocaleDateString();
+      if (typeof createdAt === 'string') return new Date(createdAt).toLocaleDateString();
+      return '';
+    } catch {
+      return '';
     }
   };
 
@@ -75,13 +152,18 @@ export default function RatingsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sticky top-8">
               <div className="text-center mb-8">
                 <div className="text-6xl font-black text-gray-900 mb-2">{stats.avg}</div>
                 <div className="flex justify-center gap-1 mb-2">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <FaStar key={i} size={20} className={i <= Math.round(stats.avg) ? 'text-yellow-400' : 'text-gray-200'} />
+                    <FaStar
+                      key={i}
+                      size={20}
+                      className={i <= Math.round(stats.avg) ? 'text-yellow-400' : 'text-gray-200'}
+                    />
                   ))}
                 </div>
                 <div className="text-gray-500">Based on {stats.count} reviews</div>
@@ -104,8 +186,8 @@ export default function RatingsPage() {
               </div>
 
               {!showForm && (
-                <button 
-                  onClick={() => user ? setShowForm(true) : toast.error('Please login to review')}
+                <button
+                  onClick={() => (user ? setShowForm(true) : toast.error('Please login to review'))}
                   className="w-full mt-8 flex items-center justify-center gap-2 bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all"
                 >
                   <FaPlus size={14} /> Write a Review
@@ -114,11 +196,51 @@ export default function RatingsPage() {
             </div>
           </div>
 
+          {/* Right */}
           <div className="lg:col-span-8 space-y-6">
+            {/* Index / Error helper box (only appears when something fails) */}
+            {(indexUrl || loadError) && (
+              <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Couldn’t load reviews</h3>
+
+                {indexUrl && (
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-700 mb-2">
+                      Firestore says this query needs a composite index. Create it here:
+                    </p>
+                    <a
+                      href={indexUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-blue-600 hover:underline break-all"
+                    >
+                      {indexUrl}
+                    </a>
+                  </div>
+                )}
+
+                {loadError && (
+                  <pre className="text-xs bg-gray-50 border border-gray-100 p-3 rounded-xl overflow-auto">
+                    {loadError}
+                  </pre>
+                )}
+
+                <button
+                  onClick={fetchReviews}
+                  className="mt-4 px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-gray-800"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
             {showForm && (
-              <ReviewForm 
-                onSuccess={() => { setShowForm(false); fetchReviews(); }} 
-                onCancel={() => setShowForm(false)} 
+              <ReviewForm
+                onSuccess={() => {
+                  setShowForm(false);
+                  fetchReviews();
+                }}
+                onCancel={() => setShowForm(false)}
               />
             )}
 
@@ -136,17 +258,19 @@ export default function RatingsPage() {
                           {review.userName?.charAt(0).toUpperCase() || 'U'}
                         </div>
                         <div>
-                          <h4 className="font-bold text-gray-900">{review.userName}</h4>
+                          <h4 className="font-bold text-gray-900">{review.userName || 'Anonymous'}</h4>
                           <div className="flex gap-0.5 mt-0.5">
                             {[1, 2, 3, 4, 5].map((i) => (
-                              <FaStar key={i} size={14} className={i <= review.rating ? 'text-yellow-400' : 'text-gray-200'} />
+                              <FaStar
+                                key={i}
+                                size={14}
+                                className={i <= review.rating ? 'text-yellow-400' : 'text-gray-200'}
+                              />
                             ))}
                           </div>
                         </div>
                       </div>
-                      <span className="text-xs text-gray-400">
-                        {new Date(review.createdAt?.toDate?.() || review.createdAt).toLocaleDateString()}
-                      </span>
+                      <span className="text-xs text-gray-400">{formatDate(review.createdAt)}</span>
                     </div>
                     <p className="text-gray-600 leading-relaxed">{review.comment}</p>
                   </div>
@@ -164,4 +288,4 @@ export default function RatingsPage() {
       </div>
     </div>
   );
-                  }
+}
