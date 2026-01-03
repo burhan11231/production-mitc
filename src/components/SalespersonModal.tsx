@@ -69,7 +69,7 @@ export default function SalespersonModal({
                   lg:pt-10
                 "
               >
-                {/* LEFT – PROFILE (30%) */}
+                {/* LEFT – PROFILE */}
                 <div className="flex flex-col items-center text-center">
                   {salesperson.imageUrl && (
                     <div className="mb-3 h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-lg">
@@ -95,10 +95,8 @@ export default function SalespersonModal({
                   )}
                 </div>
 
-                {/* RIGHT – CONTACT LINKS (70%) */}
-                <div className="space-y-2 sm:space-y-3">
-                  
-
+                {/* RIGHT – CONTACT ACTIONS */}
+                <div className="space-y-3">
                   {/* Phone */}
                   <a
                     href={`tel:${salesperson.phone}`}
@@ -159,6 +157,32 @@ export default function SalespersonModal({
                   </p>
                 </div>
               )}
+
+              {/* ================= FOOTER / EMAIL ================= */}
+              <div className="border-t border-gray-100 px-5 py-4 sm:px-6 lg:px-10">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <svg
+                    className="h-4 w-4 text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+
+                  <a
+                    href={`mailto:${salesperson.email}`}
+                    className="font-medium text-gray-800 hover:underline"
+                  >
+                    {salesperson.email}
+                  </a>
+                </div>
+              </div>
             </DialogPanel>
           </div>
         </div>
