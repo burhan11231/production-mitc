@@ -27,16 +27,14 @@ interface Review {
 }
 
 function extractIndexUrl(err: unknown): string | null {
-  const msg =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (err as any)?.message ||
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (err as any)?.toString?.() ||
-    '';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const msg = (err as any)?.message || String(err);
 
-  // Typical Firestore message contains:
-  // "The query requires an index. You can create it here: https://console.firebase.google.com/..."
-  const match = msg.match(/https://console.firebase.google.com[^s]+/);
+  // Matches:
+  // https://console.firebase.google.com/...
+  // https://console.cloud.google.com/...
+  // Captures until whitespace using S (non-whitespace) [web:98]
+  const match = msg.match(/https://console.(firebase|cloud).google.com/S+/);
   return match?.[0] ?? null;
 }
 
@@ -47,7 +45,6 @@ export default function RatingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  // For showing missing-index link to yourself
   const [indexUrl, setIndexUrl] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -62,9 +59,8 @@ export default function RatingsPage() {
     setIndexUrl(null);
 
     try {
-      // ✅ Public page: only show published reviews.
-      // This also matches rules like: allow read if published == true || isAdmin. [web:1]
-      // Composite index may be required for where(published==true) + orderBy(createdAt). [web:1]
+      // ✅ Public page: only published reviews (public can read them if rules allow published==true) [web:1]
+      // This compound query may require a composite index; Firestore error includes a console link [web:1][web:2]
       const q = query(
         collection(db, 'reviews'),
         where('published', '==', true),
@@ -87,13 +83,11 @@ export default function RatingsPage() {
       if (url) {
         setIndexUrl(url);
         toast.error('Missing Firestore index. Use the link shown below.');
-        // Also log it so you can ctrl+click in console
         console.error('Create the missing Firestore index here:', url);
       } else {
         toast.error('Failed to load reviews');
       }
 
-      // Keep raw error message visible (helps debugging permissions vs index etc.)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setLoadError((err as any)?.message || String(err));
     } finally {
@@ -107,7 +101,7 @@ export default function RatingsPage() {
     const count = reviews.length;
     const avgRaw = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / count;
 
-    const dist = [0, 0, 0, 0, 0]; // 1..5
+    const dist = [0, 0, 0, 0, 0];
     for (const r of reviews) {
       const rating = Number(r.rating);
       if (rating >= 1 && rating <= 5) dist[rating - 1] += 1;
@@ -116,13 +110,12 @@ export default function RatingsPage() {
     return {
       avg: Math.round(avgRaw * 10) / 10,
       count,
-      distribution: [...dist].reverse(), // 5..1 for UI
+      distribution: [...dist].reverse(),
     };
   }, [reviews]);
 
   const formatDate = (createdAt: Review['createdAt']) => {
     try {
-      // Firestore Timestamp
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (createdAt && typeof (createdAt as any).toDate === 'function') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -198,7 +191,6 @@ export default function RatingsPage() {
 
           {/* Right */}
           <div className="lg:col-span-8 space-y-6">
-            {/* Index / Error helper box (only appears when something fails) */}
             {(indexUrl || loadError) && (
               <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Couldn’t load reviews</h3>
