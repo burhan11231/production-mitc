@@ -97,31 +97,7 @@ export default function SalespersonModal({
 
                 {/* RIGHT – CONTACT LINKS (70%) */}
                 <div className="space-y-2 sm:space-y-3">
-                  {/* Email */}
-                  <a
-                    href={`mailto:${salesperson.email}`}
-                    className="flex items-center gap-3 rounded-xl bg-gray-50 p-3 sm:p-4 hover:bg-gray-100 transition"
-                  >
-                    <svg
-                      className="h-5 w-5 text-gray-600 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500 font-medium">Email</p>
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {salesperson.email}
-                      </p>
-                    </div>
-                  </a>
+                  
 
                   {/* Phone */}
                   <a
