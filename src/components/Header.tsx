@@ -96,10 +96,10 @@ export default function Header() {
               />
             )}
             <div className="leading-tight">
-              <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
+              <div className="text-sm lg:text-xl font-bold tracking-tight text-white">
                 {settings?.businessName || 'MITC'}
               </div>
-              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500">
+              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-white">
                 {settings?.tagline || 'Mateen IT Corp'}
               </div>
             </div>
