@@ -106,21 +106,7 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                       </a>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                      <div className="rounded-2xl bg-gray-50 p-4">
-                        <p className="text-xs text-gray-500 font-semibold">Phone</p>
-                        <p className="mt-1 font-bold text-gray-900 break-all">
-                          {salesperson.phone || '—'}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl bg-gray-50 p-4">
-                        <p className="text-xs text-gray-500 font-semibold">WhatsApp</p>
-                        <p className="mt-1 font-bold text-gray-900 break-all">
-                          {salesperson.whatsapp || salesperson.phone || '—'}
-                        </p>
-                      </div>
-                    </div>
+                   
                   </div>
 
                   {salesperson.isActive === false && (
