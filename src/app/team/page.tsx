@@ -1,304 +1,360 @@
 'use client'
 
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Dialog, DialogBackdrop, DialogPanel, Transition, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { useAuth } from '@/lib/auth-context'
-import { useSettings } from '@/hooks/useSettings'
+import Link from 'next/link'
 import { useSalespersons } from '@/hooks/useSalespersons'
+import FirestoreErrorDialog from '@/components/FirestoreErrorDialog'
 import SalespersonModal from '@/components/SalespersonModal'
-import TeamModal from '@/components/TeamModal'
 import { Salesperson } from '@/lib/firestore-models'
 
-const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/services', label: 'Services' },
-  { href: '/about', label: 'About' },
-  { href: '/ratings', label: 'Ratings' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/team', label: 'Team' },
-]
+type ViewMode = 'grid' | 'list'
+type SortMode = 'recommended' | 'name-asc'
 
-const IconPhone = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-  </svg>
-)
+function toDigits(phone: string) {
+  return (phone || '').replace(/D/g, '')
+}
 
-const IconUser = ({ className = 'w-6 h-6' }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-)
+function toWaLink(phone: string) {
+  const digits = toDigits(phone)
+  if (!digits) return ''
+  return `https://wa.me/${digits}`
+}
 
-const IconLogout = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-  </svg>
-)
+export default function TeamPage() {
+  const { salespersons, isLoading, indexError } = useSalespersons()
 
-export default function Header() {
-  const { user, isLoading } = useAuth()
-  const { settings } = useSettings()
-  const { salespersons } = useSalespersons()
-
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  const [teamOpen, setTeamOpen] = useState(false)
   const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null)
-  const [personOpen, setPersonOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
 
-  const isAdmin = user?.role === 'admin'
-  const showCallButton = !isLoading && !isAdmin
+  const [search, setSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [activeOnly, setActiveOnly] = useState(true)
+  const [sortMode, setSortMode] = useState<SortMode>('recommended')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
-  const activeSorted = useMemo(() => {
-    return (salespersons || [])
-      .filter(p => p?.isActive)
-      .sort((a, b) => Number(a.order ?? 9999) - Number(b.order ?? 9999))
-  }, [salespersons])
-
-  const handleSelectPerson = (p: Salesperson) => {
-    setSelectedPerson(p)
-    setPersonOpen(true)
-    setTeamOpen(false)
-  }
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [menuOpen])
+    if (indexError) setShowErrorDialog(true)
+  }, [indexError])
+
+  const roles = useMemo(() => {
+    const set = new Set<string>()
+    salespersons.forEach(p => p.role && set.add(p.role))
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [salespersons])
+
+  const filteredTeam = useMemo(() => {
+    const q = search.trim().toLowerCase()
+
+    const list = salespersons.filter(p => {
+      const matchesSearch =
+        !q ||
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.role || '').toLowerCase().includes(q)
+
+      const matchesRole = roleFilter === 'all' || p.role === roleFilter
+      const matchesActive = !activeOnly || !!p.isActive
+
+      return matchesSearch && matchesRole && matchesActive
+    })
+
+    if (sortMode === 'name-asc') {
+      return list.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    }
+
+    return list.sort((a, b) => {
+      const ao = Number.isFinite(a.order) ? (a.order as number) : 9999
+      const bo = Number.isFinite(b.order) ? (b.order as number) : 9999
+      if (ao !== bo) return ao - bo
+      return (a.name || '').localeCompare(b.name || '')
+    })
+  }, [salespersons, search, roleFilter, activeOnly, sortMode])
+
+  const handleCardClick = (person: Salesperson) => {
+    setSelectedPerson(person)
+    setModalOpen(true)
+  }
+
+  const resultsLabel = isLoading ? 'Loading…' : `${filteredTeam.length} team member(s)`
 
   return (
-    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-black/10">
-      <nav className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between relative">
-        {/* LEFT */}
-        <div className="flex items-center gap-3 lg:gap-4">
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 transition"
-            aria-label="Open menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+    <main className="overflow-x-hidden bg-white">
+      {/* HERO */}
+      <section className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" />
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.10),transparent_55%)]" />
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-10">
+          <div className="max-w-4xl">
+            <p className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 border border-white/60 backdrop-blur font-bold tracking-widest uppercase text-xs text-gray-900">
+              Team
+            </p>
 
-          <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
-            {settings?.logoUrl && (
-              <Image
-                src={settings.logoUrl}
-                alt={settings.businessName || 'Logo'}
-                width={40}
-                height={40}
-                className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
-                unoptimized
-              />
-            )}
-            <div className="leading-tight">
-              <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
-                {settings?.businessName || 'MITC'}
-              </div>
-              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500">
-                {settings?.tagline || 'Mateen IT Corp'}
-              </div>
-            </div>
-          </Link>
-        </div>
+            <h1 className="mt-8 text-5xl sm:text-7xl font-black tracking-tight text-gray-900 leading-[0.95]">
+              Talk to a real person.
+              <br />
+              <span className="text-gray-600 font-light">Close faster.</span>
+            </h1>
 
-        {/* CENTER */}
-        <div className="hidden lg:flex items-center gap-10 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="nav-link">
-              {item.label}
-            </Link>
-          ))}
-        </div>
+            <p className="mt-5 text-base sm:text-lg text-gray-700 max-w-2xl leading-relaxed">
+              Find the right point of contact by role, then call or WhatsApp instantly—no forms, no delays.
+            </p>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2 lg:gap-4">
-          {showCallButton && (
-            <button
-              onClick={() => setTeamOpen(true)}
-              className={`
-                h-10 lg:h-11 px-3 lg:px-4 rounded-full
-                bg-blue-50 hover:bg-blue-100 text-blue-700
-                border border-blue-100
-                transition flex items-center gap-2
-              `}
-            >
-              <IconPhone />
-              <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider">
-                Call MITC
-              </span>
-            </button>
-          )}
-
-          <Menu as="div" className="relative">
-            <MenuButton className="flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 rounded-full bg-gray-50 border border-gray-100 hover:bg-gray-100 transition overflow-hidden">
-              {user?.photoURL ? (
-                <Image src={user.photoURL} alt="Profile" width={44} height={44} className="object-cover" unoptimized />
-              ) : (
-                <IconUser className="w-5 h-5 lg:w-6 lg:h-6 text-gray-400" />
-              )}
-            </MenuButton>
-
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <MenuItems className="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none divide-y divide-gray-50 overflow-hidden">
-                {user && (
-                  <div className="px-4 py-4 bg-gray-50/50">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Signed in as</p>
-                    <p className="text-sm font-bold text-gray-900 truncate">{user.displayName || 'MITC User'}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
-                  </div>
-                )}
-
-                <div className="p-2">
-                  {isLoading ? (
-                    <div className="p-4 flex justify-center">
-                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" />
-                    </div>
-                  ) : user ? (
-                    <>
-                      {isAdmin ? (
-                        <MenuItem>
-                          {({ active }) => (
-                            <Link href="/dashboard" className={`${active ? 'bg-blue-50 text-blue-700' : 'text-gray-700'} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold transition`}>
-                              Admin Dashboard
-                            </Link>
-                          )}
-                        </MenuItem>
-                      ) : (
-                        <MenuItem>
-                          {({ active }) => (
-                            <Link href="/profile" className={`${active ? 'bg-blue-50 text-blue-700' : 'text-gray-700'} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold transition`}>
-                              My Profile
-                            </Link>
-                          )}
-                        </MenuItem>
-                      )}
-
-                      <MenuItem>
-                        {({ active }) => (
-                          <Link href="/auth/logout" className={`${active ? 'bg-red-50 text-red-700' : 'text-red-600'} flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition`}>
-                            <IconLogout /> Logout
-                          </Link>
-                        )}
-                      </MenuItem>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-1">
-                      <MenuItem>
-                        {({ active }) => (
-                          <Link href="/login" className={`${active ? 'bg-gray-100' : ''} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-gray-900 transition`}>
-                            Login
-                          </Link>
-                        )}
-                      </MenuItem>
-                      <MenuItem>
-                        {({ active }) => (
-                          <Link href="/signup" className={`${active ? 'bg-blue-700' : 'bg-blue-600'} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-white transition shadow-md shadow-blue-100`}>
-                            Create Account
-                          </Link>
-                        )}
-                      </MenuItem>
-                    </div>
-                  )}
-                </div>
-              </MenuItems>
-            </Transition>
-          </Menu>
-        </div>
-      </nav>
-
-      {/* MOBILE NAV DRAWER */}
-      <Transition show={menuOpen} as={Fragment}>
-        <Dialog open={menuOpen} onClose={setMenuOpen} className="relative z-[60] lg:hidden">
-          <DialogBackdrop transition className="fixed inset-0 bg-black/40 backdrop-blur-sm duration-200 data-[closed]:opacity-0" />
-          <div className="fixed inset-0 overflow-hidden">
-            <div className="absolute inset-0 overflow-hidden">
-              <DialogPanel transition className="absolute left-0 top-0 h-full w-[80%] max-w-[300px] bg-white border-r shadow-2xl duration-300 data-[closed]:-translate-x-full">
-                <div className="h-16 px-6 flex items-center justify-between border-b border-gray-100">
-                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Menu</span>
-                  <button onClick={() => setMenuOpen(false)} className="p-2 text-gray-500" aria-label="Close menu">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="p-4 space-y-1">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-3 text-lg font-bold text-gray-900 rounded-xl hover:bg-gray-50 transition"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </DialogPanel>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href="/contact"
+                className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+              >
+                Talk to sales
+              </Link>
+              <a
+                href="#team"
+                className="px-5 py-3 rounded-xl bg-white/80 hover:bg-white text-gray-900 font-semibold border border-white/60 backdrop-blur transition"
+              >
+                Browse team
+              </a>
             </div>
           </div>
-        </Dialog>
-      </Transition>
+        </div>
+      </section>
 
-      {/* TEAM MODAL */}
-      <TeamModal
-        isOpen={teamOpen}
-        onClose={() => setTeamOpen(false)}
-        title="Call MITC"
-        subtitle="Pick a specialist and connect instantly."
-        salespersons={activeSorted}
-        maxVisible={6}
-        showViewAllLink
-        onSelectPerson={handleSelectPerson}
-        viewAllHref="/team"
-      />
+      {/* CONTROLS */}
+      <section id="team" className="sticky top-16 lg:top-20 z-40 bg-white/85 backdrop-blur-xl border-y border-black/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            {/* Search */}
+            <div className="w-full lg:max-w-md">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+                  </svg>
+                </span>
 
-      {/* PERSON MODAL */}
+                <input
+                  type="text"
+                  placeholder="Search name, role…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-2xl border border-gray-200 bg-white px-10 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-gray-500">{resultsLabel}</p>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-3">
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="rounded-2xl border border-gray-200 px-4 py-3 text-sm bg-white"
+              >
+                <option value="all">All roles</option>
+                {roles.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+
+              <label className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={activeOnly}
+                  onChange={(e) => setActiveOnly(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                Active only
+              </label>
+
+              <select
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value as SortMode)}
+                className="rounded-2xl border border-gray-200 px-4 py-3 text-sm bg-white"
+              >
+                <option value="recommended">Sort: Recommended</option>
+                <option value="name-asc">Sort: Name A–Z</option>
+              </select>
+
+              <div className="flex rounded-2xl border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-4 py-3 text-sm font-semibold ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
+                >
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-4 py-3 text-sm font-semibold ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
+                >
+                  List
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* RESULTS */}
+      <section className="relative py-12 px-6 lg:px-12 bg-white">
+        <div className="max-w-7xl mx-auto">
+          {isLoading ? (
+            <p className="text-center text-gray-600 py-20">Loading team…</p>
+          ) : filteredTeam.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-600">No matching team members found.</p>
+              <Link href="/contact" className="mt-4 inline-block text-blue-600 font-medium">
+                Contact us instead →
+              </Link>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredTeam.map(person => {
+                const wa = toWaLink(person.whatsapp || person.phone || '')
+                const tel = toDigits(person.phone || '')
+
+                return (
+                  <div
+                    key={person.id}
+                    className="group rounded-3xl border border-gray-200 bg-white hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden"
+                  >
+                    <button onClick={() => handleCardClick(person)} className="text-left w-full">
+                      <div className="relative h-56 bg-gray-50">
+                        {person.imageUrl ? (
+                          <Image
+                            src={person.imageUrl}
+                            alt={person.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-gray-400 text-sm">
+                            No photo
+                          </div>
+                        )}
+                        {person.isActive === false && (
+                          <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-gray-900/70 text-white text-xs font-semibold">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600">
+                          {person.name}
+                        </h3>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mt-1">
+                          {person.role}
+                        </p>
+                        {person.bio && (
+                          <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+                            {person.bio}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+
+                    <div className="px-6 pb-6 flex items-center gap-3">
+                      <a
+                        href={tel ? `tel:${tel}` : '#'}
+                        className="flex-1 text-center rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 transition"
+                        onClick={(e) => { if (!tel) e.preventDefault() }}
+                      >
+                        Call
+                      </a>
+
+                      <a
+                        href={wa || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-center rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold py-3 transition"
+                        onClick={(e) => { if (!wa) e.preventDefault() }}
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredTeam.map(person => {
+                const wa = toWaLink(person.whatsapp || person.phone || '')
+                const tel = toDigits(person.phone || '')
+
+                return (
+                  <div
+                    key={person.id}
+                    className="rounded-3xl border border-gray-200 bg-white p-5 hover:shadow-lg transition"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <button onClick={() => handleCardClick(person)} className="flex items-center gap-4 text-left flex-1">
+                        <div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-gray-50 flex-shrink-0">
+                          {person.imageUrl ? (
+                            <Image src={person.imageUrl} alt={person.name} fill className="object-cover" unoptimized />
+                          ) : null}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-900 truncate">{person.name}</p>
+                          <p className="text-xs font-semibold text-blue-600 uppercase truncate">{person.role}</p>
+                          {person.bio && <p className="mt-1 text-sm text-gray-600 line-clamp-1">{person.bio}</p>}
+                        </div>
+                      </button>
+
+                      <div className="flex gap-3 sm:justify-end">
+                        <a
+                          href={tel ? `tel:${tel}` : '#'}
+                          className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
+                          onClick={(e) => { if (!tel) e.preventDefault() }}
+                        >
+                          Call
+                        </a>
+                        <a
+                          href={wa || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold transition"
+                          onClick={(e) => { if (!wa) e.preventDefault() }}
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* MODALS */}
       <SalespersonModal
-        isOpen={personOpen}
+        isOpen={modalOpen}
         salesperson={selectedPerson}
-        onClose={() => setPersonOpen(false)}
+        onClose={() => setModalOpen(false)}
       />
 
-      <style jsx>{`
-        .nav-link {
-          position: relative;
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          color: #1d1d1f;
-          transition: color 0.2s ease;
-        }
-        .nav-link:hover {
-          color: #0071e3;
-        }
-        .nav-link::after {
-          content: '';
-          position: absolute;
-          bottom: -4px;
-          left: 0;
-          width: 0;
-          height: 2px;
-          background: #0071e3;
-          transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-          width: 100%;
-        }
-      `}</style>
-    </header>
+      <FirestoreErrorDialog
+        error={indexError}
+        projectId={projectId}
+        isOpen={showErrorDialog}
+        onDismiss={() => setShowErrorDialog(false)}
+      />
+    </main>
   )
 }
