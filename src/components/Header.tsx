@@ -99,7 +99,7 @@ export default function Header() {
               <div className="text-sm lg:text-xl font-bold tracking-tight text-grey-900">
                 {settings?.businessName || 'MITC'}
               </div>
-              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-grey-400">
+              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-grey-300">
                 {settings?.tagline || 'Mateen IT Corp'}
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function Header() {
             >
               <IconPhone />
               <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider">
-                Call MITC
+                Team
               </span>
             </button>
           )}
