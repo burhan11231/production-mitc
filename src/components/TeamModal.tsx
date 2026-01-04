@@ -196,17 +196,7 @@ export default function TeamModal({
                               Call
                             </a>
 
-                            <a
-                              href={wa || '#'}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-center rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-bold py-2 transition"
-                              onClick={(e) => {
-                                if (!wa) e.preventDefault()
-                              }}
-                            >
-                              WhatsApp
-                            </a>
+                            
 
                             <button
                               onClick={() => onSelectPerson?.(p)}
