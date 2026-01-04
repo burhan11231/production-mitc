@@ -91,7 +91,7 @@ export default function Header() {
                 alt={settings.businessName || 'Logo'}
                 width={40}
                 height={40}
-                className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
+                className="mt-2 rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
                 unoptimized
               />
             )}
