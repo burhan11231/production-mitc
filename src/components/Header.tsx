@@ -70,7 +70,7 @@ export default function Header() {
   }, [menuOpen])
 
   return (
-<header className="sticky top-0 z-50 bg-[#a6d3bc]/85 backdrop-blur-xl border-b border-black/10 text-black\">
+<header className="sticky top-0 z-50 bg-[#a6d3bc]/85 backdrop-blur-xl border-b border-black/10 text-black">
       <nav className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between relative">
         {/* LEFT */}
         <div className="flex items-center gap-3 lg:gap-4">
