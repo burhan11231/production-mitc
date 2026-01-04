@@ -120,12 +120,12 @@ export default function Header() {
           {showCallButton && (
             <button
               onClick={() => setTeamOpen(true)}
-              className="
+              className={`
                 h-10 lg:h-11 px-3 lg:px-4 rounded-full
                 bg-blue-50 hover:bg-blue-100 text-blue-700
                 border border-blue-100
                 transition flex items-center gap-2
-              "
+              `}
             >
               <IconPhone />
               <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider">
@@ -252,7 +252,7 @@ export default function Header() {
         </Dialog>
       </Transition>
 
-      {/* TEAM MODAL (reusable) */}
+      {/* TEAM MODAL */}
       <TeamModal
         isOpen={teamOpen}
         onClose={() => setTeamOpen(false)}
@@ -265,7 +265,7 @@ export default function Header() {
         viewAllHref="/team"
       />
 
-      {/* Person modal */}
+      {/* PERSON MODAL */}
       <SalespersonModal
         isOpen={personOpen}
         salesperson={selectedPerson}
