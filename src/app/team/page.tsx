@@ -1,85 +1,84 @@
-'use client';
+'use client'
 
-import { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useSalespersons } from '@/hooks/useSalespersons';
-import FirestoreErrorDialog from '@/components/FirestoreErrorDialog';
-import SalespersonModal from '@/components/SalespersonModal';
-import { Salesperson } from '@/lib/firestore-models';
+import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useSalespersons } from '@/hooks/useSalespersons'
+import FirestoreErrorDialog from '@/components/FirestoreErrorDialog'
+import SalespersonModal from '@/components/SalespersonModal'
+import { Salesperson } from '@/lib/firestore-models'
 
-type ViewMode = 'grid' | 'list';
-type SortMode = 'recommended' | 'name-asc';
+type ViewMode = 'grid' | 'list'
+type SortMode = 'recommended' | 'name-asc'
 
 function toWaLink(phone: string) {
-  if (!phone) return '';
-  if (phone.includes('wa.me')) return phone;
-  return `https://wa.me/${phone.replace(/D/g, '')}`;
+  const digits = (phone || '').replace(/D/g, '')
+  if (!digits) return ''
+  return `https://wa.me/${digits}`
 }
 
 export default function TeamPage() {
-  const { salespersons, isLoading, indexError } = useSalespersons();
+  const { salespersons, isLoading, indexError } = useSalespersons()
 
-  const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
 
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [activeOnly, setActiveOnly] = useState(true);
-  const [sortMode, setSortMode] = useState<SortMode>('recommended');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [search, setSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [activeOnly, setActiveOnly] = useState(true)
+  const [sortMode, setSortMode] = useState<SortMode>('recommended')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
 
   useEffect(() => {
-    if (indexError) setShowErrorDialog(true);
-  }, [indexError]);
+    if (indexError) setShowErrorDialog(true)
+  }, [indexError])
 
   const roles = useMemo(() => {
-    const set = new Set<string>();
-    salespersons.forEach(p => p.role && set.add(p.role));
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [salespersons]);
+    const set = new Set<string>()
+    salespersons.forEach(p => p.role && set.add(p.role))
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [salespersons])
 
   const filteredTeam = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim().toLowerCase()
 
     const list = salespersons.filter(p => {
       const matchesSearch =
         !q ||
-        p.name?.toLowerCase().includes(q) ||
-        (p.role || '').toLowerCase().includes(q);
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.role || '').toLowerCase().includes(q)
 
-      const matchesRole = roleFilter === 'all' || p.role === roleFilter;
-      const matchesActive = !activeOnly || !!p.isActive;
+      const matchesRole = roleFilter === 'all' || p.role === roleFilter
+      const matchesActive = !activeOnly || !!p.isActive
 
-      return matchesSearch && matchesRole && matchesActive;
-    });
+      return matchesSearch && matchesRole && matchesActive
+    })
 
     if (sortMode === 'name-asc') {
-      return list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      return list.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
     }
 
-    // recommended: order asc, then name
     return list.sort((a, b) => {
-      const ao = Number.isFinite(a.order) ? a.order : 9999;
-      const bo = Number.isFinite(b.order) ? b.order : 9999;
-      if (ao !== bo) return ao - bo;
-      return (a.name || '').localeCompare(b.name || '');
-    });
-  }, [salespersons, search, roleFilter, activeOnly, sortMode]);
+      const ao = Number.isFinite(a.order) ? (a.order as number) : 9999
+      const bo = Number.isFinite(b.order) ? (b.order as number) : 9999
+      if (ao !== bo) return ao - bo
+      return (a.name || '').localeCompare(b.name || '')
+    })
+  }, [salespersons, search, roleFilter, activeOnly, sortMode])
 
   const handleCardClick = (person: Salesperson) => {
-    setSelectedPerson(person);
-    setModalOpen(true);
-  };
+    setSelectedPerson(person)
+    setModalOpen(true)
+  }
 
-  const resultsLabel = isLoading ? 'Loading…' : `${filteredTeam.length} team member(s)`;
+  const resultsLabel = isLoading ? 'Loading…' : `${filteredTeam.length} team member(s)`
 
   return (
     <main className="overflow-x-hidden bg-white">
-      {/* ================= HERO ================= */}
+      {/* HERO */}
       <section className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" />
         <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.10),transparent_55%)]" />
@@ -117,7 +116,7 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* ================= CONTROLS (Sticky) ================= */}
+      {/* CONTROLS */}
       <section id="team" className="sticky top-16 lg:top-20 z-40 bg-white/85 backdrop-blur-xl border-y border-black/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -129,6 +128,7 @@ export default function TeamPage() {
                     <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
                   </svg>
                 </span>
+
                 <input
                   type="text"
                   placeholder="Search name, role…"
@@ -136,6 +136,7 @@ export default function TeamPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full rounded-2xl border border-gray-200 bg-white px-10 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 />
+
                 {search && (
                   <button
                     onClick={() => setSearch('')}
@@ -206,7 +207,7 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* ================= RESULTS ================= */}
+      {/* RESULTS */}
       <section className="relative py-12 px-6 lg:px-12 bg-white">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
@@ -221,7 +222,8 @@ export default function TeamPage() {
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTeam.map(person => {
-                const wa = toWaLink(person.whatsapp || person.phone || '');
+                const wa = toWaLink(person.whatsapp || person.phone || '')
+                const tel = (person.phone || '').replace(/D/g, '')
                 return (
                   <div
                     key={person.id}
@@ -264,31 +266,33 @@ export default function TeamPage() {
                       </div>
                     </button>
 
-                    {/* Quick actions */}
                     <div className="px-6 pb-6 flex items-center gap-3">
                       <a
-                        href={`tel:${person.phone}`}
+                        href={tel ? `tel:${tel}` : '#'}
                         className="flex-1 text-center rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 transition"
+                        onClick={(e) => { if (!tel) e.preventDefault() }}
                       >
                         Call
                       </a>
                       <a
-                        href={wa}
+                        href={wa || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 text-center rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold py-3 transition"
+                        onClick={(e) => { if (!wa) e.preventDefault() }}
                       >
                         WhatsApp
                       </a>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           ) : (
             <div className="space-y-4">
               {filteredTeam.map(person => {
-                const wa = toWaLink(person.whatsapp || person.phone || '');
+                const wa = toWaLink(person.whatsapp || person.phone || '')
+                const tel = (person.phone || '').replace(/D/g, '')
                 return (
                   <div
                     key={person.id}
@@ -310,30 +314,32 @@ export default function TeamPage() {
 
                       <div className="flex gap-3 sm:justify-end">
                         <a
-                          href={`tel:${person.phone}`}
+                          href={tel ? `tel:${tel}` : '#'}
                           className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
+                          onClick={(e) => { if (!tel) e.preventDefault() }}
                         >
                           Call
                         </a>
                         <a
-                          href={wa}
+                          href={wa || '#'}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold transition"
+                          onClick={(e) => { if (!wa) e.preventDefault() }}
                         >
                           WhatsApp
                         </a>
                       </div>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
         </div>
       </section>
 
-      {/* ================= MODALS ================= */}
+      {/* MODALS */}
       <SalespersonModal
         isOpen={modalOpen}
         salesperson={selectedPerson}
@@ -347,5 +353,5 @@ export default function TeamPage() {
         onDismiss={() => setShowErrorDialog(false)}
       />
     </main>
-  );
+  )
 }
