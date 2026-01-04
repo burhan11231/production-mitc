@@ -100,7 +100,7 @@ export default function Header() {
                 {settings?.businessName || 'MITC'}
               </div>
               <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-grey-300">
-                {settings?.tagline || 'Mateen IT Corp'}
+                {settings?.tagline || 'Powering Work, Study, and Business'}
               </div>
             </div>
           </Link>
