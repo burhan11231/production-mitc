@@ -1,186 +1,134 @@
-'use client';
+'use client'
 
-import { Fragment } from 'react';
-import Image from 'next/image';
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  Transition,
-} from '@headlessui/react';
-import { Salesperson } from '@/lib/firestore-models';
+import { Fragment } from 'react'
+import Image from 'next/image'
+import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/react'
+import { Salesperson } from '@/lib/firestore-models'
 
-interface Props {
-  isOpen: boolean;
-  salesperson: Salesperson | null;
-  onClose: () => void;
+type Props = {
+  isOpen: boolean
+  salesperson: Salesperson | null
+  onClose: () => void
 }
 
-export default function SalespersonModal({
-  isOpen,
-  salesperson,
-  onClose,
-}: Props) {
-  if (!salesperson) return null;
+function toDigits(phone: string) {
+  return (phone || '').replace(/D/g, '')
+}
 
-  const whatsappPhone = salesperson.whatsapp || salesperson.phone;
-  const whatsappLink = whatsappPhone.includes('wa.me')
-    ? whatsappPhone
-    : `https://wa.me/${whatsappPhone.replace(/\D/g, '')}`;
+function toWaLink(phone: string) {
+  const digits = toDigits(phone)
+  if (!digits) return ''
+  return `https://wa.me/${digits}`
+}
+
+export default function SalespersonModal({ isOpen, salesperson, onClose }: Props) {
+  if (!salesperson) return null
+
+  const tel = toDigits(salesperson.phone || '')
+  const wa = toWaLink(salesperson.whatsapp || salesperson.phone || '')
 
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <Dialog onClose={onClose} className="relative z-[80]">
         <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-            <DialogPanel className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl">
+            <DialogPanel className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden">
               {/* Close */}
               <button
                 onClick={onClose}
-                className="absolute right-5 top-5 z-10 rounded-full bg-white/90 p-2 text-gray-600 hover:bg-gray-100"
+                className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 text-gray-600 hover:bg-gray-100 transition"
+                aria-label="Close"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
               </button>
 
-              {/* ================= TOP SECTION ================= */}
-              <div
-                className="
-                  grid
-                  grid-cols-[30%_70%]
-                  gap-4
-                  px-5 pt-7
-                  sm:px-6
-                  lg:gap-6
-                  lg:px-10
-                  lg:pt-10
-                "
-              >
-                {/* LEFT – PROFILE */}
-                <div className="flex flex-col items-center text-center">
-                  {salesperson.imageUrl && (
-                    <div className="mb-3 h-20 w-20 sm:h-24 sm:w-24 lg:h-32 lg:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-lg">
-                      <Image
-                        src={salesperson.imageUrl}
-                        alt={salesperson.name}
-                        width={128}
-                        height={128}
-                        className="h-full w-full object-cover"
-                        unoptimized
-                      />
+              {/* Top */}
+              <div className="grid grid-cols-1 sm:grid-cols-[260px_1fr] gap-6 p-6 sm:p-8">
+                {/* Left */}
+                <div className="rounded-3xl border border-gray-200 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-white ring-1 ring-black/5">
+                      {salesperson.imageUrl ? (
+                        <Image
+                          src={salesperson.imageUrl}
+                          alt={salesperson.name || 'Team member'}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : null}
                     </div>
-                  )}
+                    <div className="min-w-0">
+                      <p className="text-lg font-bold text-gray-900 truncate">{salesperson.name}</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 truncate">
+                        {salesperson.role || 'Team'}
+                      </p>
+                    </div>
+                  </div>
 
-                  <h2 className="text-sm sm:text-base lg:text-2xl font-bold text-gray-900 leading-tight">
-                    {salesperson.name}
-                  </h2>
-
-                  {salesperson.role && (
-                    <p className="mt-1 text-[10px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wide text-blue-600">
-                      {salesperson.role}
+                  {salesperson.bio && (
+                    <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+                      {salesperson.bio}
                     </p>
                   )}
                 </div>
 
-                {/* RIGHT – CONTACT ACTIONS */}
+                {/* Right */}
                 <div className="space-y-3">
-                  {/* Phone */}
-                  <a
-                    href={`tel:${salesperson.phone}`}
-                    className="flex items-center gap-3 rounded-xl bg-blue-50 p-3 sm:p-4 hover:bg-blue-100 transition"
-                  >
-                    <svg
-                      className="h-5 w-5 text-blue-600 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                      />
-                    </svg>
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium">Phone</p>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {salesperson.phone}
-                      </p>
-                    </div>
-                  </a>
+                  <div className="rounded-3xl border border-gray-200 p-5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Contact</p>
 
-                  {/* WhatsApp */}
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl bg-green-50 p-3 sm:p-4 hover:bg-green-100 transition"
-                  >
-                    <svg
-                      className="h-5 w-5 text-green-600 flex-shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12.04 0C5.397 0 .01 5.387.01 12.03c0 2.122.555 4.195 1.607 6.02L0 24l6.116-1.604a12.02 12.02 0 005.924 1.513h.005c6.642 0 12.03-5.387 12.03-12.03C24.075 5.387 18.682 0 12.04 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium">
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <a
+                        href={tel ? `tel:${tel}` : '#'}
+                        className="rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 text-center transition"
+                        onClick={(e) => {
+                          if (!tel) e.preventDefault()
+                        }}
+                      >
+                        Call
+                      </a>
+
+                      <a
+                        href={wa || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-2xl bg-green-50 hover:bg-green-100 text-green-700 font-bold text-sm py-3 text-center transition"
+                        onClick={(e) => {
+                          if (!wa) e.preventDefault()
+                        }}
+                      >
                         WhatsApp
-                      </p>
-                      <p className="text-sm font-semibold text-gray-900">
-                        Chat Now
-                      </p>
+                      </a>
                     </div>
-                  </a>
-                </div>
-              </div>
 
-              {/* ================= BIO ================= */}
-              {salesperson.bio && (
-                <div className="mt-6 border-t border-gray-100 bg-gray-50 px-5 py-6 sm:px-6 lg:px-10">
-                  <p className="text-sm sm:text-base leading-relaxed text-gray-700">
-                    {salesperson.bio}
-                  </p>
-                </div>
-              )}
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="rounded-2xl bg-gray-50 p-4">
+                        <p className="text-xs text-gray-500 font-semibold">Phone</p>
+                        <p className="mt-1 font-bold text-gray-900 break-all">
+                          {salesperson.phone || '—'}
+                        </p>
+                      </div>
 
-              {/* ================= FOOTER / EMAIL ================= */}
-              <div className="border-t border-gray-100 px-5 py-4 sm:px-6 lg:px-10">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <svg
-                    className="h-4 w-4 text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
+                      <div className="rounded-2xl bg-gray-50 p-4">
+                        <p className="text-xs text-gray-500 font-semibold">WhatsApp</p>
+                        <p className="mt-1 font-bold text-gray-900 break-all">
+                          {salesperson.whatsapp || salesperson.phone || '—'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                  <a
-                    href={`mailto:${salesperson.email}`}
-                    className="font-medium text-gray-800 hover:underline"
-                  >
-                    {salesperson.email}
-                  </a>
+                  {salesperson.isActive === false && (
+                    <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5">
+                      <p className="font-bold text-amber-900">This team member is currently inactive.</p>
+                      <p className="text-sm text-amber-900/80 mt-1">Please choose another specialist from the team list.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </DialogPanel>
@@ -188,5 +136,5 @@ export default function SalespersonModal({
         </div>
       </Dialog>
     </Transition>
-  );
+  )
 }
