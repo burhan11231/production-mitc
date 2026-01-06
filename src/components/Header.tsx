@@ -64,10 +64,7 @@ export default function Header() {
     setTeamOpen(false)
   }
 
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [menuOpen])
+  
 
   return (
 <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-black/10">
@@ -120,17 +117,17 @@ export default function Header() {
         <div className="flex items-center gap-2 lg:gap-4">
   {showCallButton && (
     <button
-      onClick={() => setTeamOpen(true)}
-      className="
-        h-10 lg:h-11 px-4 lg:px-5 rounded-full
-        bg-blue-50 hover:bg-blue-100 text-blue-700
-        border border-blue-100
-        transition
-        text-xs font-bold uppercase tracking-wider
-      "
-    >
-     Connect
-    </button>
+  onClick={() => setTeamOpen(true)}
+  className={`
+    h-10 lg:h-11 px-4 lg:px-5 rounded-full
+    bg-blue-50 hover:bg-blue-100 text-blue-700
+    border border-blue-100
+    transition
+    text-xs font-bold uppercase tracking-wider
+  `}
+>
+  Connect
+</button>
           )}
 
           <Menu as="div" className="relative">
