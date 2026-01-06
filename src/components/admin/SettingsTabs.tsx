@@ -135,7 +135,7 @@ export default function SettingsTabs() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Logo URL (compressed, max 700KB)
+                  Logo (compressed, max 700KB)
                 </label>
                 <div className="flex gap-4">
                   <input
@@ -154,7 +154,7 @@ export default function SettingsTabs() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Featured Image URL
+                  Featured Image
                 </label>
                 <div className="flex gap-4">
                   <input
@@ -300,15 +300,35 @@ export default function SettingsTabs() {
                 />
               </div>
 
+              {/* FULL GOOGLE MAP IFRAME EMBED */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Map Embed URL</label>
-                <input
-                  type="url"
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Google Maps Embed (full iframe)
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  In Google Maps, click Share &gt; Embed a map &gt; Copy HTML and paste the full iframe code here.
+                </p>
+                <textarea
                   value={formData.mapEmbedUrl || ''}
                   onChange={(e) => setFormData({ ...formData, mapEmbedUrl: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="https://maps.app.goo.gl/..."
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none font-mono text-xs"
+                  placeholder={`<iframe src="https://www.google.com/maps/embed?pb=..." style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`}
                 />
+
+                {/* Preview */}
+                {formData.mapEmbedUrl && (
+                  <div className="mt-4 rounded-2xl border overflow-hidden bg-gray-50 p-3">
+                    <p className="text-xs text-gray-500 mb-2">Live map preview</p>
+                    <div className="relative w-full h-56">
+                      <div
+                        className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
+                        // eslint-disable-next-line react/no-danger
+                        dangerouslySetInnerHTML={{ __html: formData.mapEmbedUrl }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
