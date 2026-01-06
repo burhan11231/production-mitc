@@ -53,6 +53,7 @@ export interface Salesperson {
   imageUrl: string;
   email: string;
   phone: string;
+  specializations?: string[]
   whatsapp?: string;
   bio: string;
   isActive: boolean;
