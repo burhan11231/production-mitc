@@ -10,6 +10,21 @@ import FirestoreErrorDialog from '@/components/FirestoreErrorDialog'
 
 interface FormData extends Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'> {}
 
+const AVAILABLE_SPECIALIZATIONS = [
+  'Technical Sales',
+  'Enterprise Solutions',
+  'Customer Success',
+  'Product Expert',
+  'Integration Specialist',
+  'Account Management',
+  'Onboarding',
+  'Training & Support',
+  'Billing & Licensing',
+  'API & Development',
+  'Security & Compliance',
+  'Data Analytics'
+]
+
 export default function SalespersonManager() {
   const {
     salespersons,
@@ -37,6 +52,7 @@ export default function SalespersonManager() {
     phone: '',
     whatsapp: '',
     bio: '',
+    specializations: [], // Initialize empty array
     isActive: true,
     order: salespersons.length,
   })
@@ -67,6 +83,22 @@ export default function SalespersonManager() {
     }
   }
 
+  /* ---------------- Specialization Handlers ---------------- */
+
+  const toggleSpecialization = (specialization: string) => {
+    setFormData(prev => {
+      const current = prev.specializations || []
+      const isSelected = current.includes(specialization)
+      
+      return {
+        ...prev,
+        specializations: isSelected
+          ? current.filter(s => s !== specialization)
+          : [...current, specialization]
+      }
+    })
+  }
+
   /* ---------------- Helpers ---------------- */
 
   const resetForm = () => {
@@ -78,6 +110,7 @@ export default function SalespersonManager() {
       phone: '',
       whatsapp: '',
       bio: '',
+      specializations: [],
       isActive: true,
       order: salespersons.length,
     })
@@ -110,7 +143,10 @@ export default function SalespersonManager() {
   }
 
   const handleEdit = (person: Salesperson) => {
-    setFormData(person as FormData)
+    setFormData({
+      ...person,
+      specializations: person.specializations || []
+    } as FormData)
     setEditingId(person.id || null)
     setShowForm(true)
   }
@@ -232,6 +268,41 @@ export default function SalespersonManager() {
                 </div>
               </div>
 
+              {/* Specializations - NEW SECTION */}
+              <div>
+                <label className="block text-sm font-medium mb-3">
+                  Areas of Expertise
+                  <span className="text-xs text-gray-400 ml-2">(Select all that apply)</span>
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {AVAILABLE_SPECIALIZATIONS.map(spec => {
+                    const isSelected = (formData.specializations || []).includes(spec)
+                    return (
+                      <button
+                        key={spec}
+                        type="button"
+                        onClick={() => toggleSpecialization(spec)}
+                        className={`
+                          px-3 py-2 text-sm rounded-lg border-2 transition-all
+                          ${isSelected
+                            ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
+                            : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                          }
+                        `}
+                      >
+                        {isSelected && <span className="mr-1">✓</span>}
+                        {spec}
+                      </button>
+                    )
+                  })}
+                </div>
+                {formData.specializations && formData.specializations.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {formData.specializations.length} selected
+                  </p>
+                )}
+              </div>
+
               {/* Bio */}
               <div>
                 <label className="block text-sm font-medium mb-2">Bio</label>
@@ -298,15 +369,30 @@ export default function SalespersonManager() {
           {salespersons.map(person => (
             <div key={person.id} className="bg-white border rounded-lg p-6 flex gap-4">
               {person.imageUrl && (
-                <div className="relative w-16 h-16 rounded overflow-hidden">
+                <div className="relative w-16 h-16 rounded overflow-hidden flex-shrink-0">
                   <Image src={person.imageUrl} alt={person.name} fill className="object-cover" unoptimized />
                 </div>
               )}
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="font-bold">{person.name}</p>
                 <p className="text-sm text-blue-600">{person.role}</p>
                 <p className="text-sm text-gray-600">{person.email}</p>
+                
+                {/* Display Specializations */}
+                {person.specializations && person.specializations.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {person.specializations.map(spec => (
+                      <span
+                        key={spec}
+                        className="inline-block px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-md border border-blue-200"
+                      >
+                        {spec}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {!person.isActive && (
                   <span className="inline-block mt-2 px-2 py-1 text-xs bg-gray-100 rounded">
                     Inactive
@@ -314,7 +400,7 @@ export default function SalespersonManager() {
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={() => handleEdit(person)}
                   className="px-3 py-2 bg-blue-50 text-blue-600 rounded"
