@@ -130,9 +130,7 @@ export default function TeamModal({
                     )}
                   </div>
 
-                  <p className="mt-2 text-xs text-gray-500">
-                    Showing {filtered.length} of {totalActive} active team member(s)
-                  </p>
+                  
                 </div>
               </div>
 
