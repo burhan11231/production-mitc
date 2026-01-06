@@ -54,6 +54,8 @@ export interface Salesperson {
   email: string;
   phone: string;
   specializations?: string[]
+  likesCount?: number;
+  dislikesCount?: number;
   whatsapp?: string;
   bio: string;
   isActive: boolean;
