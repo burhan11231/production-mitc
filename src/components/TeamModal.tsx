@@ -20,7 +20,7 @@ type Props = {
 }
 
 function toDigits(phone: string) {
-  return (phone || '').replace(/D/g, '')
+  return (phone || '').replace(/\D/g, '')
 }
 
 function toWaLink(phone: string) {
@@ -30,17 +30,17 @@ function toWaLink(phone: string) {
 }
 
 function initials(name?: string) {
-  const parts = (name || '').trim().split(/s+/).filter(Boolean)
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean)
   return parts.slice(0, 2).map(p => p[0]?.toUpperCase()).join('')
 }
 
 export default function TeamModal({
   isOpen,
   onClose,
-  title = 'Talk to our team',
-  subtitle = 'Choose a specialist to assist you.',
+  title = 'Connect with Our Team',
+  subtitle = 'Choose a specialist and connect instantly via call or WhatsApp.',
   salespersons,
-  maxVisible = 6,
+  maxVisible = 4,
   showViewAllLink = true,
   onSelectPerson,
   viewAllHref = '/team',
@@ -185,29 +185,44 @@ export default function TeamModal({
                           </div>
 
                           <div className="mt-4 grid grid-cols-3 gap-2">
-                            <a
-                              href={tel ? `tel:${tel}` : '#'}
-                              className="text-center rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 transition disabled:opacity-50"
-                              aria-disabled={!tel}
-                              onClick={(e) => {
-                                if (!tel) e.preventDefault()
-                              }}
-                            >
-                              Call
-                            </a>
+  {/* Call */}
+  <a
+    href={tel ? `tel:${tel}` : '#'}
+    className="text-center rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 transition disabled:opacity-50"
+    aria-disabled={!tel}
+    onClick={(e) => {
+      if (!tel) e.preventDefault()
+    }}
+  >
+    Call
+  </a>
 
-                            
+  {/* WhatsApp */}
+  <a
+    href={wa || '#'}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-center rounded-2xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 transition disabled:opacity-50"
+    aria-disabled={!wa}
+    onClick={(e) => {
+      if (!wa) e.preventDefault()
+    }}
+  >
+    WhatsApp
+  </a>
 
-                            <button
-                              onClick={() => onSelectPerson?.(p)}
-                              className="rounded-2xl border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition flex items-center justify-center"
-                              title="View details"
-                            >
-                              <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
-                              </svg>
-                            </button>
-                          </div>
+  {/* Info */}
+  <button
+    onClick={() => onSelectPerson?.(p)}
+    className="rounded-2xl border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition flex items-center justify-center"
+    title="View details"
+  >
+    <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+    </svg>
+  </button>
+</div>
+
                         </div>
                       )
                     })}
