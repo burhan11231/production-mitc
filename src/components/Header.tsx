@@ -118,21 +118,19 @@ export default function Header() {
 
         {/* RIGHT */}
         <div className="flex items-center gap-2 lg:gap-4">
-          {showCallButton && (
-            <button
-              onClick={() => setTeamOpen(true)}
-              className={`
-                h-10 lg:h-11 px-3 lg:px-4 rounded-full
-                bg-blue-50 hover:bg-blue-100 text-blue-700
-                border border-blue-100
-                transition flex items-center gap-2
-              `}
-            >
-              <IconPhone />
-              <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider">
-                Team
-              </span>
-            </button>
+  {showCallButton && (
+    <button
+      onClick={() => setTeamOpen(true)}
+      className="
+        h-10 lg:h-11 px-4 lg:px-5 rounded-full
+        bg-blue-50 hover:bg-blue-100 text-blue-700
+        border border-blue-100
+        transition
+        text-xs font-bold uppercase tracking-wider
+      "
+    >
+     Connect
+    </button>
           )}
 
           <Menu as="div" className="relative">
@@ -222,7 +220,12 @@ export default function Header() {
 
       {/* MOBILE NAV DRAWER */}
       <Transition show={menuOpen} as={Fragment}>
-        <Dialog open={menuOpen} onClose={setMenuOpen} className="relative z-[60] lg:hidden">
+        <Dialog
+  open={menuOpen}
+  onClose={setMenuOpen}
+  className="relative z-[60] lg:hidden"
+  static={false}
+>
           <DialogBackdrop transition className="fixed inset-0 bg-black/40 backdrop-blur-sm duration-200 data-[closed]:opacity-0" />
           <div className="fixed inset-0 overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
@@ -257,10 +260,10 @@ export default function Header() {
       <TeamModal
         isOpen={teamOpen}
         onClose={() => setTeamOpen(false)}
-        title="Call MITC"
-        subtitle="Pick a specialist and connect instantly."
+        title="Connect with Our Team"
+        subtitle="Choose a specialist and connect instantly via call or WhatsApp."
         salespersons={activeSorted}
-        maxVisible={6}
+        maxVisible={3}
         showViewAllLink
         onSelectPerson={handleSelectPerson}
         viewAllHref="/team"
