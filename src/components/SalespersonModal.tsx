@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/react'
 import { Salesperson } from '@/lib/firestore-models'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/lib/auth-context'
 import { db } from '@/lib/firebase'
 import { 
   doc, 
