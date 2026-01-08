@@ -1,69 +1,81 @@
 // src/lib/firestore-models.ts
-// Firestore data models and types
+// Updated data models with like/dislike counts
 
 export interface SiteSettings {
   // Business Branding
-  businessName: string;
-  tagline: string;
-  logoUrl: string;
-  featuredImageUrl: string;
-  primaryPhone: string;
-  primaryWhatsApp: string;
-  primaryEmail: string;
-  addressText: string;
-  mapEmbedUrl: string;
+  businessName: string
+  tagline: string
+  logoUrl: string
+  featuredImageUrl: string
+  primaryPhone: string
+  primaryWhatsApp: string
+  primaryEmail: string
+  addressText: string
+  mapEmbedUrl: string
 
   // SEO & Meta
-  siteTitle: string;
-  metaDescription: string;
-  ogTitle: string;
-  ogDescription: string;
-  ogImageUrl: string;
-  twitterCardType: string;
-  canonicalUrl: string;
+  siteTitle: string
+  metaDescription: string
+  ogTitle: string
+  ogDescription: string
+  ogImageUrl: string
+  twitterCardType: string
+  canonicalUrl: string
 
   // Social Links
-  instagram: string;
-  facebook: string;
-  twitter: string;
-  linkedin: string;
-  youtube: string;
+  instagram: string
+  facebook: string
+  twitter: string
+  linkedin: string
+  youtube: string
 
   // Working Hours
   workingHours: {
-    summer: Record<string, { open: string; close: string; closed?: boolean }>;
-    winter: Record<string, { open: string; close: string; closed?: boolean }>;
-  };
+    summer: Record<string, { open: string; close: string; closed?: boolean }>
+    winter: Record<string, { open: string; close: string; closed?: boolean }>
+  }
 
   // Founder Details
-  founderName: string;
-  founderImageUrl: string;
-  founderEmail: string;
-  founderBio: string;
+  founderName: string
+  founderImageUrl: string
+  founderEmail: string
+  founderBio: string
 
   // Metadata
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: any
+  updatedAt?: any
 }
 
 export interface Salesperson {
-  id?: string;
-  name: string;
-  role: 'Sales' | 'Support' | 'Manager';
-  imageUrl: string;
-  email: string;
-  phone: string;
+  id?: string
+  name: string
+  role: 'Sales' | 'Support' | 'Manager'
+  imageUrl: string
+  email: string
+  phone: string
   specializations?: string[]
-  likesCount?: number;
-  dislikesCount?: number;
-  whatsapp?: string;
-  bio: string;
-  isActive: boolean;
-  order: number;
+  likesCount?: number
+  dislikesCount?: number
+  whatsapp?: string
+  bio: string
+  isActive: boolean
+  order: number
 
   // Metadata
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: any
+  updatedAt?: any
+}
+
+/**
+ * Salesperson Reaction - Stores user likes/dislikes
+ * Document ID: ${userId}_${salespersonId}
+ */
+export interface SalespersonReaction {
+  userId: string
+  salespersonId: string
+  type: 'like' | 'dislike'
+  createdAt?: any
+  updatedAt?: any
 }
 
 // Default site settings
@@ -126,7 +138,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // Metadata
   createdAt: new Date(),
   updatedAt: new Date(),
-};
+}
 
 // Default salespersons
 export const DEFAULT_SALESPERSONS: Salesperson[] = [
@@ -140,5 +152,8 @@ export const DEFAULT_SALESPERSONS: Salesperson[] = [
     bio: 'Senior Sales Executive',
     isActive: true,
     order: 1,
+    specializations: [],
+    likesCount: 0,
+    dislikesCount: 0,
   },
-];
+]
