@@ -1,7 +1,14 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const StarIcon = ({ filled }: { filled: boolean }) => (
@@ -15,25 +22,41 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
 );
 
 export default function TopFooter() {
-  const [ratingStats, setRatingStats] = useState({ avg: 5, count: 0 });
+  const [ratingStats, setRatingStats] = useState({ avg: 0, count: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'reviews'));
-        const reviews = querySnapshot.docs.map((doc) => doc.data());
-        if (reviews.length > 0) {
-          const sum = reviews.reduce((acc, curr: any) => acc + (curr.rating || 0), 0);
-          const avg = Math.round((sum / reviews.length) * 10) / 10;
-          setRatingStats({ avg, count: reviews.length });
+        const q = query(
+          collection(db, 'reviews'),
+          where('published', '==', true),
+          orderBy('createdAt', 'desc')
+        );
+
+        const snap = await getDocs(q);
+
+        const reviews = snap.docs.map((d) => d.data());
+        const count = reviews.length;
+
+        if (count > 0) {
+          const sum = reviews.reduce(
+            (acc, r: any) => acc + (Number(r.rating) || 0),
+            0
+          );
+          const avg = Math.round((sum / count) * 10) / 10;
+
+          setRatingStats({ avg, count });
+        } else {
+          setRatingStats({ avg: 0, count: 0 });
         }
-      } catch (error) {
-        console.error('Error fetching ratings:', error);
+      } catch (err) {
+        console.error('Error fetching ratings:', err);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchRatings();
   }, []);
 
@@ -41,8 +64,8 @@ export default function TopFooter() {
     <section className="w-full bg-white border-b border-gray-100">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          
-          {/* Location Section */}
+
+          {/* Location */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
@@ -62,7 +85,7 @@ export default function TopFooter() {
             </a>
           </div>
 
-          {/* Compact Ratings Section */}
+          {/* Ratings */}
           <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100 min-w-[240px]">
             {isLoading ? (
               <div className="animate-pulse space-y-2">
@@ -71,28 +94,31 @@ export default function TopFooter() {
               </div>
             ) : (
               <div className="space-y-1">
-                {/* Stars and Number */}
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <StarIcon key={star} filled={star <= Math.round(ratingStats.avg)} />
+                      <StarIcon
+                        key={star}
+                        filled={star <= Math.round(ratingStats.avg)}
+                      />
                     ))}
                   </div>
                   <span className="text-sm font-bold text-gray-900">
-                    {ratingStats.avg} <span className="text-gray-400 font-medium">({ratingStats.count})</span>
+                    {ratingStats.avg}
+                    <span className="text-gray-400 font-medium">
+                      {' '}({ratingStats.count})
+                    </span>
                   </span>
                 </div>
-                
-                {/* Verified Text */}
+
                 <p className="text-xs text-gray-500">
                   Based on {ratingStats.count} verified reviews
                 </p>
 
-                {/* Link */}
                 <div className="pt-1">
                   <Link
                     href="/ratings"
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700"
                   >
                     Read customer reviews →
                   </Link>
