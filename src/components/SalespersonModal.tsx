@@ -250,7 +250,7 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Professional Bio</h3>
                   <div className="p-5 rounded-xl bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200">
                     <p className="text-gray-700 leading-relaxed italic text-base">
-                      \"{salesperson.bio}\"
+                      {salesperson.bio}
                     </p>
                   </div>
                 </section>
@@ -274,7 +274,7 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                   <p className="text-sm text-red-700 font-medium">
                     {authError.msg}.{' '}
                     <Link href="/login" className="underline font-bold hover:text-red-800">
-                      Please Login
+                      Login Now
                     </Link>
                   </p>
                 </div>
