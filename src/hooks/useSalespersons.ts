@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   collection,
   query,
-  where,
+  // where,          // ❌ remove isActive filter
   orderBy,
   onSnapshot,
   addDoc,
@@ -48,14 +48,14 @@ export function useSalespersons(): UseSalespersonsReturn {
   useEffect(() => {
     if (unsubscribeRef.current) return;
 
-    // ✅ Only show loading on the first ever subscription.
+    // Only show loading on the first ever subscription
     if (!hasLoadedOnceRef.current) setIsLoading(true);
     setError(null);
-    // ❌ do NOT clear indexError here (prevents dialog/banner flicker)
 
+    // ✅ Fetch ALL salespersons (active + inactive), sorted by order then createdAt
     const q = query(
       collection(db, 'salespersons'),
-      where('isActive', '==', true),
+      // where('isActive', '==', true),     // ❌ removed to include inactive
       orderBy('order', 'asc'),
       orderBy('createdAt', 'desc')
     );
@@ -76,21 +76,18 @@ export function useSalespersons(): UseSalespersonsReturn {
         clearTimeout(globalErrorTimeout);
       },
       (err: any) => {
-        // ✅ Stop showing loading forever once an error happens.
         hasLoadedOnceRef.current = true;
         setIsLoading(false);
 
         setError(err);
 
         const info = parseIndexError(err, projectId);
-        const isPermissionDenied = err?.code === 'permission-denied' || err?.code === 'PERMISSION_DENIED';
+        const isPermissionDenied =
+          err?.code === 'permission-denied' || err?.code === 'PERMISSION_DENIED';
 
         if (info.isIndexError || info.isPermissionError || isPermissionDenied) {
           setIndexError(err);
         }
-
-        // ✅ Keep existing salespersons data to avoid UI jumping.
-        // (do NOT setSalespersons([]) here)
 
         if (!globalErrorShown) {
           if (info.isPermissionError || isPermissionDenied) {
