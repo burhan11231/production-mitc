@@ -83,7 +83,7 @@ export default function TeamModal({
               </div>
 
               {/* Body */}
-              <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <div className="p-6 max-h-[70vh] overflow-y-auto bg-sky-50/60">
 
                 {/* Subtitle moved here */}
                 <p className="mb-5 text-sm text-gray-600">
