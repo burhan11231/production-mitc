@@ -260,7 +260,6 @@ export default function Header() {
         title="Connect with Our Team"
         subtitle="Choose a specialist and connect instantly via call or WhatsApp."
         salespersons={activeSorted}
-        maxVisible={3}
         showViewAllLink
         onSelectPerson={handleSelectPerson}
         viewAllHref="/team"
