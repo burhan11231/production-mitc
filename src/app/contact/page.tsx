@@ -84,7 +84,7 @@ export default function ContactPage() {
               Let's Talk Business
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Visit our showroom, call us, or drop a message. Team responds within working hours.
+              Drop a message or visit us. Our team responds within working hours.
             </p>
           </div>
 
@@ -159,33 +159,35 @@ export default function ContactPage() {
             {/* LEFT: LOCATION & HOURS CARD */}
             <div className="space-y-6">
               <div className="bg-white border border-gray-200 rounded-3xl p-8 sm:p-10 shadow-sm h-full">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-3xl">
-                    📍
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Visit Our Store</h3>
-                    <p className="text-blue-600 font-semibold uppercase tracking-wider text-sm">Gaw Kadal, Srinagar</p>
-                  </div>
-                </div>
                 
                 {/* Address */}
                 {settings?.addressText && (
-                  <div className="mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Address</h4>
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line text-lg">
+                  <div className="mb-6">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Our Address</h4>
+                    <p className="text-gray-900 font-medium leading-relaxed whitespace-pre-line text-2xl mb-6">
                       {settings.addressText}
                     </p>
+                    <a 
+                      href="https://maps.app.goo.gl/6yAR2xVALw9uCF8q7" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors group"
+                    >
+                      Get Directions on Google Maps
+                      <span className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">↗</span>
+                    </a>
                   </div>
                 )}
 
                 {/* Integrated Business Hours */}
                 {settings?.workingHours?.[currentSeason] && (
-                  <div className="border-t border-gray-100 pt-8">
-                    <div className="flex items-center gap-2 mb-6">
-                      <span className="text-xl">⏰</span>
-                      <h4 className="text-lg font-bold text-gray-900">Business Hours</h4>
-                      <span className="ml-auto text-xs font-bold px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full uppercase">
+                  <div className="border-t border-gray-100 pt-8 mt-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">⏰</span>
+                        <h4 className="text-lg font-bold text-gray-900">Business Hours</h4>
+                      </div>
+                      <span className="text-[10px] font-bold px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full uppercase tracking-tighter">
                         {currentSeason} Schedule
                       </span>
                     </div>
@@ -209,13 +211,8 @@ export default function ContactPage() {
 
             {/* RIGHT: MAP */}
             {settings?.mapEmbedUrl && (
-              <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-                <div className="p-6 bg-gray-50 border-b border-gray-100">
-                  <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                    🗺️ Navigation Map
-                  </h4>
-                </div>
-                <div className="flex-grow min-h-[400px] lg:min-h-full relative">
+              <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+                <div className="flex-grow relative">
                   <div
                     className="absolute inset-0 w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
                     dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
