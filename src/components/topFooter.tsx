@@ -67,12 +67,7 @@ export default function TopFooter() {
 
           {/* Location */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                Flagship Store
-              </span>
-            </div>
+           
             <h2 className="text-2xl font-bold text-gray-900">Gaw Kadal, Maisuma</h2>
             <p className="text-sm text-gray-500">Srinagar, J&K — 190001</p>
             <a
@@ -108,21 +103,17 @@ export default function TopFooter() {
                     <span className="text-gray-400 font-medium">
                       {' '}({ratingStats.count})
                     </span>
-                  </span>
-                </div>
-
-                <p className="text-xs text-gray-500">
-                  Based on {ratingStats.count} verified reviews
-                </p>
-
-                <div className="pt-1">
-                  <Link
+<Link
                     href="/ratings"
                     className="text-xs font-bold text-blue-600 hover:text-blue-700"
                   >
                     Read customer reviews →
                   </Link>
+                  </span>
                 </div>
+
+              
+                
               </div>
             )}
           </div>
