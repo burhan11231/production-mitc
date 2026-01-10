@@ -21,6 +21,20 @@ export default function Footer() {
             <p className="text-base leading-relaxed text-gray-500 max-w-sm">
               Kashmir's trusted authority for premium commercial laptops and professional IT services since 2013.
             </p>
+
+            {/* Logo (admin-controlled, same as header) */}
+            {settings?.logoUrl && (
+              <Link href="/" className="inline-block mt-6">
+                <Image
+                  src={settings.logoUrl}
+                  alt={settings.businessName || 'Logo'}
+                  width={96}
+                  height={96}
+                  className="h-10 w-auto object-contain opacity-90 hover:opacity-100 transition"
+                  unoptimized
+                />
+              </Link>
+            )}
           </div>
 
           {/* Column 2 */}
