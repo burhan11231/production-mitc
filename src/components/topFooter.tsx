@@ -105,7 +105,7 @@ export default function TopFooter() {
                     </span>        
 <Link        
                     href="/ratings"        
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700"        
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 p-4"        
                   >        
                     Read customer reviews →        
                   </Link>        
