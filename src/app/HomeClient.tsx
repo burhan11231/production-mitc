@@ -150,9 +150,9 @@ export default function HomeClient() {
       </section>
 
       {/* 2. ABOUT US SECTION */}
-      <section id="about" className="relative bg-[#f3f7fb] overflow-hidden py-20">
+      <section id="about" className="relative bg-sky-50/60 overflow-hidden py-20">
         <div className="absolute inset-x-0 -top-24 h-24 bg-white">
-          <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-[#f3f7fb]" />
+          <div className="absolute inset-x-0 bottom-0 h-24 rounded-t-[3rem] bg-sky-50/60" />
         </div>
         <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="grid lg:grid-cols-2 gap-10 items-end">
@@ -324,7 +324,7 @@ export default function HomeClient() {
       {/* 4. WHY CHOOSE US SECTION (Modern & Dynamic) */}
       <section
         id="why-choose-us"
-        className="relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#f3f7fb] overflow-hidden"
+        className="relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-sky-50/60 overflow-hidden"
       >
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] -translate-y-1/3 rounded-full bg-[radial-gradient(circle,rgba(0,113,227,0.15),transparent_70%)] blur-3xl" />
