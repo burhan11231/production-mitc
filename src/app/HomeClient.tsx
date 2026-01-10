@@ -16,6 +16,12 @@ import { RiEyeLine } from 'react-icons/ri';
 import { TbArrowsUpRight, TbChecks } from 'react-icons/tb';
 import Link from 'next/link';
 
+// Added Imports for Form Logic
+import { useAuth } from '@/lib/auth-context';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import toast from 'react-hot-toast';
+
 import TopFooter from '@/components/topFooter';
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
@@ -68,6 +74,16 @@ export default function HomeClient() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const currentWord = heroWords[currentWordIndex];
 
+  // Form State & Logic
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.displayName || '',
+    email: user?.email || '',
+    phone: '',
+    message: '',
+  });
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentWordIndex((prev) => (prev + 1) % heroWords.length);
@@ -76,6 +92,34 @@ export default function HomeClient() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.phone) {
+      toast.error('Phone number is required');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await addDoc(collection(db, 'leads'), {
+        ...formData,
+        userId: user?.uid || null,
+        read: false,
+        createdAt: serverTimestamp(),
+      });
+      toast.success('Message sent successfully');
+      setFormData({ name: '', email: '', phone: '', message: '' });
+    } catch {
+      toast.error('Failed to send message');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <main className="overflow-x-hidden">
       {/* 1. HERO SECTION */}
@@ -83,7 +127,6 @@ export default function HomeClient() {
         id="home"
         className="relative min-h-[70vh] lg:min-h-[85vh] overflow-hidden flex flex-col justify-center bg-[#000] py-10"
       >
-        {/* Background Layer */}
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2400"
@@ -95,9 +138,7 @@ export default function HomeClient() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,113,227,0.2),transparent_50%)]" />
         </div>
 
-        {/* Content Container */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
-          {/* Badge */}
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-2xl">
             <span className="flex h-2 w-2 rounded-full bg-[#0071e3] shadow-[0_0_10px_#0071e3] animate-pulse" />
             <span className="text-[10px] lg:text-[11px] font-bold text-white tracking-[0.15em] uppercase">
@@ -105,16 +146,13 @@ export default function HomeClient() {
             </span>
           </div>
 
-          {/* Main Heading */}
-    <h1 className="mt-8 text-2xl sm:text-3xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
-      Commercial-grade laptops, <span className="text-white/70">built for</span>{' '}
-      <span className="text-[#0071e3] inline-flex border-r-4 border-[#0071e3] pr-2">
-        {currentWord}
-      </span>
-    </h1>
+          <h1 className="mt-8 text-2xl sm:text-3xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
+            Commercial-grade laptops, <span className="text-white/70">built for</span>{' '}
+            <span className="text-[#0071e3] inline-flex border-r-4 border-[#0071e3] pr-2">
+              {currentWord}
+            </span>
+          </h1>
 
-
-          {/* Info Card */}
           <div className="mt-4">
             <div className="group rounded-[2rem] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] transition-all hover:border-white/20">
               <div className="grid lg:grid-cols-5 items-stretch">
@@ -196,7 +234,6 @@ export default function HomeClient() {
           </div>
         </div>
 
-        {/* Capabilities Marquee */}
         <div className="relative mt-10 lg:-mx-8 lg:px-8">
           <div className="max-w-none lg:max-w-none">
             <div className="relative overflow-hidden -mx-4 sm:-mx-6 lg:-mx-0">
@@ -232,44 +269,6 @@ export default function HomeClient() {
               </div>
             </div>
           </div>
-          <style jsx>{`
-            .cap-marquee {
-              display: flex;
-              width: max-content;
-              gap: 1.5rem;
-              animation: cap-scroll 25s linear infinite;
-              will-change: transform;
-            }
-            .cap-track {
-              display: flex;
-              gap: 1.5rem;
-            }
-            .cap-card {
-              flex: 0 0 auto;
-              min-width: 220px;
-              max-width: 260px;
-              height: 180px;
-              border-radius: 2rem;
-              border: 1px solid rgb(229 231 235);
-              background: white;
-              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-              transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            .cap-card:hover {
-              box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-              transform: translateY(-8px) scale(1.02);
-            }
-            @keyframes cap-scroll {
-              from { transform: translateX(0); }
-              to { transform: translateX(-50%); }
-            }
-            @media (min-width: 640px) { .cap-card { min-width: 240px; max-width: 280px; } }
-            @media (min-width: 1024px) { .cap-card { min-width: 260px; max-width: 300px; height: 200px; } }
-            @media (min-width: 1280px) { .cap-card { min-width: 280px; max-width: 320px; } }
-          `}</style>
         </div>
       </section>
 
@@ -321,13 +320,11 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. WHY CHOOSE US SECTION (Modern & Dynamic) */}
+      {/* 4. WHY CHOOSE US SECTION */}
       <section
         id="why-choose-us"
         className="relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-sky-50/60 overflow-hidden"
       >
-        
-
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white/80 backdrop-blur px-5 py-2.5 shadow-sm">
@@ -379,13 +376,13 @@ export default function HomeClient() {
                       <div className="h-px flex-1 bg-gradient-to-l from-gray-300 via-gray-200 to-transparent" />
                     </div>
                   </div>
-                  <div className="absolute inset-0 scale-95 group-hover:scale-100 transition-transform duration-700 rounded-3xl bg-white/50 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 </div>
               ))}
             </div>
 
-            <div className="lg:col-span-4">
-              <div className="relative h-full min-h-[200px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
+            <div className="lg:col-span-4 space-y-8">
+              {/* Existing Confidence Card */}
+              <div className="relative min-h-[200px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
                 <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_30%_20%,rgba(0,113,227,0.4),transparent_60%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_70%_80%,rgba(16,185,129,0.25),transparent_60%)]" />
                 <div className="relative z-10 flex flex-col h-full justify-between">
@@ -401,13 +398,44 @@ export default function HomeClient() {
                       Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
                       No pressure. No surprises. Just clarity.
                     </p>
-
                   </div>
-                    
+                </div>
+              </div>
+
+              {/* INTEGRATED CONTACT FORM */}
+              <div className="bg-white border border-gray-200 rounded-3xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+                <div className="p-8">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Send an Inquiry</h4>
+                  <p className="text-sm text-gray-500 mb-6">Our team responds within working hours.</p>
                   
-                    
-                    
-                  
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                      <label className="field-label mb-1.5 block">Full Name <span className="text-red-500">*</span></label>
+                      <input name="name" value={formData.name} onChange={handleChange} required placeholder="Your name" className="input h-12" />
+                    </div>
+                    <div>
+                      <label className="field-label mb-1.5 block">Email <span className="text-red-500">*</span></label>
+                      <input name="email" value={formData.email} onChange={handleChange} required type="email" placeholder="you@example.com" className="input h-12" />
+                    </div>
+                    <div>
+                      <label className="field-label mb-1.5 block">Phone <span className="text-red-500">*</span></label>
+                      <input name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 7006 XXX XXX" className="input h-12" />
+                    </div>
+                    <div>
+                      <label className="field-label mb-1.5 block">How can we help? <span className="text-red-500">*</span></label>
+                      <textarea name="message" value={formData.message} onChange={handleChange} required rows={4} placeholder="Requirement..." className="input py-3" />
+                    </div>
+                    <button disabled={isLoading} className="submit-btn h-12 text-sm">
+                      {isLoading ? (
+                        <div className="flex items-center justify-center">
+                          <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
+                          Sending...
+                        </div>
+                      ) : (
+                        'Send Message ↗'
+                      )}
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
@@ -417,6 +445,25 @@ export default function HomeClient() {
 
       {/* 5. TOP FOOTER SECTION */}
       <TopFooter />
+
+      <style jsx>{`
+        /* Existing Styles */
+        .cap-marquee { display: flex; width: max-content; gap: 1.5rem; animation: cap-scroll 25s linear infinite; will-change: transform; }
+        .cap-track { display: flex; gap: 1.5rem; }
+        .cap-card { flex: 0 0 auto; min-width: 220px; max-width: 260px; height: 180px; border-radius: 2rem; border: 1px solid rgb(229 231 235); background: white; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; }
+        .cap-card:hover { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15); transform: translateY(-8px) scale(1.02); }
+        @keyframes cap-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @media (min-width: 640px) { .cap-card { min-width: 240px; max-width: 280px; } }
+        @media (min-width: 1024px) { .cap-card { min-width: 260px; max-width: 300px; height: 200px; } }
+        @media (min-width: 1280px) { .cap-card { min-width: 280px; max-width: 320px; } }
+
+        /* Form Logic Styles (Integrated) */
+        .field-label { font-size: 13px; font-weight: 600; color: #374151; }
+        .input { width: 100%; padding: 0 16px; border-radius: 12px; border: 2px solid #e5e7eb; background: #ffffff; font-size: 14px; transition: all 0.2s ease; }
+        .input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .submit-btn { background: #111827; color: white; border-radius: 9999px; font-weight: 700; transition: all 0.3s ease; width: 100%; }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); background: #000; }
+      `}</style>
     </main>
   );
 }
