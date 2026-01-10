@@ -323,7 +323,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 4. WHY CHOOSE US SECTION */}
+      {/* 4. WHY CHOOSE US SECTION - Updated Layout */}
       <section
         id="why-choose-us"
         className="relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-sky-50/60 overflow-hidden"
@@ -346,8 +346,9 @@ export default function HomeClient() {
             </p>
           </div>
 
-          <div className="mt-16 lg:mt-20 grid gap-8 lg:gap-10 lg:grid-cols-12 items-start">
-            <div className="lg:col-span-8 grid grid-cols-1 gap-6 lg:gap-8">
+          <div className="mt-16 lg:mt-20">
+            {/* Cards Grid - Now 1 Column Full Width */}
+            <div className="grid grid-cols-1 gap-6 lg:gap-8">
               {whyChooseUs.map(({ title, desc, icon: Icon, accent }) => (
                 <div
                   key={title}
@@ -358,7 +359,7 @@ export default function HomeClient() {
                   />
                   <div className="relative z-10 p-8 lg:p-10 flex flex-col h-full">
                     <div className="flex items-start gap-5">
-                      <div className="relative h-14 w-14 lg:h-16 lg:w-16 rounded-2xl bg-gradient-to-br from-gray-900 to-black grid place-items-center shadow-xl ring-4 ring-white/50">
+                      <div className="relative h-14 w-14 lg:h-16 lg:w-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-gray-900 to-black grid place-items-center shadow-xl ring-4 ring-white/50">
                         <Icon className="text-white text-2xl lg:text-3xl" />
                         <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
                       </div>
@@ -366,89 +367,100 @@ export default function HomeClient() {
                         <h3 className="text-xl lg:text-2xl font-bold text-gray-900 leading-tight">
                           {title}
                         </h3>
-                        <p className="mt-3 text-base text-gray-600 leading-relaxed">
+                        <p className="mt-3 text-base text-gray-600 leading-relaxed max-w-4xl">
                           {desc}
                         </p>
                       </div>
-                    </div>
-                    <div className="mt-8 flex items-center justify-between">
-                      <div className="h-px flex-1 bg-gradient-to-r from-gray-300 via-gray-200 to-transparent" />
-                      <span className="ml-4 text-xs font-bold tracking-[0.3em] uppercase text-gray-400">
-                        MITC Standard
-                      </span>
-                      <div className="h-px flex-1 bg-gradient-to-l from-gray-300 via-gray-200 to-transparent" />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            <div className="lg:col-span-4 space-y-8">
-              {/* Existing Confidence Card */}
-              <div className="relative min-h-[200px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 p-10 lg:p-12 shadow-2xl border border-white/10">
-                <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_30%_20%,rgba(0,113,227,0.4),transparent_60%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_70%_80%,rgba(16,185,129,0.25),transparent_60%)]" />
-                <div className="relative z-10 flex flex-col h-full justify-between">
-                  <div>
-                    <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
-                      Built for confidence
-                    </p>
-                    <h3 className="mt-2 text-2xl lg:text-3xl font-bold text-white leading-tight">
-                      Evaluated in person.
-                      <span className="block text-white/80">Trusted by choice.</span>
-                    </h3>
-                    <p className="mt-2 text-sm text-white/80 leading-relaxed">
-                      Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
-                      No pressure. No surprises. Just clarity.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* INTEGRATED CONTACT FORM */}
-              <div className="bg-white border border-gray-200 rounded-3xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
-                <div className="p-8">
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Send an Inquiry</h4>
-                  <p className="text-sm text-gray-500 mb-6">Our team responds within working hours.</p>
-                  
-                  <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                      <label className="field-label mb-1.5 block">Full Name <span className="text-red-500">*</span></label>
-                      <input name="name" value={formData.name} onChange={handleChange} required placeholder="Your name" className="input h-12" />
-                    </div>
-                    <div>
-                      <label className="field-label mb-1.5 block">Email <span className="text-red-500">*</span></label>
-                      <input name="email" value={formData.email} onChange={handleChange} required type="email" placeholder="you@example.com" className="input h-12" />
-                    </div>
-                    <div>
-                      <label className="field-label mb-1.5 block">Phone <span className="text-red-500">*</span></label>
-                      <input name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 7006 XXX XXX" className="input h-12" />
-                    </div>
-                    <div>
-                      <label className="field-label mb-1.5 block">How can we help? <span className="text-red-500">*</span></label>
-                      <textarea name="message" value={formData.message} onChange={handleChange} required rows={4} placeholder="Tell us about your requirement — laptop model, usage purpose, preferred specifications, budget, or any questions you have. Our team will respond shortly." className="input py-4" />
-                    </div>
-                    <button disabled={isLoading} className="submit-btn h-12 text-sm">
-                      {isLoading ? (
-                        <div className="flex items-center justify-center">
-                          <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
-                          Sending...
-                        </div>
-                      ) : (
-                        'Send Message ↗'
-                      )}
-                    </button>
-                  </form>
-                </div>
-              </div>
-{/* 5. TOP FOOTER SECTION */}
-      <TopFooter />
-            </div>
           </div>
         </div>
       </section>
 
-      
+      {/* 5. CONFIDENCE & CONTACT SECTION - New Dedicated Full Width Section */}
+      <section className="relative py-24 bg-gradient-to-br from-gray-950 via-black to-gray-900 overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(1000px_circle_at_20%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(1000px_circle_at_80%_80%,rgba(16,185,129,0.15),transparent_60%)]" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            
+            {/* Left Column: Built For Confidence Text */}
+            <div className="space-y-8">
+              <div>
+                <div className="inline-flex items-center gap-2 mb-4">
+                  <div className="h-[2px] w-8 bg-[#0071e3]" />
+                  <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
+                    Built for confidence
+                  </p>
+                </div>
+                <h3 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+                  Evaluated in person.
+                  <span className="block text-white/50 mt-2">Trusted by choice.</span>
+                </h3>
+                <p className="mt-6 text-lg text-white/70 leading-relaxed max-w-xl">
+                  Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
+                  No pressure. No surprises. Just clarity.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <div className="flex items-center gap-3 text-white/80">
+                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-white/10 border border-white/10">
+                    <RiEyeLine className="text-sm" />
+                  </span>
+                  <span className="text-sm">Live Demo</span>
+                </div>
+                <div className="flex items-center gap-3 text-white/80">
+                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-white/10 border border-white/10">
+                    <TbChecks className="text-sm" />
+                  </span>
+                  <span className="text-sm">Verified Specs</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Contact Form */}
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 lg:p-10">
+                <h4 className="text-2xl font-bold text-gray-900 mb-2">Send an Inquiry</h4>
+                <p className="text-sm text-gray-500 mb-8">Tell us what you need. Our team responds within working hours.</p>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div>
+                    <label className="field-label mb-1.5 block">Full Name <span className="text-red-500">*</span></label>
+                    <input name="name" value={formData.name} onChange={handleChange} required placeholder="Your name" className="input h-12" />
+                  </div>
+                  <div>
+                    <label className="field-label mb-1.5 block">Phone <span className="text-red-500">*</span></label>
+                    <input name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 7006 XXX XXX" className="input h-12" />
+                  </div>
+                  <div>
+                    <label className="field-label mb-1.5 block">How can we help? <span className="text-red-500">*</span></label>
+                    <textarea name="message" value={formData.message} onChange={handleChange} required rows={3} placeholder="Laptop model, specs, or general questions..." className="input py-4" />
+                  </div>
+                  <button disabled={isLoading} className="submit-btn h-12 text-sm mt-2">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
+                        Sending...
+                      </div>
+                    ) : (
+                      'Send Message ↗'
+                    )}
+                  </button>
+                </form>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 6. TOP FOOTER SECTION */}
+      <TopFooter />
 
       <style jsx>{`
         /* Existing Styles */
