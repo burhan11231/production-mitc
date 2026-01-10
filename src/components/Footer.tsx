@@ -29,8 +29,8 @@ export default function Footer() {
       <Image
         src={settings.logoUrl}
         alt={settings.businessName || 'Logo'}
-        width={48}
-        height={48}
+        width={120}
+        height={120}
         className="h-10 w-10 object-cover rounded-lg"
         unoptimized
       />
