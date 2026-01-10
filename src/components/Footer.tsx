@@ -10,23 +10,11 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-white border-t border-gray-100">
-      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-16">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
         
-        {/* Middle Section: Brand + Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 py-12">
-          {/* Brand - Changed text-center to text-left */}
-          <div className="text-left">
-            <Link href="/" className="inline-flex items-center gap-4 mb-8">
-              <Image
-                src="https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg"
-                alt="MITC Logo"
-                width={48}
-                height={48}
-                className="rounded-xl grayscale hover:grayscale-0 transition-all duration-500 shadow-lg"
-              />
-              <span className="text-3xl font-bold tracking-tighter text-gray-900">MITC</span>
-            </Link>
-            {/* Changed mx-auto to mx-0 */}
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 py-8">
+          
             <p className="text-base leading-relaxed text-gray-500 max-w-sm mx-0">
               Kashmir's trusted authority for premium commercial laptops and professional IT services since 2013.
             </p>
