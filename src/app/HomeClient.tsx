@@ -37,36 +37,39 @@ const capabilities = [
   { label: 'SSD Upgrade', icon: MdStorage },
 ];
 
+const WHY_ACCENT =
+  'from-[#0071e3]/20 via-white/0 to-emerald-400/20';
+
 const whyChooseUs = [
   {
     title: '15-Day Replacement Warranty',
     desc: 'Added peace of mind with a straightforward replacement policy on eligible devices.',
     icon: FaShieldAlt,
-    accent: 'from-[#0071e3]/20 via-white/0 to-emerald-400/20',
+    accent: WHY_ACCENT,
   },
   {
     title: 'Fair, Market-Aligned Pricing',
     desc: 'Prices reflect real market value—no inflated tags, no artificial discounts.',
     icon: HiOutlineCurrencyRupee,
-    accent: 'from-emerald-400/20 via-white/0 to-[#0071e3]/20',
+    accent: WHY_ACCENT,
   },
   {
     title: 'Diagnostics Done in Front of You',
     desc: 'Basic checks and demonstrations are performed openly before delivery.',
     icon: RiEyeLine,
-    accent: 'from-[#0071e3]/20 via-white/0 to-white/0',
+    accent: WHY_ACCENT,
   },
   {
     title: 'Upgrade-First Mindset',
     desc: 'We recommend RAM, SSD, or OS upgrades when it makes more sense than replacement.',
     icon: TbArrowsUpRight,
-    accent: 'from-white/0 via-white/0 to-emerald-400/20',
+    accent: WHY_ACCENT,
   },
   {
     title: 'Transparent Buying Process',
     desc: 'Specifications, condition, and limitations are clearly explained—no surprises after purchase.',
     icon: TbChecks,
-    accent: 'from-emerald-400/20 via-white/0 to-white/0',
+    accent: WHY_ACCENT,
   },
 ];
 
