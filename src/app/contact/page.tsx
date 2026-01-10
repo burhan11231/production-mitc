@@ -76,14 +76,14 @@ export default function ContactPage() {
       {/* SECTION 1: CONTACT FORM */}
       <section className="w-full py-20 sm:py-24 lg:py-32 bg-sky-50/60 backdrop-blur">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 lg:mb-16">
             <p className="text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase text-blue-600 mb-4">
               Get In Touch
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
               Let's Talk Business
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-4">
               Drop a message or visit us. Our team responds within working hours.
             </p>
           </div>
