@@ -28,8 +28,8 @@ export default function Footer() {
     <Image
       src={settings.logoUrl}
       alt={settings.businessName || 'Logo'}
-      width={96}
-      height={96}
+      width={40}
+      height={40}
       className="rounded-lg object-cover opacity-90"
       unoptimized
     />
