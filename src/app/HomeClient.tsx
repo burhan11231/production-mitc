@@ -408,19 +408,9 @@ export default function HomeClient() {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <div className="flex items-center gap-3 text-white/80">
-                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-white/10 border border-white/10">
-                    <RiEyeLine className="text-sm" />
-                  </span>
-                  <span className="text-sm">Live Demo</span>
-                </div>
-                <div className="flex items-center gap-3 text-white/80">
-                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-white/10 border border-white/10">
-                    <TbChecks className="text-sm" />
-                  </span>
-                  <span className="text-sm">Verified Specs</span>
-                </div>
+              <div className="py-6">
+                {/* 6. TOP FOOTER SECTION */}
+      <TopFooter />
               </div>
             </div>
 
@@ -459,8 +449,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 6. TOP FOOTER SECTION */}
-      <TopFooter />
+      
 
       <style jsx>{`
         /* Existing Styles */
