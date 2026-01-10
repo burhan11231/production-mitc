@@ -326,10 +326,7 @@ export default function HomeClient() {
         id="why-choose-us"
         className="relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-sky-50/60 overflow-hidden"
       >
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] -translate-y-1/3 rounded-full bg-[radial-gradient(circle,rgba(0,113,227,0.15),transparent_70%)] blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-[700px] h-[700px] translate-x-1/4 translate-y-1/4 rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.14),transparent_70%)] blur-3xl" />
-        </div>
+        
 
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-4xl">
