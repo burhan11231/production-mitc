@@ -441,13 +441,14 @@ export default function HomeClient() {
                   </form>
                 </div>
               </div>
+{/* 5. TOP FOOTER SECTION */}
+      <TopFooter />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. TOP FOOTER SECTION */}
-      <TopFooter />
+      
 
       <style jsx>{`
         /* Existing Styles */
