@@ -24,17 +24,19 @@ export default function Footer() {
 
             {/* Logo (admin-controlled, same as header) */}
             {settings?.logoUrl && (
-              <Link href="/" className="inline-block mt-6">
-                <Image
-                  src={settings.logoUrl}
-                  alt={settings.businessName || 'Logo'}
-                  width={96}
-                  height={96}
-                  className="h-10 w-auto object-contain opacity-90 hover:opacity-100 transition"
-                  unoptimized
-                />
-              </Link>
-            )}
+  <Link href="/" className="inline-flex mt-6">
+    <div className="rounded-xl bg-white shadow-sm ring-1 ring-black/5 p-2">
+      <Image
+        src={settings.logoUrl}
+        alt={settings.businessName || 'Logo'}
+        width={48}
+        height={48}
+        className="h-10 w-10 object-cover rounded-lg"
+        unoptimized
+      />
+    </div>
+  </Link>
+)}
           </div>
 
           {/* Column 2 */}
