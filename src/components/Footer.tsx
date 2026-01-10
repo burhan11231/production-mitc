@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSettings } from '@/hooks/useSettings';
@@ -11,18 +12,22 @@ export default function Footer() {
   return (
     <footer className="relative bg-white border-t border-gray-100">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
-        
-        
+
+        {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 py-8">
-          
-            <p className="text-base leading-relaxed text-gray-500 max-w-sm mx-0">
+
+          {/* Column 1 */}
+          <div>
+            <p className="text-base leading-relaxed text-gray-500 max-w-sm">
               Kashmir's trusted authority for premium commercial laptops and professional IT services since 2013.
             </p>
           </div>
 
-          {/* Company Links - Changed text-center to text-left */}
+          {/* Column 2 */}
           <div className="text-left">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">Company</h4>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">
+              Company
+            </h4>
             <ul className="space-y-5">
               {['About', 'Services', 'Ratings', 'Contact'].map((item) => (
                 <li key={item}>
@@ -37,14 +42,16 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Social Connect - Changed text-center to text-left and justify-center to justify-start */}
+          {/* Column 3 */}
           <div className="text-left">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">Connect</h4>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">
+              Connect
+            </h4>
             <div className="flex gap-4 justify-start">
               {['Facebook', 'Instagram', 'Twitter', 'LinkedIn'].map((social) => (
                 <a
                   key={social}
-                  href={settings?.[social.toLowerCase() as keyof typeof settings] as string || '#'}
+                  href={(settings?.[social.toLowerCase() as keyof typeof settings] as string) || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-300"
@@ -55,13 +62,15 @@ export default function Footer() {
               ))}
             </div>
           </div>
+
         </div>
 
-        {/* Bottom Legal - Changed items-center to items-start (mobile) and text-center to text-left */}
+        {/* Bottom Legal */}
         <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
           <p className="text-sm font-medium text-gray-400">
             © {currentYear} Mateen IT Corp. All rights reserved.
           </p>
+
           <div className="flex gap-10">
             <Link href="#" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition">
               Privacy Policy
@@ -71,6 +80,7 @@ export default function Footer() {
             </Link>
           </div>
         </div>
+
       </div>
     </footer>
   );
