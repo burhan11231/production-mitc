@@ -161,97 +161,97 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* SECTION 3: STORE LOCATION & HOURS - DESKTOP FIRST, MOBILE RESPONSIVE */}
-      <section className="py-20 sm:py-24 lg:py-32">
-        <div className="max-w-6xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start lg:items-center">
-            {/* LOCATION INFO */}
-            <div className="lg:order-2 space-y-6 lg:space-y-8">
-              <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-3xl p-8 sm:p-10 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+      {/* SECTION 3: SINGLE LOCATION + HOURS SECTION */}
+      <section className="py-20 sm:py-24 lg:py-32 bg-white/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="text-center mb-16 lg:mb-20">
+            <p className="text-sm sm:text-base font-semibold tracking-[0.2em] uppercase text-emerald-600 mb-4">
+              Visit Us
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Store Location & Hours
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Find our Srinagar showroom and check current operating hours
+            </p>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur border border-gray-200 rounded-4xl shadow-2xl overflow-hidden">
+            <div className="lg:grid lg:grid-cols-12 lg:gap-8 p-8 sm:p-12 lg:p-16">
+              
+              {/* LOCATION INFO + HOURS - LEFT SIDE */}
+              <div className="lg:col-span-7 space-y-8 mb-10 lg:mb-0">
+                {/* MAIN LOCATION */}
+                <div className="flex items-start gap-4 mb-8 p-6 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-3xl border border-emerald-100">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1">
                     <span className="text-2xl">📍</span>
                   </div>
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Store Location</h3>
-                    <p className="text-sm text-blue-600 font-semibold">Gaw Kadal, Srinagar</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">MITC Showroom</h3>
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                      {settings?.addressText && (
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+                          {settings.addressText}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                
-                {settings?.addressText && (
-                  <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-100 rounded-2xl p-6 mb-8">
-                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-line">
-                      {settings.addressText}
-                    </p>
+
+                {/* BUSINESS HOURS */}
+                {settings?.workingHours?.[currentSeason] && (
+                  <div className="bg-gradient-to-r from-gray-50 to-emerald-50 border border-gray-100 rounded-3xl p-8">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <span className="text-xl">⏰</span>
+                      </div>
+                      <div>
+                        <h4 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Business Hours</h4>
+                        <p className="text-lg font-semibold text-amber-700">
+                          {currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)} Timings
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-7 gap-3">
+                      {Object.entries(settings.workingHours[currentSeason]).map(([day, hours]) => (
+                        <div key={day} className="group bg-white/80 hover:bg-white rounded-2xl p-4 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 text-center">
+                          <div className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">
+                            {day.slice(0,3)}
+                          </div>
+                          {hours.closed ? (
+                            <div className="text-red-500 font-bold text-base px-2 py-1 bg-red-50 rounded-xl">CLOSED</div>
+                          ) : (
+                            <div className="text-gray-800 font-semibold text-sm">
+                              {hours.open} - {hours.close}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-
-                {/* QUICK CONTACT */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {settings?.primaryPhone && (
-                    <a href={`tel:${settings.primaryPhone}`} className="contact-tile h-20 flex flex-col items-center justify-center text-center">
-                      <span className="text-2xl mb-1">📞</span>
-                      <span className="font-semibold text-gray-900 block">{settings.primaryPhone}</span>
-                    </a>
-                  )}
-                  {settings?.primaryEmail && (
-                    <a href={`mailto:${settings.primaryEmail}`} className="contact-tile h-20 flex flex-col items-center justify-center text-center">
-                      <span className="text-2xl mb-1">✉️</span>
-                      <span className="font-semibold text-gray-900 block truncate">{settings.primaryEmail}</span>
-                    </a>
-                  )}
-                </div>
               </div>
-            </div>
 
-            {/* MAP & HOURS */}
-            <div className="lg:order-1 space-y-6 lg:space-y-8">
-              {/* HOURS */}
-              {settings?.workingHours?.[currentSeason] && (
-                <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-sm">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center">
-                      <span className="text-2xl">⏰</span>
+              {/* MAP - RIGHT SIDE */}
+              <div className="lg:col-span-5">
+                {settings?.mapEmbedUrl && (
+                  <div className="sticky top-8 rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 text-white">
+                      <h4 className="text-xl font-bold flex items-center gap-2">
+                        🗺️ Live Location
+                      </h4>
+                      <p className="text-sm opacity-90 mt-1">Google Maps - Maisuma, Srinagar</p>
                     </div>
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Business Hours</h3>
-                      <p className="text-sm font-semibold text-emerald-700">
-                        {currentSeason === 'summer' ? 'Summer' : 'Winter'} Timings
-                      </p>
+                    <div className="relative h-[320px] sm:h-[380px] lg:h-[420px] xl:h-[460px]">
+                      <div
+                        className="absolute inset-0 w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
+                        dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
+                      />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-7 gap-2 text-sm">
-                    {Object.entries(settings.workingHours[currentSeason]).map(([day, h]) => (
-                      <div key={day} className="bg-white rounded-xl p-3 text-center border hover:border-gray-200 transition-colors">
-                        <div className="font-semibold text-gray-900 text-xs uppercase tracking-wide">{day.slice(0,3)}</div>
-                        {h.closed ? (
-                          <div className="text-red-500 font-bold mt-1">CLOSED</div>
-                        ) : (
-                          <div className="text-gray-700 font-medium mt-1 text-xs">{h.open} - {h.close}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* MAP */}
-              {settings?.mapEmbedUrl && (
-                <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
-                  <div className="p-6 sm:p-8 bg-gradient-to-r from-gray-50 to-gray-100">
-                    <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      🗺️ Find Us on Map
-                    </h4>
-                    <p className="text-sm text-gray-600">Maisuma, Srinagar Location</p>
-                  </div>
-                  <div className="h-72 sm:h-96 lg:h-[28rem] w-full relative">
-                    <div
-                      className="absolute inset-0 w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0 [&>iframe]:rounded-b-3xl"
-                      dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
-                    />
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -306,22 +306,9 @@ export default function ContactPage() {
           transform: none;
           box-shadow: none;
         }
-        .contact-tile {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border: 2px solid #e2e8f0;
-          border-radius: 20px;
-          transition: all 0.3s ease;
-          backdrop-filter: blur(10px);
-        }
-        .contact-tile:hover {
-          border-color: #3b82f6;
-          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
-        }
 
         @media (max-width: 1024px) {
-          .h-72, .h-96 { height: 280px !important; }
+          [class*="h-"] { height: 320px !important; }
         }
         @media (max-width: 640px) {
           .input { padding: 0 14px; height: 52px !important; }
