@@ -107,7 +107,7 @@ export default function ContactPage() {
                 </div>
                 <div className="mb-10">
                   <label className="field-label mb-2 block">How can we help? <span className="text-red-500">*</span></label>
-                  <textarea name="message" value={formData.message} onChange={handleChange} required rows={6} placeholder="Tell us about your requirement..." className="input mt-1" />
+                  <textarea name="message" value={formData.message} onChange={handleChange} required rows={6} placeholder="Please describe your requirement in detail. Mention the laptop model (if known), intended usage (office, gaming, design, student, etc.), preferred specifications (RAM, storage, processor), budget range, and any other questions you may have. Our team will review your message and get back to you as soon as possible." className="input py-8" />
                 </div>
                 <button disabled={isLoading} className="submit-btn w-full lg:w-auto max-w-sm mx-auto block">
                   {isLoading ? (
