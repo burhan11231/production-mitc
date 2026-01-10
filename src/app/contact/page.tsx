@@ -131,7 +131,7 @@ export default function ContactPage() {
             
             {/* LEFT: LOCATION & HOURS CARD */}
             <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-3xl p-8 sm:p-10 shadow-sm h-full">
+              <div className="bg-sky-50/60 border border-gray-200 rounded-3xl p-8 sm:p-10 shadow-sm h-full">
                 
                 {/* Address */}
                 {settings?.addressText && (
