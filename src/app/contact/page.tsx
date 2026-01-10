@@ -74,7 +74,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f7fb] via-white to-[#f3f4f6]">
       {/* SECTION 1: CONTACT FORM */}
-      <section className="w-full py-20 sm:py-24 lg:py-32 bg-white/80 backdrop-blur">
+      <section className="w-full py-20 sm:py-24 lg:py-32 bg-sky-50/60 backdrop-blur">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-12 lg:mb-16">
             <p className="text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase text-blue-600 mb-4">
@@ -122,34 +122,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* SECTION 2: SOCIAL LINKS */}
-      <section className="py-20 sm:py-24 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center mb-16">
-            <p className="text-sm sm:text-base font-semibold tracking-[0.2em] uppercase text-blue-600 mb-4">
-              Stay Connected
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Follow Our Journey
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-            {socialLinks.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative bg-white/70 hover:bg-white backdrop-blur border border-gray-200 hover:border-blue-200 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-28 flex flex-col items-center justify-center text-center"
-              >
-                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{link.icon}</div>
-                <span className="text-xs font-semibold text-gray-900 group-hover:text-blue-600">{link.label}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* SECTION 3: UNIFIED LOCATION & HOURS */}
       <section className="py-20 sm:py-24 lg:py-32">
