@@ -107,7 +107,7 @@ export default function ContactPage() {
                 </div>
                 <div className="mb-10">
                   <label className="field-label mb-2 block">How can we help? <span className="text-red-500">*</span></label>
-                  <textarea name="message" value={formData.message} onChange={handleChange} required rows={6} placeholder="Tell us about your requirement..." className="input" />
+                  <textarea name="message" value={formData.message} onChange={handleChange} required rows={6} placeholder="Tell us about your requirement..." className="input mt-1" />
                 </div>
                 <button disabled={isLoading} className="submit-btn w-full lg:w-auto max-w-sm mx-auto block">
                   {isLoading ? (
