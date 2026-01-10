@@ -184,7 +184,7 @@ export default function ContactPage() {
 
             {/* RIGHT: MAP */}
             {settings?.mapEmbedUrl && (
-              <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+              <div className="bg-sky-50/60 border border-gray-200 rounded-3xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
                 <div className="flex-grow relative">
                   <div
                     className="absolute inset-0 w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
