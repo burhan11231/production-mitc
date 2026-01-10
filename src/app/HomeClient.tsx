@@ -423,7 +423,7 @@ export default function HomeClient() {
                     </div>
                     <div>
                       <label className="field-label mb-1.5 block">How can we help? <span className="text-red-500">*</span></label>
-                      <textarea name="message" value={formData.message} onChange={handleChange} required rows={4} placeholder="Tell us about your requirement — laptop model, usage purpose, preferred specifications, budget, or any questions you have. Our team will respond shortly." className="input py-3 mt-2" />
+                      <textarea name="message" value={formData.message} onChange={handleChange} required rows={4} placeholder="Tell us about your requirement — laptop model, usage purpose, preferred specifications, budget, or any questions you have. Our team will respond shortly." className="input py-3" />
                     </div>
                     <button disabled={isLoading} className="submit-btn h-12 text-sm">
                       {isLoading ? (
