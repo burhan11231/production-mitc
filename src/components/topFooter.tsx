@@ -45,6 +45,8 @@ export default function TopFooter() {
           );
           const avg = Math.round((sum / count) * 10) / 10;
           setRatingStats({ avg, count });
+        } else {
+          setRatingStats({ avg: 0, count: 0 });
         }
       } catch (err) {
         console.error('Error fetching ratings:', err);
@@ -58,16 +60,16 @@ export default function TopFooter() {
 
   return (
     <section className="w-full bg-white border-b border-gray-100">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-8">
-        <div className="flex flex-col md:flex-row gap-6 md:gap-8 justify-between">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-10">
+        <div className="flex flex-col md:flex-row gap-8 md:items-center md:justify-between">
 
-          {/* Location — full width on mobile */}
+          {/* Location */}
           <div className="w-full md:w-auto space-y-1">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">
               Gaw Kadal, Maisuma
             </h2>
 
-            <p className="text-xs md:text-sm text-gray-500 whitespace-nowrap">
+            <p className="text-xs md:text-sm text-gray-500 truncate">
               Srinagar, J&K — 190001
             </p>
 
@@ -75,22 +77,22 @@ export default function TopFooter() {
               href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-sm font-semibold text-gray-900 hover:underline pt-1"
+              className="inline-block text-sm font-semibold text-gray-900 hover:underline"
             >
               Get Directions →
             </a>
           </div>
 
-          {/* Ratings — full width on mobile */}
-          <div className="w-full md:w-auto bg-gray-50/50 p-4 md:p-5 rounded-2xl border border-gray-100">
+          {/* Ratings */}
+          <div className="w-full md:w-auto md:min-w-[240px] md:bg-gray-50/50 md:border md:border-gray-100 md:rounded-2xl md:p-5">
             {isLoading ? (
               <div className="animate-pulse space-y-2">
                 <div className="h-4 w-32 bg-gray-200 rounded" />
                 <div className="h-3 w-24 bg-gray-200 rounded" />
               </div>
             ) : (
-              <div className="space-y-1">
-                <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <StarIcon
@@ -106,17 +108,14 @@ export default function TopFooter() {
                       {' '}({ratingStats.count})
                     </span>
                   </span>
-
-                  {/* ~10px visual spacing */}
-                  <span className="mx-2 text-gray-300">|</span>
-
-                  <Link
-                    href="/ratings"
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    Read customer reviews →
-                  </Link>
                 </div>
+
+                <Link
+                  href="/ratings"
+                  className="block text-xs font-bold text-blue-600 hover:text-blue-700"
+                >
+                  Read customer reviews →
+                </Link>
               </div>
             )}
           </div>
