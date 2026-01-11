@@ -11,6 +11,7 @@ import {
   Timestamp,
   deleteDoc,
   doc,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
@@ -61,7 +62,7 @@ export default function RatingsPage() {
     }
   };
 
-  /* ---------------- FETCH CURRENT USER REVIEW ---------------- */
+  /* ---------------- FETCH CURRENT USER REVIEW (BY UID) ---------------- */
   const fetchMyReview = async () => {
     if (!user) {
       setMyReview(null);
@@ -69,18 +70,12 @@ export default function RatingsPage() {
     }
 
     try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('userId', '==', user.uid),
-        limit(1)
-      );
+      const snap = await getDoc(doc(db, 'reviews', user.uid));
 
-      const snap = await getDocs(q);
-
-      if (!snap.empty) {
+      if (snap.exists()) {
         setMyReview({
-          id: snap.docs[0].id,
-          ...(snap.docs[0].data() as Omit<Review, 'id'>),
+          id: snap.id,
+          ...(snap.data() as Omit<Review, 'id'>),
         });
       } else {
         setMyReview(null);
@@ -168,7 +163,6 @@ export default function RatingsPage() {
                 </p>
               </div>
 
-              {/* CTA */}
               {!user && (
                 <button
                   onClick={() => toast.error('Login to write a review')}
@@ -242,7 +236,7 @@ export default function RatingsPage() {
                         <button
                           onClick={async () => {
                             if (!confirm('Delete your review?')) return;
-                            await deleteDoc(doc(db, 'reviews', r.id));
+                            await deleteDoc(doc(db, 'reviews', user.uid));
                             toast.success('Review deleted');
                             fetchReviews();
                             fetchMyReview();
@@ -260,7 +254,9 @@ export default function RatingsPage() {
               <div className="bg-white p-16 rounded-3xl border text-center">
                 <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
                 <h3 className="font-bold text-xl">No reviews yet</h3>
-                <p className="text-gray-500">Be the first to share your experience.</p>
+                <p className="text-gray-500">
+                  Be the first to share your experience.
+                </p>
               </div>
             )}
           </div>
