@@ -448,31 +448,31 @@ export default function ProfilePage() {
 
   /* ---------------- GOOGLE LINKING ---------------- */
 
-  const connectGoogle = async () => {
-    if (
-      !auth.currentUser ||
-      auth.currentUser.providerData.some(p => p.providerId === 'google.com')
-    ) {
-      toast.info('Google account already connected');
-      return;
-    }
+const connectGoogle = async () => {
+  if (
+    !auth.currentUser ||
+    auth.currentUser.providerData.some(p => p.providerId === 'google.com')
+  ) {
+    toast('Google account already connected');
+    return;
+  }
 
-    try {
-      const provider = new GoogleAuthProvider();
-      await linkWithPopup(auth.currentUser, provider);
-      toast.success('Google account connected successfully');
-    } catch (error: any) {
-      const code = error.code;
-      
-      if (code === 'auth/popup-blocked') {
-        toast.error('Popup blocked. Please allow popups and try again');
-      } else if (code === 'auth/popup-closed-by-user') {
-        toast.info('Google connection cancelled');
-      } else {
-        toast.error(error.message || 'Failed to connect Google account');
-      }
+  try {
+    const provider = new GoogleAuthProvider();
+    await linkWithPopup(auth.currentUser, provider);
+    toast.success('Google account connected successfully');
+  } catch (error: any) {
+    const code = error?.code;
+
+    if (code === 'auth/popup-blocked') {
+      toast.error('Popup blocked. Please allow popups and try again');
+    } else if (code === 'auth/popup-closed-by-user') {
+      toast('Google connection cancelled');
+    } else {
+      toast.error(error?.message || 'Failed to connect Google account');
     }
-  };
+  }
+};
 
   /* ---------------- ACCOUNT ACTIONS ---------------- */
 
