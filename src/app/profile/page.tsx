@@ -249,7 +249,7 @@ export default function ProfilePage() {
       if (snap.exists()) {
         const data = snap.data();
         const merged = {
-          name: data.name || user.displayName || '',
+          name: user?.name || '',
           phone: data.phone || '',
           photoURL: data.photoURL || '',
           email: user.email!,
