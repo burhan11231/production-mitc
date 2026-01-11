@@ -17,7 +17,9 @@ import {
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
-type FilterMode = 'all' | 'published' | 'hidden';
+/* ---------------- TYPES ---------------- */
+
+type FilterMode = 'all' | 'published' | 'pending';
 type SortMode = 'newest' | 'oldest';
 
 interface Review {
@@ -27,11 +29,13 @@ interface Review {
   userEmail?: string;
   rating: number;
   comment: string;
+  status: 'pending' | 'published';
   createdAt?: Timestamp | Date | string | number | null;
-  published?: boolean;
 }
 
-export default function RatingsPage() {
+/* ---------------- COMPONENT ---------------- */
+
+export default function AdminReviewsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
@@ -41,7 +45,8 @@ export default function RatingsPage() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [sort, setSort] = useState<SortMode>('newest');
 
-  // ---- Guard: admin only ----
+  /* ---------------- ADMIN GUARD ---------------- */
+
   useEffect(() => {
     if (!isLoading && user?.role !== 'admin') {
       toast.error('Admin access required');
@@ -54,6 +59,8 @@ export default function RatingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.role, sort]);
 
+  /* ---------------- FETCH ---------------- */
+
   const fetchReviews = async () => {
     setReviewsLoading(true);
     try {
@@ -61,58 +68,65 @@ export default function RatingsPage() {
         collection(db, 'reviews'),
         orderBy('createdAt', sort === 'newest' ? 'desc' : 'asc')
       );
+
       const snap = await getDocs(q);
 
-      const reviewsData = snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<Review, 'id'>),
-      })) as Review[];
-
-      setReviews(reviewsData);
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
+      setReviews(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Review, 'id'>),
+        }))
+      );
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to load reviews');
     } finally {
       setReviewsLoading(false);
     }
   };
 
-  const formatDate = (createdAt: Review['createdAt']) => {
+  /* ---------------- HELPERS ---------------- */
+
+  const formatDate = (v: Review['createdAt']) => {
     try {
-      // Firestore Timestamp
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (createdAt && typeof (createdAt as any).toDate === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (createdAt as any).toDate().toLocaleDateString();
-      }
-      if (createdAt instanceof Date) return createdAt.toLocaleDateString();
-      if (typeof createdAt === 'number') return new Date(createdAt).toLocaleDateString();
-      if (typeof createdAt === 'string') return new Date(createdAt).toLocaleDateString();
+      // @ts-ignore
+      if (v?.toDate) return v.toDate().toLocaleDateString();
+      if (v instanceof Date) return v.toLocaleDateString();
+      if (typeof v === 'number') return new Date(v).toLocaleDateString();
+      if (typeof v === 'string') return new Date(v).toLocaleDateString();
       return '';
     } catch {
       return '';
     }
   };
 
-  const displayedReviews = useMemo(() => {
-    const list = [...reviews];
+  /* ---------------- FILTERED LIST ---------------- */
 
-    if (filter === 'published') return list.filter((r) => r.published === true);
-    if (filter === 'hidden') return list.filter((r) => !r.published);
-    return list;
+  const displayedReviews = useMemo(() => {
+    if (filter === 'published')
+      return reviews.filter((r) => r.status === 'published');
+    if (filter === 'pending')
+      return reviews.filter((r) => r.status === 'pending');
+    return reviews;
   }, [reviews, filter]);
+
+  /* ---------------- STATS ---------------- */
+
+  const counts = useMemo(() => {
+    const published = reviews.filter((r) => r.status === 'published').length;
+    const pending = reviews.filter((r) => r.status === 'pending').length;
+    return { all: reviews.length, published, pending };
+  }, [reviews]);
 
   const averageRating = useMemo(() => {
     if (!displayedReviews.length) return 0;
-    const avg = displayedReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / displayedReviews.length;
+    const avg =
+      displayedReviews.reduce((sum, r) => sum + r.rating, 0) /
+      displayedReviews.length;
     return Math.round(avg * 10) / 10;
   }, [displayedReviews]);
 
-  const counts = useMemo(() => {
-    const publishedCount = reviews.filter((r) => r.published === true).length;
-    const hiddenCount = reviews.length - publishedCount;
-    return { all: reviews.length, published: publishedCount, hidden: hiddenCount };
-  }, [reviews]);
+  /* ---------------- ACTIONS ---------------- */
 
   const handleDelete = async (reviewId: string, userName?: string) => {
     if (!confirm(`Delete review${userName ? ` by ${userName}` : ''}?`)) return;
@@ -120,161 +134,145 @@ export default function RatingsPage() {
     try {
       await deleteDoc(doc(db, 'reviews', reviewId));
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-      toast.success('Review deleted successfully');
-    } catch (error) {
-      console.error('Error deleting review:', error);
+      toast.success('Review deleted');
+    } catch {
       toast.error('Failed to delete review');
     }
   };
 
-  const handleTogglePublish = async (reviewId: string, nextPublished: boolean) => {
-    // Optimistic UI update (fast UI)
+  const handleToggleStatus = async (
+    reviewId: string,
+    nextStatus: 'pending' | 'published'
+  ) => {
+    // optimistic
     setReviews((prev) =>
-      prev.map((r) => (r.id === reviewId ? { ...r, published: nextPublished } : r))
+      prev.map((r) =>
+        r.id === reviewId ? { ...r, status: nextStatus } : r
+      )
     );
 
     try {
       await updateDoc(doc(db, 'reviews', reviewId), {
-        published: nextPublished,
+        status: nextStatus,
         moderatedAt: new Date(),
         moderatedBy: user?.uid || null,
       });
-      toast.success(nextPublished ? 'Review published' : 'Review hidden');
-    } catch (error) {
-      console.error('Error updating publish state:', error);
-      // revert on failure
+
+      toast.success(
+        nextStatus === 'published'
+          ? 'Review published'
+          : 'Review moved to pending'
+      );
+    } catch {
+      // revert
       setReviews((prev) =>
-        prev.map((r) => (r.id === reviewId ? { ...r, published: !nextPublished } : r))
+        prev.map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                status: nextStatus === 'published' ? 'pending' : 'published',
+              }
+            : r
+        )
       );
       toast.error('Failed to update review');
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="spinner" />
-      </div>
-    );
-  }
+  if (isLoading || user?.role !== 'admin') return null;
 
-  if (user?.role !== 'admin') return null;
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="text-primary-600 hover:text-primary-700 text-sm mb-2 inline-block">
+      {/* HEADER */}
+      <div className="bg-white border-b py-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <Link href="/dashboard" className="text-sm text-blue-600">
             ← Back to Dashboard
           </Link>
 
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="mt-4 flex flex-col gap-4 md:flex-row md:justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Review Moderation</h1>
-              <p className="text-gray-600 mt-2 text-sm">
-                Publish/hide reviews (public page shows only published reviews). {/* per Option A [web:6] */}
+              <h1 className="text-4xl font-bold">Review Moderation</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Approve or reject customer reviews.
               </p>
             </div>
 
             <div className="text-right">
-              <div className="flex items-center gap-2 justify-end">
-                <div className="text-3xl font-bold text-yellow-500">{averageRating}</div>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <span
-                      key={i}
-                      className={`text-2xl ${i <= Math.round(averageRating) ? 'text-yellow-500' : 'text-gray-300'}`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
+              <div className="text-3xl font-bold text-yellow-500">
+                {averageRating}
               </div>
-              <p className="text-gray-600 text-sm">
-                ({displayedReviews.length} shown • {counts.all} total)
+              <p className="text-sm text-gray-600">
+                {displayedReviews.length} shown • {counts.all} total
               </p>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  filter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200'
-                }`}
-              >
-                All ({counts.all})
-              </button>
-              <button
-                onClick={() => setFilter('published')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  filter === 'published'
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-700 border-gray-200'
-                }`}
-              >
-                Published ({counts.published})
-              </button>
-              <button
-                onClick={() => setFilter('hidden')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  filter === 'hidden'
-                    ? 'bg-amber-600 text-white border-amber-600'
-                    : 'bg-white text-gray-700 border-gray-200'
-                }`}
-              >
-                Hidden ({counts.hidden})
-              </button>
-            </div>
+          {/* CONTROLS */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            {(['all', 'published', 'pending'] as FilterMode[]).map(
+              (mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setFilter(mode)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
+                    filter === mode
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  {mode.charAt(0).toUpperCase() + mode.slice(1)} (
+                  {counts[mode]})
+                </button>
+              )
+            )}
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSort((s) => (s === 'newest' ? 'oldest' : 'newest'))}
-                className="px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                title="Toggle sort order"
-              >
-                Sort: {sort === 'newest' ? 'Newest first' : 'Oldest first'}
-              </button>
+            <button
+              onClick={() =>
+                setSort((s) => (s === 'newest' ? 'oldest' : 'newest'))
+              }
+              className="px-4 py-2 rounded-lg border bg-white text-sm"
+            >
+              Sort: {sort === 'newest' ? 'Newest' : 'Oldest'}
+            </button>
 
-              <button
-                onClick={fetchReviews}
-                className="px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-              >
-                Refresh
-              </button>
-            </div>
+            <button
+              onClick={fetchReviews}
+              className="px-4 py-2 rounded-lg border bg-white text-sm"
+            >
+              Refresh
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Reviews List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* LIST */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {reviewsLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="spinner" />
-          </div>
-        ) : displayedReviews.length > 0 ? (
+          <p className="text-center">Loading…</p>
+        ) : displayedReviews.length ? (
           <div className="space-y-6">
-            {displayedReviews.map((review) => {
-              const isPublished = review.published === true;
+            {displayedReviews.map((r) => {
+              const isPublished = r.status === 'published';
 
               return (
-                <div key={review.id} className="card p-8">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start mb-4">
+                <div key={r.id} className="bg-white p-8 rounded-2xl border">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-4">
                     <div>
                       <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-gray-900">{review.userName || 'Anonymous'}</h3>
+                        <h3 className="text-xl font-bold">
+                          {r.userName || 'Anonymous'}
+                        </h3>
                         <span
-                          className={`text-xs font-bold px-2 py-1 rounded-full border ${
+                          className={`text-xs px-2 py-1 rounded-full ${
                             isPublished
-                              ? 'bg-green-50 text-green-700 border-green-200'
-                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-yellow-100 text-yellow-700'
                           }`}
                         >
-                          {isPublished ? 'Published' : 'Hidden'}
+                          {isPublished ? 'Published' : 'Pending'}
                         </span>
                       </div>
 
@@ -282,53 +280,59 @@ export default function RatingsPage() {
                         {[1, 2, 3, 4, 5].map((i) => (
                           <span
                             key={i}
-                            className={`text-xl ${i <= review.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                            className={`text-xl ${
+                              i <= r.rating
+                                ? 'text-yellow-500'
+                                : 'text-gray-300'
+                            }`}
                           >
                             ★
                           </span>
                         ))}
                       </div>
-
-                      {!!review.userEmail && (
-                        <p className="text-xs text-gray-500 mt-2">{review.userEmail}</p>
-                      )}
                     </div>
 
-                    <div className="sm:text-right">
-                      <p className="text-sm text-gray-500 mb-3">{formatDate(review.createdAt)}</p>
-
-                      <div className="flex gap-2 sm:justify-end flex-wrap">
-                        <button
-                          onClick={() => handleTogglePublish(review.id, !isPublished)}
-                          className={`px-3 py-2 rounded-lg text-sm font-semibold border ${
-                            isPublished
-                              ? 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50'
-                              : 'bg-white text-green-700 border-green-200 hover:bg-green-50'
-                          }`}
-                        >
-                          {isPublished ? 'Hide' : 'Publish'}
-                        </button>
-
-                        <button
-                          onClick={() => handleDelete(review.id, review.userName)}
-                          className="px-3 py-2 rounded-lg text-sm font-semibold border border-red-200 text-red-700 bg-white hover:bg-red-50"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                    <div className="text-sm text-gray-500 text-right">
+                      {formatDate(r.createdAt)}
                     </div>
                   </div>
 
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{review.comment}</p>
+                  <p className="text-gray-700 whitespace-pre-line mb-6">
+                    {r.comment}
+                  </p>
+
+                  <div className="flex gap-3 flex-wrap">
+                    <button
+                      onClick={() =>
+                        handleToggleStatus(
+                          r.id,
+                          isPublished ? 'pending' : 'published'
+                        )
+                      }
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
+                        isPublished
+                          ? 'border-yellow-300 text-yellow-700'
+                          : 'border-green-300 text-green-700'
+                      }`}
+                    >
+                      {isPublished ? 'Unpublish' : 'Publish'}
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(r.id, r.userName)}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold border border-red-300 text-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="card p-12 text-center">
-            <p className="text-gray-600 text-lg">No reviews found</p>
-            <p className="text-gray-500">Try changing the filter or refresh.</p>
-          </div>
+          <p className="text-center text-gray-600">
+            No reviews found.
+          </p>
         )}
       </div>
     </div>
