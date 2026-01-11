@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { db, auth, storage } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import {
   doc,
   getDoc,
@@ -20,7 +20,6 @@ import {
   GoogleAuthProvider,
   linkWithPopup,
 } from 'firebase/auth';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import toast from 'react-hot-toast';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
 import ReviewForm from '@/components/ReviewForm';
@@ -310,7 +309,6 @@ export default function ProfilePage() {
     );
   }, [profile]);
 
-  // REPLACED REACT-USE WITH NATIVE HOOK
   useEffect(() => {
     if (!hasUnsavedChanges) return;
 
@@ -327,7 +325,8 @@ export default function ProfilePage() {
 
   const completion = useMemo(() => {
     let score = 0;
-    if (profile.photoURL && profile.photoURL.startsWith('http')) score++;
+    // UPDATED: Check length instead of startsWith('http') to support base64
+    if (profile.photoURL && profile.photoURL.length > 100) score++;
     if (profile.name.trim()) score++;
     if (profile.phone.trim()) score++;
     return Math.round((score / 3) * 100);
@@ -358,19 +357,14 @@ export default function ProfilePage() {
     setSaving(true);
     
     try {
-      // Upload photo if changed
-      let photoURL = profile.photoURL;
-      if (profile.photoURL && profile.photoURL !== originalProfile.current?.photoURL) {
-        const storageRef = ref(storage, `profile/${user.uid}/photo.jpg`);
-        await uploadString(storageRef, profile.photoURL, 'data_url');
-        photoURL = await getDownloadURL(storageRef);
-      }
+      // Use the base64 string directly from state
+      const photoURL = profile.photoURL;
 
       // Update Firestore
       await updateDoc(doc(db, 'users', user.uid), {
         name: profile.name,
         phone: profile.phone,
-        photoURL,
+        photoURL: photoURL,
         updatedAt: serverTimestamp(),
         ...(profile.name !== originalProfile.current?.name && {
           lastNameChange: serverTimestamp(),
@@ -378,7 +372,7 @@ export default function ProfilePage() {
       });
 
       // Update auth profile
-      await updateProfile(user, { displayName: profile.name, photoURL });
+      await updateProfile(user, { displayName: profile.name, photoURL: photoURL });
 
       // Sync to review if exists
       if (review) {
@@ -406,7 +400,17 @@ export default function ProfilePage() {
 
     toast.loading('Processing image...', { id: 'image' });
     try {
+      // Compress and set as base64 string
       const base64 = await compressImage(file, 700);
+
+      // ADDED: Guard against Firestore 1MB limit violation
+      // 250,000 chars is roughly ~180-250KB depending on encoding, safe for Firestore
+      if (base64.length > 250_000) {
+        toast.dismiss('image');
+        toast.error('Image is too large. Please choose a simpler photo.', { duration: 4000 });
+        return;
+      }
+
       setProfile((p) => ({ ...p, photoURL: base64 }));
       toast.success('Image ready to save', { id: 'image' });
     } catch {
@@ -437,7 +441,7 @@ export default function ProfilePage() {
     setPasswordConfirmOpen(true);
   }, []);
 
-  /* ---------------- GOOGLE LINKING (Fixed auth.currentUser check) ---------------- */
+  /* ---------------- GOOGLE LINKING ---------------- */
 
   const connectGoogle = async () => {
     if (
