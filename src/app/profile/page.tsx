@@ -448,10 +448,12 @@ export default function ProfilePage() {
 
   /* ---------------- GOOGLE LINKING ---------------- */
 
-const connectGoogle = async () => {
+const connectGoogle = useCallback(async () => {
+  const currentUser = auth.currentUser;
+
   if (
-    !auth.currentUser ||
-    auth.currentUser.providerData.some(p => p.providerId === 'google.com')
+    !currentUser ||
+    currentUser.providerData?.some(p => p.providerId === 'google.com')
   ) {
     toast('Google account already connected');
     return;
@@ -459,7 +461,7 @@ const connectGoogle = async () => {
 
   try {
     const provider = new GoogleAuthProvider();
-    await linkWithPopup(auth.currentUser, provider);
+    await linkWithPopup(currentUser, provider);
     toast.success('Google account connected successfully');
   } catch (error: any) {
     const code = error?.code;
@@ -472,17 +474,20 @@ const connectGoogle = async () => {
       toast.error(error?.message || 'Failed to connect Google account');
     }
   }
+}, []);
+
+/* ---------------- ACCOUNT ACTIONS ---------------- */
+
+const sendResetEmail = async () => {
+  if (!user?.email) return;
+  await sendPasswordResetEmail(auth, user.email);
+  toast.success('Password reset email sent');
 };
 
-  /* ---------------- ACCOUNT ACTIONS ---------------- */
-
-  const sendResetEmail = async () => {
-    if (!user?.email) return;
-    await sendPasswordResetEmail(auth, user.email);
-    toast.success('Password reset email sent');
-  };
-
-  const handleDeleteAccount = async (options: { keepReview: boolean; deleteAll: boolean }) => {
+const handleDeleteAccount = async (options: {
+  keepReview: boolean;
+  deleteAll: boolean;
+}) => {
   if (!user) return;
 
   const deleteAction = async () => {
@@ -508,7 +513,9 @@ const connectGoogle = async () => {
       toast.success('Account deleted');
       router.push('/login');
     } catch (error: any) {
-      toast.error('Failed to delete account: ' + (error?.message || 'Unknown error'));
+      toast.error(
+        'Failed to delete account: ' + (error?.message || 'Unknown error')
+      );
     }
   };
 
@@ -516,7 +523,10 @@ const connectGoogle = async () => {
   setDeleteModalOpen(false);
 };
 
-  const hasGoogleProvider = user?.providerData.some(p => p.providerId === 'google.com');
+/* ---------------- PROVIDER FLAGS ---------------- */
+
+const hasGoogleProvider =
+  !!user?.providerData?.some(p => p.providerId === 'google.com');
 
   if (isLoading || !user) {
     return (
