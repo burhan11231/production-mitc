@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import {
   doc,
   getDoc,
@@ -51,6 +51,7 @@ export default function ProfilePage() {
   const [loadingReview, setLoadingReview] = useState(true);
 
   const originalProfile = useRef<any>(null);
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMode, setDeleteMode] = useState<'keep' | 'review' | 'all'>(
     'keep'
@@ -67,15 +68,15 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) return;
 
-    const baseProfile = {
+    const base = {
       name: user.displayName || '',
       email: user.email || '',
       phone: '',
       photoURL: '',
     };
 
-    setProfile(baseProfile);
-    originalProfile.current = baseProfile;
+    setProfile(base);
+    originalProfile.current = base;
 
     loadProfile();
     loadReview();
@@ -83,17 +84,18 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     const snap = await getDoc(doc(db, 'users', user!.uid));
-    if (snap.exists()) {
-      const d = snap.data();
-      const merged = {
-        name: d.name || '',
-        phone: d.phone || '',
-        photoURL: d.photoURL || '',
-        email: user!.email!,
-      };
-      setProfile(merged);
-      originalProfile.current = merged;
-    }
+    if (!snap.exists()) return;
+
+    const d = snap.data();
+    const merged = {
+      name: d.name || '',
+      phone: d.phone || '',
+      photoURL: d.photoURL || '',
+      email: user!.email!,
+    };
+
+    setProfile(merged);
+    originalProfile.current = merged;
   };
 
   /* ---------------- LOAD REVIEW ---------------- */
@@ -116,7 +118,7 @@ export default function ProfilePage() {
     }
   };
 
-  /* ---------------- UNSAVED CHANGES GUARD ---------------- */
+  /* ---------------- UNSAVED CHANGES ---------------- */
 
   const hasUnsavedChanges = useMemo(() => {
     return (
@@ -195,6 +197,7 @@ export default function ProfilePage() {
 
   const saveReview = async () => {
     if (!review) return;
+
     setSaving(true);
     try {
       await updateDoc(doc(db, 'reviews', user!.uid), {
@@ -203,6 +206,7 @@ export default function ProfilePage() {
         status: 'pending',
         updatedAt: serverTimestamp(),
       });
+
       toast.success('Review updated (pending approval)');
       setEditingReview(false);
       loadReview();
@@ -215,6 +219,7 @@ export default function ProfilePage() {
 
   const deleteReview = async () => {
     if (!confirm('Delete your review?')) return;
+
     setSaving(true);
     try {
       await deleteDoc(doc(db, 'reviews', user!.uid));
@@ -229,24 +234,32 @@ export default function ProfilePage() {
 
   const sendReset = async () => {
     if (!user?.email) return;
-    await sendPasswordResetEmail(user.auth, user.email);
+    await sendPasswordResetEmail(auth, user.email);
     toast.success('Password reset email sent');
   };
 
   const reverify = async () => {
-    await reload(user!.auth.currentUser!);
+    if (!auth.currentUser) {
+      toast.error('Not authenticated');
+      return;
+    }
+    await reload(auth.currentUser);
     toast.success('Account reverified');
   };
 
   const deleteAccount = async () => {
     try {
+      if (!auth.currentUser) throw new Error('Not authenticated');
+
       if (deleteMode !== 'keep') {
         await deleteDoc(doc(db, 'reviews', user!.uid));
       }
+
       if (deleteMode === 'all') {
         await deleteDoc(doc(db, 'users', user!.uid));
       }
-      await deleteUser(user!.auth.currentUser!);
+
+      await deleteUser(auth.currentUser);
       toast.success('Account deleted');
       router.push('/');
     } catch {
@@ -297,7 +310,6 @@ export default function ProfilePage() {
           </label>
         </div>
 
-        {/* Fields */}
         <input
           className="w-full border rounded-xl px-4 py-3"
           value={profile.name}
@@ -306,11 +318,13 @@ export default function ProfilePage() {
           }
           placeholder="Full name"
         />
+
         <input
           disabled
           className="w-full border rounded-xl px-4 py-3 bg-gray-100"
           value={profile.email}
         />
+
         <input
           className="w-full border rounded-xl px-4 py-3"
           value={profile.phone}
