@@ -18,7 +18,7 @@ import {
 } from 'firebase/auth';
 import toast from 'react-hot-toast';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
-import ReviewForm from '@/components/reviews/ReviewForm';
+import ReviewForm from '@/components/ReviewForm';
 
 /* ---------------- TYPES ---------------- */
 
