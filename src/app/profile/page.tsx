@@ -647,9 +647,10 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            )}
+                </div>  {/* Added missing closing div for the profile card */}
+              )}
+            </div>
+            {/* Removed the extra ')}' here */}
 
             {/* REVIEW SECTION */}
             <div className="space-y-6 lg:space-y-8">
