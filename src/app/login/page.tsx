@@ -32,7 +32,7 @@ export default function LoginPage() {
   const keyFail = `login_fail_${email}`;
   const keyLock = `login_lock_${email}`;
 
-  const isLocked = lockedUntil && Date.now() < lockedUntil;
+  const isLocked = Boolean(lockedUntil && Date.now() < lockedUntil);
 
   useEffect(() => {
     if (!email) return;
