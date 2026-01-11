@@ -34,6 +34,18 @@ import TopFooter from '@/components/topFooter';
 /* ---------------- CONSTANTS ---------------- */
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
+
+const capabilities = [
+  { label: 'Diagnostics', icon: FaTools },
+  { label: 'Chip-Level Repair', icon: FaMicrochip },
+  { label: 'Screen Replacement', icon: FaDesktop },
+  { label: 'Battery Replacement', icon: FaBatteryHalf },
+  { label: 'OS Installation', icon: FaWindows },
+  { label: 'BIOS Update', icon: FaServer },
+  { label: 'RAM Upgrade', icon: FaMemory },
+  { label: 'SSD Upgrade', icon: MdStorage },
+];
+
 const MAX_MESSAGES_PER_MONTH = 30;
 
 /* ---------------- COMPONENT ---------------- */
