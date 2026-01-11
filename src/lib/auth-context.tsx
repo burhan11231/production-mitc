@@ -1,70 +1,80 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth, db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  onAuthStateChanged,
+  signOut,
+  User,
+} from 'firebase/auth';
+import {
+  doc,
+  getDoc,
+} from 'firebase/firestore';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { auth, db } from '@/lib/firebase';
 
-interface UserData extends Partial<User> {
+export interface AppUser {
   uid: string;
-  role: 'user' | 'admin';
   name: string;
   email: string;
   phone: string;
+  role: 'user' | 'admin';
   photoURL: string | null;
+  providers: string[];
 }
 
 interface AuthContextType {
-  user: UserData | null;
+  user: AppUser | null;
   isLoading: boolean;
   logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      if (authUser) {
-        try {
-          const userDocRef = doc(db, 'users', authUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          
-          if (userDocSnap.exists()) {
-            const dbData = userDocSnap.data();
-            setUser({
-              ...authUser,
-              uid: authUser.uid,
-              role: dbData.role || 'user',
-              name: dbData.name || authUser.displayName || 'User',
-              email: dbData.email || authUser.email || '',
-              phone: dbData.phone || '',
-              photoURL: dbData.photoURL || authUser.photoURL || null,
-            });
-          } else {
-            // Fallback if doc hasn't been created yet
-            setUser({
-              uid: authUser.uid,
-              role: 'user',
-              name: authUser.displayName || 'User',
-              email: authUser.email || '',
-              phone: '',
-              photoURL: authUser.photoURL || null,
-            } as UserData);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      } else {
+    return onAuthStateChanged(auth, async (authUser) => {
+      if (!authUser) {
         setUser(null);
+        setIsLoading(false);
+        return;
       }
+
+      const snap = await getDoc(doc(db, 'users', authUser.uid));
+
+      if (snap.exists()) {
+        const data = snap.data();
+        setUser({
+          uid: authUser.uid,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          role: data.role || 'user',
+          photoURL: data.photoURL || authUser.photoURL || null,
+          providers: authUser.providerData.map(p => p.providerId),
+        });
+      } else {
+        // Safety fallback
+        setUser({
+          uid: authUser.uid,
+          name: authUser.displayName || 'User',
+          email: authUser.email || '',
+          phone: '',
+          role: 'user',
+          photoURL: authUser.photoURL || null,
+          providers: authUser.providerData.map(p => p.providerId),
+        });
+      }
+
       setIsLoading(false);
     });
-
-    return () => unsubscribe();
   }, []);
 
   const logout = async () => {
@@ -80,7 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used inside AuthProvider');
+  }
+  return ctx;
 }
