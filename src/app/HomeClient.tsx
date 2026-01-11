@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import {
   FaTools,
@@ -16,112 +17,160 @@ import { RiEyeLine } from 'react-icons/ri';
 import { TbArrowsUpRight, TbChecks } from 'react-icons/tb';
 import Link from 'next/link';
 
-// Added Imports for Form Logic
 import { useAuth } from '@/lib/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getCountFromServer,
+} from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 import TopFooter from '@/components/topFooter';
 
+/* ---------------- CONSTANTS ---------------- */
+
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
+const MAX_MESSAGES_PER_MONTH = 30;
 
-const capabilities = [
-  { label: 'Diagnostics', icon: FaTools },
-  { label: 'Chip-Level Repair', icon: FaMicrochip },
-  { label: 'Screen Replacement', icon: FaDesktop },
-  { label: 'Battery Replacement', icon: FaBatteryHalf },
-  { label: 'OS Installation', icon: FaWindows },
-  { label: 'BIOS Update', icon: FaServer },
-  { label: 'RAM Upgrade', icon: FaMemory },
-  { label: 'SSD Upgrade', icon: MdStorage },
-];
-
-const WHY_ACCENT =
-  'from-[#0071e3]/20 via-white/0 to-emerald-400/20';
-
-const whyChooseUs = [
-  {
-    title: '15-Day Replacement Warranty',
-    desc: 'Added peace of mind with a straightforward replacement policy on eligible devices.',
-    icon: FaShieldAlt,
-    accent: WHY_ACCENT,
-  },
-  {
-    title: 'Fair, Market-Aligned Pricing',
-    desc: 'Prices reflect real market value—no inflated tags, no artificial discounts.',
-    icon: HiOutlineCurrencyRupee,
-    accent: WHY_ACCENT,
-  },
-  {
-    title: 'Diagnostics Done in Front of You',
-    desc: 'Basic checks and demonstrations are performed openly before delivery.',
-    icon: RiEyeLine,
-    accent: WHY_ACCENT,
-  },
-  {
-    title: 'Upgrade-First Mindset',
-    desc: 'We recommend RAM, SSD, or OS upgrades when it makes more sense than replacement.',
-    icon: TbArrowsUpRight,
-    accent: WHY_ACCENT,
-  },
-  {
-    title: 'Transparent Buying Process',
-    desc: 'Specifications, condition, and limitations are clearly explained—no surprises after purchase.',
-    icon: TbChecks,
-    accent: WHY_ACCENT,
-  },
-];
+/* ---------------- COMPONENT ---------------- */
 
 export default function HomeClient() {
+  /* -------- HERO WORD ROTATION -------- */
+
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const currentWord = heroWords[currentWordIndex];
 
-  // Form State & Logic
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentWordIndex(prev => (prev + 1) % heroWords.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
+
+  /* -------- AUTH & FORM STATE -------- */
+
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: user?.displayName || '',
+    name: user?.name || '',
     email: user?.email || '',
     phone: '',
     message: '',
   });
 
+  /* -------- MESSAGE LIMIT STATE -------- */
+
+  const [messagesUsed, setMessagesUsed] = useState<number | null>(null);
+  const messagesLeft =
+    messagesUsed !== null
+      ? Math.max(0, MAX_MESSAGES_PER_MONTH - messagesUsed)
+      : null;
+
+  /* -------- AUTO-FILL USER DATA -------- */
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWordIndex((prev) => (prev + 1) % heroWords.length);
-    }, 1800);
+    if (!user) return;
 
-    return () => clearInterval(interval);
-  }, []);
+    setFormData(prev => ({
+      ...prev,
+      name: user.name || '',
+      email: user.email || '',
+      phone: user.phone || '', // only if saved in profile
+    }));
+  }, [user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  /* -------- LOAD MONTHLY MESSAGE COUNT -------- */
+
+  useEffect(() => {
+    if (!user) {
+      setMessagesUsed(null);
+      return;
+    }
+
+    const loadMessageUsage = async () => {
+      try {
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const q = query(
+          collection(db, 'leads'),
+          where('userId', '==', user.uid),
+          where('createdAt', '>=', monthStart)
+        );
+
+        const snap = await getCountFromServer(q);
+        setMessagesUsed(snap.data().count);
+      } catch {
+        // Silent fail – do not block form
+        setMessagesUsed(null);
+      }
+    };
+
+    loadMessageUsage();
+  }, [user]);
+
+  /* -------- FORM HANDLERS -------- */
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.phone) {
-      toast.error('Phone number is required');
+
+    if (messagesLeft !== null && messagesLeft <= 0) {
+      toast.error(
+        'You have reached your monthly message limit. Please try again next month.'
+      );
       return;
     }
+
+    if (!formData.message.trim()) {
+      toast.error('Message is required');
+      return;
+    }
+
     setIsLoading(true);
+
     try {
       await addDoc(collection(db, 'leads'), {
-        ...formData,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || null, // optional
+        message: formData.message.trim(),
         userId: user?.uid || null,
         read: false,
         createdAt: serverTimestamp(),
       });
+
       toast.success('Message sent successfully');
-      setFormData({ name: '', email: '', phone: '', message: '' });
+
+      // Reset message only (keep identity)
+      setFormData(prev => ({
+        ...prev,
+        phone: user?.phone || '',
+        message: '',
+      }));
+
+      setMessagesUsed(prev =>
+        prev === null ? null : prev + 1
+      );
     } catch {
       toast.error('Failed to send message');
     } finally {
       setIsLoading(false);
     }
   };
+
+  /* ---------------- UI STARTS BELOW ---------------- */
 
   return (
     <main className="overflow-x-hidden">
@@ -415,35 +464,129 @@ export default function HomeClient() {
             </div>
 
             {/* Right Column: Contact Form */}
-            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 lg:p-10">
-                <h4 className="text-2xl font-bold text-gray-900 mb-2">Send an Inquiry</h4>
-                <p className="text-sm text-gray-500 mb-8">Tell us what you need. Our team responds within working hours.</p>
+<div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 lg:p-10">
+  <h4 className="text-2xl font-bold text-gray-900 mb-1">
+    Send an Inquiry
+  </h4>
+  <p className="text-sm text-gray-500 mb-6">
+    Tell us what you need. Our team responds within working hours.
+  </p>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div>
-                    <label className="field-label mb-1.5 block">Full Name <span className="text-red-500">*</span></label>
-                    <input name="name" value={formData.name} onChange={handleChange} required placeholder="Your name" className="input h-12" />
-                  </div>
-                  <div>
-                    <label className="field-label mb-1.5 block">Phone <span className="text-red-500">*</span></label>
-                    <input name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 7006 XXX XXX" className="input h-12" />
-                  </div>
-                  <div>
-                    <label className="field-label mb-1.5 block">How can we help? <span className="text-red-500">*</span></label>
-                    <textarea name="message" value={formData.message} onChange={handleChange} required rows={3} placeholder="Laptop model, specs, or general questions..." className="input py-4" />
-                  </div>
-                  <button disabled={isLoading} className="submit-btn h-12 text-sm mt-2">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
-                        Sending...
-                      </div>
-                    ) : (
-                      'Send Message ↗'
-                    )}
-                  </button>
-                </form>
-            </div>
+  {/* MESSAGE LIMIT STATUS */}
+  {messagesLeft !== null && (
+    <div
+      className={`mb-6 rounded-xl px-4 py-3 text-sm font-semibold flex items-center justify-between ${
+        messagesLeft > 5
+          ? 'bg-emerald-50 text-emerald-700'
+          : messagesLeft > 0
+          ? 'bg-amber-50 text-amber-700'
+          : 'bg-red-50 text-red-700'
+      }`}
+    >
+      <span>Monthly message quota</span>
+      <span>
+        {messagesLeft} / {MAX_MESSAGES_PER_MONTH}
+      </span>
+    </div>
+  )}
+
+  {/* LIMIT EXCEEDED MESSAGE */}
+  {messagesLeft === 0 && (
+    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 leading-relaxed">
+      You’ve reached your monthly inquiry limit.
+      <br />
+      Please try again next month or visit us in store for immediate assistance.
+    </div>
+  )}
+
+  <form onSubmit={handleSubmit} className="space-y-5">
+    {/* NAME */}
+    <div>
+      <label className="field-label mb-1.5 block">
+        Full Name <span className="text-red-500">*</span>
+      </label>
+      <input
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+        placeholder="Your name"
+        className="input h-12"
+        disabled={isLoading || messagesLeft === 0}
+      />
+    </div>
+
+    {/* EMAIL */}
+    <div>
+      <label className="field-label mb-1.5 block">
+        Email <span className="text-red-500">*</span>
+      </label>
+      <input
+        type="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+        placeholder="you@example.com"
+        className="input h-12"
+        disabled={isLoading || messagesLeft === 0}
+      />
+    </div>
+
+    {/* PHONE (OPTIONAL) */}
+    <div>
+      <label className="field-label mb-1.5 block">
+        Phone <span className="text-gray-400">(optional)</span>
+      </label>
+      <input
+        name="phone"
+        value={formData.phone}
+        onChange={handleChange}
+        placeholder="+91 7006 XXX XXX"
+        className="input h-12"
+        disabled={isLoading || messagesLeft === 0}
+      />
+      <p className="mt-1 text-xs text-gray-400">
+        Used only for this inquiry. Not saved to your profile.
+      </p>
+    </div>
+
+    {/* MESSAGE */}
+    <div>
+      <label className="field-label mb-1.5 block">
+        How can we help? <span className="text-red-500">*</span>
+      </label>
+      <textarea
+        name="message"
+        value={formData.message}
+        onChange={handleChange}
+        required
+        rows={4}
+        placeholder="Laptop model, specifications, or any questions you have..."
+        className="input py-4 resize-none"
+        disabled={isLoading || messagesLeft === 0}
+      />
+    </div>
+
+    {/* SUBMIT */}
+    <button
+      type="submit"
+      disabled={isLoading || messagesLeft === 0}
+      className="submit-btn h-12 text-sm mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center">
+          <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
+          Sending…
+        </div>
+      ) : messagesLeft === 0 ? (
+        'Monthly Limit Reached'
+      ) : (
+        'Send Message ↗'
+      )}
+    </button>
+  </form>
+</div>
 
           </div>
         </div>
