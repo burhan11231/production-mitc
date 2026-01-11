@@ -372,7 +372,12 @@ export default function ProfilePage() {
       });
 
       // Update auth profile
-      await updateProfile(user, { displayName: profile.name, photoURL: photoURL });
+      if (auth.currentUser) {
+  await updateProfile(auth.currentUser, {
+    displayName: profile.name,
+    photoURL: photoURL,
+  });
+}
 
       // Sync to review if exists
       if (review) {
