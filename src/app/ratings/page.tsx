@@ -9,16 +9,16 @@ import {
   query,
   where,
   Timestamp,
-  deleteDoc,
   doc,
   getDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
-import { FaStar, FaPlus } from 'react-icons/fa';
+import { FaStar } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
 import ReviewForm from '@/components/ReviewForm';
+import PublicReviewGate from '@/components/PublicReviewGate';
 
 /* ---------------- TYPES ---------------- */
 
@@ -42,7 +42,7 @@ export default function RatingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  /* ---------------- FETCH PUBLIC REVIEWS ---------------- */
+  /* ---------------- FETCH PUBLISHED REVIEWS ---------------- */
 
   const fetchReviews = async () => {
     try {
@@ -61,13 +61,12 @@ export default function RatingsPage() {
           ...(d.data() as Omit<Review, 'id'>),
         }))
       );
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to load reviews');
     }
   };
 
-  /* ---------------- FETCH CURRENT USER REVIEW ---------------- */
+  /* ---------------- FETCH MY REVIEW ---------------- */
 
   const fetchMyReview = async () => {
     if (!user) {
@@ -77,17 +76,13 @@ export default function RatingsPage() {
 
     try {
       const snap = await getDoc(doc(db, 'reviews', user.uid));
-
-      if (snap.exists()) {
-        setMyReview({
-          id: snap.id,
-          ...(snap.data() as Omit<Review, 'id'>),
-        });
-      } else {
-        setMyReview(null);
-      }
-    } catch (err) {
-      console.error(err);
+      setMyReview(
+        snap.exists()
+          ? ({ id: snap.id, ...snap.data() } as Review)
+          : null
+      );
+    } catch {
+      setMyReview(null);
     }
   };
 
@@ -98,11 +93,11 @@ export default function RatingsPage() {
     );
   }, [user]);
 
-  /* ---------------- STATS (PUBLISHED ONLY) ---------------- */
+  /* ---------------- STATS ---------------- */
 
   const stats = useMemo(() => {
     if (!reviews.length)
-      return { avg: 0, count: 0, distribution: [0, 0, 0, 0, 0] };
+      return { avg: 0, count: 0 };
 
     const count = reviews.length;
     const avg =
@@ -110,12 +105,7 @@ export default function RatingsPage() {
         (reviews.reduce((a, r) => a + r.rating, 0) / count) * 10
       ) / 10;
 
-    const dist = [0, 0, 0, 0, 0];
-    reviews.forEach((r) => {
-      if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++;
-    });
-
-    return { avg, count, distribution: [...dist].reverse() };
+    return { avg, count };
   }, [reviews]);
 
   /* ---------------- DATE FORMAT ---------------- */
@@ -124,10 +114,7 @@ export default function RatingsPage() {
     try {
       // @ts-ignore
       if (v?.toDate) return v.toDate().toLocaleDateString();
-      if (v instanceof Date) return v.toLocaleDateString();
-      if (typeof v === 'number') return new Date(v).toLocaleDateString();
-      if (typeof v === 'string') return new Date(v).toLocaleDateString();
-      return '';
+      return new Date(v as any).toLocaleDateString();
     } catch {
       return '';
     }
@@ -138,23 +125,23 @@ export default function RatingsPage() {
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
       {/* HEADER */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold">
             Customer <span className="text-blue-600">Reviews</span>
           </h1>
-          <p className="text-lg text-gray-600">
-            Real feedback from verified customers.
+          <p className="text-gray-600 mt-3">
+            Real feedback from verified customers
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-8">
         <div className="grid lg:grid-cols-12 gap-8">
-          {/* LEFT – STATS */}
-          <div className="lg:col-span-4">
-            <div className="bg-white rounded-2xl shadow-sm border p-8 sticky top-8">
-              <div className="text-center mb-8">
+          {/* LEFT – STATS + GATE */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white rounded-2xl border p-8 sticky top-8">
+              <div className="text-center mb-6">
                 <div className="text-6xl font-black">{stats.avg}</div>
                 <div className="flex justify-center gap-1 my-2">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -173,37 +160,17 @@ export default function RatingsPage() {
                 </p>
               </div>
 
-              {!user && (
-                <button
-                  onClick={() => toast.error('Login to write a review')}
-                  className="w-full py-4 rounded-xl bg-gray-200 font-bold"
-                >
-                  Login to Review
-                </button>
-              )}
-
-              {user && !myReview && !showForm && (
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold hover:bg-gray-800"
-                >
-                  <FaPlus className="inline mr-2" /> Write a Review
-                </button>
-              )}
-
-              {user && myReview && myReview.status === 'pending' && (
-                <p className="mt-4 text-sm text-yellow-600 text-center">
-                  Your review is pending admin approval.
-                </p>
-              )}
+              <PublicReviewGate
+                myReview={myReview}
+                onWrite={() => setShowForm(true)}
+              />
             </div>
           </div>
 
           {/* RIGHT – LIST */}
           <div className="lg:col-span-8 space-y-6">
-            {showForm && (
+            {showForm && !myReview && (
               <ReviewForm
-                existingReview={myReview}
                 onSuccess={() => {
                   setShowForm(false);
                   fetchReviews();
@@ -249,30 +216,6 @@ export default function RatingsPage() {
                     </div>
 
                     <p className="text-gray-600">{r.comment}</p>
-
-                    {user?.uid === r.userId && (
-                      <div className="flex gap-4 mt-4">
-                        <button
-                          onClick={() => setShowForm(true)}
-                          className="text-blue-600 font-semibold text-sm"
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          onClick={async () => {
-                            if (!confirm('Delete your review?')) return;
-                            await deleteDoc(doc(db, 'reviews', user.uid));
-                            toast.success('Review deleted');
-                            fetchReviews();
-                            fetchMyReview();
-                          }}
-                          className="text-red-500 font-semibold text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
