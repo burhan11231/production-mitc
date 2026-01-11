@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { db } from '@/lib/firebase';
@@ -9,6 +9,7 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
@@ -19,7 +20,7 @@ interface UserReview {
   id: string;
   rating: number;
   comment: string;
-  createdAt: any;
+  published?: boolean;
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -34,6 +35,8 @@ export default function ProfilePage() {
     phone: '',
     photoURL: '',
   });
+
+  const [originalProfile, setOriginalProfile] = useState(profile);
 
   const [review, setReview] = useState<UserReview | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
@@ -52,32 +55,27 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-
-    setProfile({
-      name: user.displayName || '',
-      email: user.email || '',
-      phone: '',
-      photoURL: '',
-    });
-
     loadProfile();
     loadReview();
   }, [user]);
 
   const loadProfile = async () => {
     const snap = await getDoc(doc(db, 'users', user!.uid));
-    if (snap.exists()) {
-      const d = snap.data();
-      setProfile((p) => ({
-        ...p,
-        name: d.name || '',
-        phone: d.phone || '',
-        photoURL: d.photoURL || '',
-      }));
-    }
+    if (!snap.exists()) return;
+
+    const d = snap.data();
+    const p = {
+      name: d.name || '',
+      email: user!.email || '',
+      phone: d.phone || '',
+      photoURL: d.photoURL || '',
+    };
+
+    setProfile(p);
+    setOriginalProfile(p);
   };
 
-  /* ---------------- LOAD REVIEW (ONE PER USER) ---------------- */
+  /* ---------------- LOAD REVIEW ---------------- */
 
   const loadReview = async () => {
     try {
@@ -88,7 +86,7 @@ export default function ProfilePage() {
           id: snap.id,
           rating: d.rating,
           comment: d.comment,
-          createdAt: d.createdAt,
+          published: d.published,
         });
         setReviewForm({ rating: d.rating, comment: d.comment });
       }
@@ -97,7 +95,25 @@ export default function ProfilePage() {
     }
   };
 
-  /* ---------------- PROFILE SAVE ---------------- */
+  /* ---------------- UNSAVED CHANGES ---------------- */
+
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(profile) !== JSON.stringify(originalProfile),
+    [profile, originalProfile]
+  );
+
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [hasUnsavedChanges]);
+
+  /* ---------------- PROFILE SAVE (WITH CROSS-SYNC) ---------------- */
 
   const saveProfile = async () => {
     setSaving(true);
@@ -106,8 +122,17 @@ export default function ProfilePage() {
         name: profile.name,
         phone: profile.phone,
         photoURL: profile.photoURL,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(),
       });
+
+      // 🔁 Cross-sync name into review (feature #15)
+      if (review) {
+        await updateDoc(doc(db, 'reviews', user!.uid), {
+          userName: profile.name,
+        });
+      }
+
+      setOriginalProfile(profile);
       toast.success('Profile updated');
     } catch {
       toast.error('Failed to update profile');
@@ -116,21 +141,18 @@ export default function ProfilePage() {
     }
   };
 
-  /* ---------------- PROFILE PIC (USING YOUR LIB) ---------------- */
+  /* ---------------- PROFILE PIC ---------------- */
 
   const handleAvatarChange = async (file: File) => {
     const { valid, error } = validateImageFile(file);
-    if (!valid) {
-      toast.error(error!);
-      return;
-    }
+    if (!valid) return toast.error(error!);
 
     try {
       const base64 = await compressImage(file, 700);
       setProfile((p) => ({ ...p, photoURL: base64 }));
-      toast.success('Image ready. Save profile to apply.');
-    } catch (err: any) {
-      toast.error(err.message || 'Image processing failed');
+      toast.success('Image ready. Save to apply.');
+    } catch (e: any) {
+      toast.error(e.message || 'Image failed');
     }
   };
 
@@ -144,20 +166,20 @@ export default function ProfilePage() {
       await updateDoc(doc(db, 'reviews', user!.uid), {
         rating: reviewForm.rating,
         comment: reviewForm.comment,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(),
+        published: false, // reset approval
       });
-      toast.success('Review updated');
+
+      toast.success('Review updated (pending approval)');
       setEditingReview(false);
       loadReview();
-    } catch {
-      toast.error('Failed to update review');
     } finally {
       setSaving(false);
     }
   };
 
   const deleteReview = async () => {
-    if (!confirm('Delete your review?')) return;
+    if (!confirm('Delete your review permanently?')) return;
     setSaving(true);
     try {
       await deleteDoc(doc(db, 'reviews', user!.uid));
@@ -168,7 +190,30 @@ export default function ProfilePage() {
     }
   };
 
+  /* ---------------- ACCOUNT DELETE ---------------- */
+
+  const deleteAccount = async () => {
+    if (!confirm('Delete your account permanently?')) return;
+    try {
+      await deleteDoc(doc(db, 'users', user!.uid));
+      await deleteDoc(doc(db, 'reviews', user!.uid)).catch(() => {});
+      await user!.delete();
+      toast.success('Account deleted');
+      router.push('/');
+    } catch {
+      toast.error('Re-authentication required');
+    }
+  };
+
   if (isLoading || !user) return null;
+
+  /* ---------------- PROFILE COMPLETION ---------------- */
+
+  const completion =
+    (profile.name ? 25 : 0) +
+    (profile.phone ? 25 : 0) +
+    (profile.photoURL ? 25 : 0) +
+    (review ? 25 : 0);
 
   /* ---------------- UI ---------------- */
 
@@ -177,21 +222,23 @@ export default function ProfilePage() {
 
       {/* PROFILE */}
       <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow">
-        <h2 className="text-2xl font-bold mb-6">Profile</h2>
+        <h2 className="text-2xl font-bold mb-2">Profile</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          Profile completion: {completion}%
+        </p>
 
         {/* Avatar */}
         <div className="flex items-center gap-6 mb-8">
           <img
             src={profile.photoURL || '/avatar.png'}
-            alt="Profile"
             className="w-24 h-24 rounded-full object-cover border"
           />
-          <label className="cursor-pointer text-sm font-semibold text-blue-600">
-            Change Photo
+          <label className="cursor-pointer text-blue-600 font-semibold text-sm">
+            Change photo
             <input
               type="file"
-              accept="image/*"
               hidden
+              accept="image/*"
               onChange={(e) =>
                 e.target.files && handleAvatarChange(e.target.files[0])
               }
@@ -204,9 +251,7 @@ export default function ProfilePage() {
           <input
             className="w-full border rounded-xl px-4 py-3"
             value={profile.name}
-            onChange={(e) =>
-              setProfile({ ...profile, name: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
             placeholder="Full name"
           />
 
@@ -219,99 +264,57 @@ export default function ProfilePage() {
           <input
             className="w-full border rounded-xl px-4 py-3"
             value={profile.phone}
-            onChange={(e) =>
-              setProfile({ ...profile, phone: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
             placeholder="Phone"
           />
 
           <button
+            disabled={!hasUnsavedChanges || saving}
             onClick={saveProfile}
-            disabled={saving}
-            className="bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold"
+            className="bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-50"
           >
-            Save Profile
+            Save profile
           </button>
         </div>
       </div>
 
-      {/* REVIEW */}
-      <div className="bg-white rounded-3xl p-8 shadow">
-        <h2 className="text-xl font-bold mb-6">My Review</h2>
+      {/* RIGHT PANEL */}
+      <div className="space-y-6">
 
-        {loadingReview ? (
-          <p>Loading…</p>
-        ) : review ? (
-          editingReview ? (
-            <>
-              <div className="flex gap-2 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <button
-                    key={i}
-                    onClick={() =>
-                      setReviewForm({ ...reviewForm, rating: i })
-                    }
-                    className={`text-3xl ${
-                      i <= reviewForm.rating
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
+        {/* REVIEW */}
+        <div className="bg-white rounded-3xl p-8 shadow">
+          <h3 className="text-xl font-bold mb-4">My Review</h3>
 
-              <textarea
-                className="w-full border rounded-xl p-4 mb-4"
-                rows={4}
-                value={reviewForm.comment}
-                onChange={(e) =>
-                  setReviewForm({
-                    ...reviewForm,
-                    comment: e.target.value,
-                  })
-                }
-              />
+          {review && (
+            <span className={`text-xs font-bold ${
+              review.published ? 'text-green-600' : 'text-orange-500'
+            }`}>
+              {review.published ? 'Published' : 'Pending approval'}
+            </span>
+          )}
 
-              <div className="flex gap-3">
-                <button
-                  onClick={saveReview}
-                  className="bg-gray-900 text-white px-4 py-2 rounded-xl"
-                >
-                  Save
+          {loadingReview ? (
+            <p>Loading…</p>
+          ) : review ? (
+            editingReview ? (
+              <>
+                <textarea
+                  className="w-full border rounded-xl p-4 my-4"
+                  value={reviewForm.comment}
+                  onChange={(e) =>
+                    setReviewForm({ ...reviewForm, comment: e.target.value })
+                  }
+                />
+                <button onClick={saveReview} className="text-blue-600 font-semibold">
+                  Save review
                 </button>
-                <button
-                  onClick={() => setEditingReview(false)}
-                  className="border px-4 py-2 rounded-xl"
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <span
-                    key={i}
-                    className={`text-2xl ${
-                      i <= review.rating
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-
-              <p className="text-gray-700 mb-6">{review.comment}</p>
-
-              <div className="flex gap-3">
+              </>
+            ) : (
+              <>
+                <p className="my-4">{review.comment}</p>
                 <button
                   onClick={() => setEditingReview(true)}
-                  className="text-blue-600 font-semibold"
+                  className="text-blue-600 font-semibold mr-4"
                 >
                   Edit
                 </button>
@@ -321,14 +324,29 @@ export default function ProfilePage() {
                 >
                   Delete
                 </button>
-              </div>
-            </>
-          )
-        ) : (
-          <p className="text-gray-500">
-            You haven’t submitted a review yet.
+              </>
+            )
+          ) : (
+            <p className="text-gray-500">No review submitted.</p>
+          )}
+        </div>
+
+        {/* ACCOUNT */}
+        <div className="bg-white rounded-3xl p-8 shadow">
+          <h3 className="text-lg font-bold mb-4">Account</h3>
+          <p className="text-sm text-gray-500">UID: {user.uid}</p>
+          <p className="text-sm text-gray-500">
+            Provider: {user.providerData[0]?.providerId}
           </p>
-        )}
+
+          <button
+            onClick={deleteAccount}
+            className="mt-6 text-red-600 font-semibold"
+          >
+            Delete account
+          </button>
+        </div>
+
       </div>
     </div>
   );
