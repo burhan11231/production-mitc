@@ -486,7 +486,9 @@ export default function ProfilePage() {
                 <div>
                   <label className="text-xs uppercase text-gray-400 font-bold">Member Since</label>
                   <p className="text-sm font-medium text-gray-700">
-                    {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}
+                    {user.metadata?.creationTime
+  ? new Date(user.metadata.creationTime).toLocaleDateString()
+  : 'N/A'}
                   </p>
                 </div>
               </div>
