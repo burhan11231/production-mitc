@@ -22,7 +22,7 @@ export default function ContactPage() {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.displayName || '',
+    name: user?.name || '',
     email: user?.email || '',
     phone: '',
     message: '',
