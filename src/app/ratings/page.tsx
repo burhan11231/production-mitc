@@ -18,7 +18,9 @@ import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
 import { FaStar, FaPlus } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
-import ReviewForm from '@/components/ReviewForm';
+import ReviewForm from '@/components/reviews/ReviewForm';
+
+/* ---------------- TYPES ---------------- */
 
 interface Review {
   id: string;
@@ -27,8 +29,10 @@ interface Review {
   rating: number;
   comment: string;
   createdAt?: Timestamp | Date | string | number | null;
-  published?: boolean;
+  status: 'pending' | 'published';
 }
+
+/* ---------------- COMPONENT ---------------- */
 
 export default function RatingsPage() {
   const { user } = useAuth();
@@ -39,11 +43,12 @@ export default function RatingsPage() {
   const [showForm, setShowForm] = useState(false);
 
   /* ---------------- FETCH PUBLIC REVIEWS ---------------- */
+
   const fetchReviews = async () => {
     try {
       const q = query(
         collection(db, 'reviews'),
-        where('published', '==', true),
+        where('status', '==', 'published'),
         orderBy('createdAt', 'desc'),
         limit(200)
       );
@@ -62,7 +67,8 @@ export default function RatingsPage() {
     }
   };
 
-  /* ---------------- FETCH CURRENT USER REVIEW (BY UID) ---------------- */
+  /* ---------------- FETCH CURRENT USER REVIEW ---------------- */
+
   const fetchMyReview = async () => {
     if (!user) {
       setMyReview(null);
@@ -93,6 +99,7 @@ export default function RatingsPage() {
   }, [user]);
 
   /* ---------------- STATS (PUBLISHED ONLY) ---------------- */
+
   const stats = useMemo(() => {
     if (!reviews.length)
       return { avg: 0, count: 0, distribution: [0, 0, 0, 0, 0] };
@@ -111,6 +118,8 @@ export default function RatingsPage() {
     return { avg, count, distribution: [...dist].reverse() };
   }, [reviews]);
 
+  /* ---------------- DATE FORMAT ---------------- */
+
   const formatDate = (v: Review['createdAt']) => {
     try {
       // @ts-ignore
@@ -123,6 +132,8 @@ export default function RatingsPage() {
       return '';
     }
   };
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
@@ -140,7 +151,6 @@ export default function RatingsPage() {
 
       <div className="max-w-7xl mx-auto px-6 -mt-8">
         <div className="grid lg:grid-cols-12 gap-8">
-
           {/* LEFT – STATS */}
           <div className="lg:col-span-4">
             <div className="bg-white rounded-2xl shadow-sm border p-8 sticky top-8">
@@ -180,6 +190,12 @@ export default function RatingsPage() {
                   <FaPlus className="inline mr-2" /> Write a Review
                 </button>
               )}
+
+              {user && myReview && myReview.status === 'pending' && (
+                <p className="mt-4 text-sm text-yellow-600 text-center">
+                  Your review is pending admin approval.
+                </p>
+              )}
             </div>
           </div>
 
@@ -204,16 +220,25 @@ export default function RatingsPage() {
             ) : reviews.length ? (
               <div className="grid gap-6">
                 {reviews.map((r) => (
-                  <div key={r.id} className="bg-white p-6 rounded-2xl border shadow-sm">
+                  <div
+                    key={r.id}
+                    className="bg-white p-6 rounded-2xl border shadow-sm"
+                  >
                     <div className="flex justify-between mb-4">
                       <div>
-                        <h4 className="font-bold">{r.userName || 'User'}</h4>
+                        <h4 className="font-bold">
+                          {r.userName || 'User'}
+                        </h4>
                         <div className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((i) => (
                             <FaStar
                               key={i}
                               size={14}
-                              className={i <= r.rating ? 'text-yellow-400' : 'text-gray-200'}
+                              className={
+                                i <= r.rating
+                                  ? 'text-yellow-400'
+                                  : 'text-gray-200'
+                              }
                             />
                           ))}
                         </div>
@@ -233,6 +258,7 @@ export default function RatingsPage() {
                         >
                           Edit
                         </button>
+
                         <button
                           onClick={async () => {
                             if (!confirm('Delete your review?')) return;
@@ -252,7 +278,10 @@ export default function RatingsPage() {
               </div>
             ) : (
               <div className="bg-white p-16 rounded-3xl border text-center">
-                <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
+                <MdMessage
+                  size={48}
+                  className="mx-auto text-gray-300 mb-4"
+                />
                 <h3 className="font-bold text-xl">No reviews yet</h3>
                 <p className="text-gray-500">
                   Be the first to share your experience.
