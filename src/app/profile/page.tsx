@@ -1,23 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import {
   doc,
   updateDoc,
   getDoc,
   deleteDoc,
 } from 'firebase/firestore';
-import {
-  ref,
-  uploadString,
-  getDownloadURL,
-} from 'firebase/storage';
 import toast from 'react-hot-toast';
 
-import { compressImage, validateImageFile } from '@/lib/image-utils';
+/* ---------------- TYPES ---------------- */
 
 interface UserReview {
   id: string;
@@ -26,10 +21,59 @@ interface UserReview {
   createdAt: any;
 }
 
+/* ---------------- IMAGE HELPERS ---------------- */
+
+async function compressImage(file: File, maxKB = 700): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const img = new Image();
+      img.src = reader.result as string;
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+
+        const max = 800;
+        if (width > height && width > max) {
+          height *= max / width;
+          width = max;
+        } else if (height > max) {
+          width *= max / height;
+          height = max;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('Canvas error');
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        let quality = 0.8;
+        let base64 = canvas.toDataURL('image/jpeg', quality);
+
+        while (base64.length / 1024 > maxKB && quality > 0.1) {
+          quality -= 0.1;
+          base64 = canvas.toDataURL('image/jpeg', quality);
+        }
+
+        resolve(base64);
+      };
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------------- COMPONENT ---------------- */
+
 export default function ProfilePage() {
-  const { user, isLoading, refreshUser } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -38,256 +82,288 @@ export default function ProfilePage() {
     photoURL: '',
   });
 
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
   const [userReview, setUserReview] = useState<UserReview | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const [isEditingReview, setIsEditingReview] = useState(false);
-  const [reviewLoading, setReviewLoading] = useState(true);
+  const [editingReview, setEditingReview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loadingReview, setLoadingReview] = useState(true);
 
   /* ---------------- AUTH GUARD ---------------- */
+
   useEffect(() => {
     if (!isLoading && !user) router.push('/login');
   }, [user, isLoading, router]);
 
-  /* ---------------- INIT ---------------- */
+  /* ---------------- LOAD PROFILE + REVIEW ---------------- */
+
   useEffect(() => {
     if (!user) return;
 
     setFormData({
       name: user.displayName || '',
       email: user.email || '',
-      phone: (user as any).phone || '',
-      photoURL: user.photoURL || '',
+      phone: '',
+      photoURL: '',
     });
 
-    fetchUserReview();
+    loadProfile();
+    loadReview();
   }, [user]);
 
-  /* ---------------- PROFILE PIC UPLOAD ---------------- */
-  const handlePhotoChange = async (file: File) => {
-    if (!user) return;
-
-    const validation = validateImageFile(file);
-    if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
-
-    setUploadingPhoto(true);
-
-    try {
-      const compressed = await compressImage(file, 700);
-      const imageRef = ref(storage, `profile-pictures/${user.uid}.jpg`);
-
-      await uploadString(imageRef, compressed, 'data_url');
-      const url = await getDownloadURL(imageRef);
-
-      // Update Firestore
-      await updateDoc(doc(db, 'users', user.uid), {
-        photoURL: url,
-        updatedAt: new Date(),
-      });
-
-      // Update Auth profile
-      await refreshUser({ photoURL: url });
-
-      setFormData((p) => ({ ...p, photoURL: url }));
-      toast.success('Profile picture updated');
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingPhoto(false);
+  const loadProfile = async () => {
+    const snap = await getDoc(doc(db, 'users', user!.uid));
+    if (snap.exists()) {
+      const d = snap.data();
+      setFormData((p) => ({
+        ...p,
+        name: d.name || '',
+        phone: d.phone || '',
+        photoURL: d.photoURL || '',
+      }));
     }
   };
 
-  /* ---------------- FETCH REVIEW ---------------- */
-  const fetchUserReview = async () => {
-    if (!user?.uid) return;
-
-    setReviewLoading(true);
+  const loadReview = async () => {
     try {
-      const snap = await getDoc(doc(db, 'reviews', user.uid));
+      const snap = await getDoc(doc(db, 'reviews', user!.uid));
       if (snap.exists()) {
-        const data = snap.data();
+        const d = snap.data();
         setUserReview({
           id: snap.id,
-          rating: data.rating,
-          comment: data.comment,
-          createdAt: data.createdAt,
+          rating: d.rating,
+          comment: d.comment,
+          createdAt: d.createdAt,
         });
-        setReviewForm({ rating: data.rating, comment: data.comment });
-      } else {
-        setUserReview(null);
+        setReviewForm({ rating: d.rating, comment: d.comment });
       }
-    } catch (err) {
-      console.error(err);
     } finally {
-      setReviewLoading(false);
+      setLoadingReview(false);
     }
   };
 
-  /* ---------------- SAVE PROFILE ---------------- */
-  const handleSaveProfile = async () => {
-    if (!user?.uid) return;
+  /* ---------------- PROFILE SAVE ---------------- */
 
-    setIsSaving(true);
+  const saveProfile = async () => {
+    setSaving(true);
     try {
-      await updateDoc(doc(db, 'users', user.uid), {
+      await updateDoc(doc(db, 'users', user!.uid), {
         name: formData.name,
         phone: formData.phone,
+        photoURL: formData.photoURL,
         updatedAt: new Date(),
       });
       toast.success('Profile updated');
-    } catch (err) {
+    } catch {
       toast.error('Failed to update profile');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
-  /* ---------------- DELETE REVIEW ---------------- */
-  const handleDeleteReview = async () => {
-    if (!user?.uid) return;
-    if (!confirm('Delete your review permanently?')) return;
+  /* ---------------- PROFILE PIC ---------------- */
 
+  const onAvatarChange = async (file: File) => {
     try {
-      await deleteDoc(doc(db, 'reviews', user.uid));
+      const base64 = await compressImage(file);
+      setFormData((p) => ({ ...p, photoURL: base64 }));
+    } catch {
+      toast.error('Invalid image');
+    }
+  };
+
+  /* ---------------- REVIEW ---------------- */
+
+  const saveReview = async () => {
+    if (!userReview) return;
+
+    setSaving(true);
+    try {
+      await updateDoc(doc(db, 'reviews', user!.uid), {
+        rating: reviewForm.rating,
+        comment: reviewForm.comment,
+        updatedAt: new Date(),
+      });
+      toast.success('Review updated');
+      setEditingReview(false);
+      loadReview();
+    } catch {
+      toast.error('Failed to update review');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteReview = async () => {
+    if (!confirm('Delete your review?')) return;
+    setSaving(true);
+    try {
+      await deleteDoc(doc(db, 'reviews', user!.uid));
       setUserReview(null);
       toast.success('Review deleted');
-    } catch {
-      toast.error('Failed to delete review');
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-10 w-10 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) return null;
+  if (isLoading || !user) return null;
 
   /* ---------------- UI ---------------- */
-  return (
-    <div className="min-h-screen bg-gray-50 py-16 px-6">
-      <div className="max-w-5xl mx-auto space-y-10">
 
-        {/* HEADER */}
-        <div className="bg-white rounded-3xl p-8 shadow border flex items-center gap-6">
-          <div className="relative">
-            <img
-              src={formData.photoURL || '/avatar-placeholder.png'}
-              className="h-24 w-24 rounded-full object-cover border"
-              alt="Profile"
-            />
-            <button
-              onClick={() => fileRef.current?.click()}
-              disabled={uploadingPhoto}
-              className="absolute bottom-0 right-0 bg-black text-white text-xs px-3 py-1 rounded-full"
-            >
-              {uploadingPhoto ? 'Uploading…' : 'Edit'}
-            </button>
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-3 gap-8">
+
+      {/* PROFILE */}
+      <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow">
+        <h2 className="text-2xl font-bold mb-6">Profile</h2>
+
+        {/* Avatar */}
+        <div className="flex items-center gap-6 mb-8">
+          <img
+            src={formData.photoURL || '/avatar.png'}
+            className="w-24 h-24 rounded-full object-cover border"
+          />
+          <label className="cursor-pointer text-sm font-semibold text-blue-600">
+            Change Photo
             <input
-              ref={fileRef}
               type="file"
               accept="image/*"
               hidden
               onChange={(e) =>
-                e.target.files && handlePhotoChange(e.target.files[0])
+                e.target.files && onAvatarChange(e.target.files[0])
               }
             />
-          </div>
-
-          <div>
-            <h1 className="text-3xl font-bold">{formData.name || 'My Profile'}</h1>
-            <p className="text-gray-500">{formData.email}</p>
-          </div>
+          </label>
         </div>
 
-        {/* PROFILE FORM */}
-        <div className="bg-white rounded-3xl p-8 shadow border space-y-5">
+        {/* Fields */}
+        <div className="space-y-4">
           <input
-            className="input"
-            placeholder="Full Name"
+            className="w-full border rounded-xl px-4 py-3"
             value={formData.name}
             onChange={(e) =>
               setFormData({ ...formData, name: e.target.value })
             }
+            placeholder="Full name"
           />
-
-          <input className="input bg-gray-100" disabled value={formData.email} />
-
           <input
-            className="input"
-            placeholder="Phone"
+            disabled
+            className="w-full border rounded-xl px-4 py-3 bg-gray-100"
+            value={formData.email}
+          />
+          <input
+            className="w-full border rounded-xl px-4 py-3"
             value={formData.phone}
             onChange={(e) =>
               setFormData({ ...formData, phone: e.target.value })
             }
+            placeholder="Phone"
           />
 
-          <button onClick={handleSaveProfile} className="btn-primary">
-            {isSaving ? 'Saving...' : 'Save Profile'}
+          <button
+            onClick={saveProfile}
+            disabled={saving}
+            className="bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold"
+          >
+            Save Profile
           </button>
         </div>
+      </div>
 
-        {/* REVIEW */}
-        <div className="bg-white rounded-3xl p-8 shadow border">
-          <h2 className="text-xl font-bold mb-4">Your Review</h2>
+      {/* REVIEW */}
+      <div className="bg-white rounded-3xl p-8 shadow">
+        <h2 className="text-xl font-bold mb-6">My Review</h2>
 
-          {reviewLoading ? (
-            <div className="h-8 w-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
-          ) : userReview ? (
+        {loadingReview ? (
+          'Loading...'
+        ) : userReview ? (
+          editingReview ? (
+            <>
+              <div className="flex gap-2 mb-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <button
+                    key={i}
+                    onClick={() =>
+                      setReviewForm({ ...reviewForm, rating: i })
+                    }
+                    className={`text-3xl ${
+                      i <= reviewForm.rating
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
+                    }`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+
+              <textarea
+                className="w-full border rounded-xl p-4 mb-4"
+                rows={4}
+                value={reviewForm.comment}
+                onChange={(e) =>
+                  setReviewForm({
+                    ...reviewForm,
+                    comment: e.target.value,
+                  })
+                }
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={saveReview}
+                  className="bg-gray-900 text-white px-4 py-2 rounded-xl"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingReview(false)}
+                  className="border px-4 py-2 rounded-xl"
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
             <>
               <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((s) => (
+                {[1, 2, 3, 4, 5].map((i) => (
                   <span
-                    key={s}
+                    key={i}
                     className={`text-2xl ${
-                      s <= userReview.rating ? 'text-yellow-400' : 'text-gray-300'
+                      i <= userReview.rating
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
                     }`}
                   >
                     ★
                   </span>
                 ))}
               </div>
-              <p className="mb-4">{userReview.comment}</p>
-              <button onClick={handleDeleteReview} className="btn-danger">
-                Delete Review
-              </button>
+              <p className="text-gray-700 mb-6">
+                {userReview.comment}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setEditingReview(true)}
+                  className="text-blue-600 font-semibold"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={deleteReview}
+                  className="text-red-500 font-semibold"
+                >
+                  Delete
+                </button>
+              </div>
             </>
-          ) : (
-            <p className="text-gray-500">No review submitted yet.</p>
-          )}
-        </div>
+          )
+        ) : (
+          <p className="text-gray-500">
+            You haven’t submitted a review yet.
+          </p>
+        )}
       </div>
-
-      <style jsx>{`
-        .input {
-          width: 100%;
-          padding: 12px;
-          border-radius: 12px;
-          border: 1px solid #e5e7eb;
-        }
-        .btn-primary {
-          background: #111827;
-          color: white;
-          padding: 12px 20px;
-          border-radius: 9999px;
-          font-weight: 600;
-        }
-        .btn-danger {
-          border: 1px solid #fecaca;
-          color: #dc2626;
-          padding: 10px 18px;
-          border-radius: 9999px;
-        }
-      `}</style>
     </div>
   );
 }
