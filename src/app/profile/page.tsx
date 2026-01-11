@@ -18,6 +18,7 @@ import {
 } from 'firebase/auth';
 import toast from 'react-hot-toast';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
+import ReviewForm from '@/components/reviews/ReviewForm';
 
 /* ---------------- TYPES ---------------- */
 
@@ -44,18 +45,11 @@ export default function ProfilePage() {
   });
 
   const [review, setReview] = useState<UserReview | null>(null);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const [editingReview, setEditingReview] = useState(false);
+  const [loadingReview, setLoadingReview] = useState(true);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const [saving, setSaving] = useState(false);
-  const [loadingReview, setLoadingReview] = useState(true);
-
   const originalProfile = useRef<any>(null);
-
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteMode, setDeleteMode] = useState<'keep' | 'review' | 'all'>(
-    'keep'
-  );
 
   /* ---------------- AUTH GUARD ---------------- */
 
@@ -111,7 +105,8 @@ export default function ProfilePage() {
           comment: d.comment,
           status: d.status || 'pending',
         });
-        setReviewForm({ rating: d.rating, comment: d.comment });
+      } else {
+        setReview(null);
       }
     } finally {
       setLoadingReview(false);
@@ -125,16 +120,6 @@ export default function ProfilePage() {
       JSON.stringify(profile) !== JSON.stringify(originalProfile.current)
     );
   }, [profile]);
-
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (!hasUnsavedChanges) return;
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [hasUnsavedChanges]);
 
   /* ---------------- PROFILE COMPLETION ---------------- */
 
@@ -161,7 +146,7 @@ export default function ProfilePage() {
         updatedAt: serverTimestamp(),
       });
 
-      /* Cross-sync into review */
+      /* Sync into review */
       if (review) {
         await updateDoc(doc(db, 'reviews', user!.uid), {
           userName: profile.name,
@@ -193,43 +178,6 @@ export default function ProfilePage() {
     }
   };
 
-  /* ---------------- REVIEW ---------------- */
-
-  const saveReview = async () => {
-    if (!review) return;
-
-    setSaving(true);
-    try {
-      await updateDoc(doc(db, 'reviews', user!.uid), {
-        rating: reviewForm.rating,
-        comment: reviewForm.comment,
-        status: 'pending',
-        updatedAt: serverTimestamp(),
-      });
-
-      toast.success('Review updated (pending approval)');
-      setEditingReview(false);
-      loadReview();
-    } catch {
-      toast.error('Failed to update review');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const deleteReview = async () => {
-    if (!confirm('Delete your review?')) return;
-
-    setSaving(true);
-    try {
-      await deleteDoc(doc(db, 'reviews', user!.uid));
-      setReview(null);
-      toast.success('Review deleted');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   /* ---------------- ACCOUNT TOOLS ---------------- */
 
   const sendReset = async () => {
@@ -239,32 +187,9 @@ export default function ProfilePage() {
   };
 
   const reverify = async () => {
-    if (!auth.currentUser) {
-      toast.error('Not authenticated');
-      return;
-    }
+    if (!auth.currentUser) return;
     await reload(auth.currentUser);
     toast.success('Account reverified');
-  };
-
-  const deleteAccount = async () => {
-    try {
-      if (!auth.currentUser) throw new Error('Not authenticated');
-
-      if (deleteMode !== 'keep') {
-        await deleteDoc(doc(db, 'reviews', user!.uid));
-      }
-
-      if (deleteMode === 'all') {
-        await deleteDoc(doc(db, 'users', user!.uid));
-      }
-
-      await deleteUser(auth.currentUser);
-      toast.success('Account deleted');
-      router.push('/');
-    } catch {
-      toast.error('Reauthentication required');
-    }
   };
 
   if (isLoading || !user) return null;
@@ -347,70 +272,52 @@ export default function ProfilePage() {
       <div className="bg-white rounded-3xl p-8 shadow space-y-6">
         <h2 className="text-xl font-bold">My Review</h2>
 
-        {review && (
-          <span
-            className={`inline-block text-xs px-3 py-1 rounded-full ${
-              review.status === 'published'
-                ? 'bg-green-100 text-green-700'
-                : 'bg-yellow-100 text-yellow-700'
-            }`}
-          >
-            {review.status === 'published'
-              ? 'Published'
-              : 'Pending approval'}
-          </span>
-        )}
+        {loadingReview ? (
+          <p className="text-gray-500">Loading…</p>
+        ) : showReviewForm ? (
+          <ReviewForm
+            existingReview={review}
+            onCancel={() => setShowReviewForm(false)}
+            onSuccess={() => {
+              setShowReviewForm(false);
+              loadReview();
+            }}
+          />
+        ) : review ? (
+          <>
+            <span
+              className={`inline-block text-xs px-3 py-1 rounded-full ${
+                review.status === 'published'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-yellow-100 text-yellow-700'
+              }`}
+            >
+              {review.status === 'published'
+                ? 'Published'
+                : 'Pending approval'}
+            </span>
 
-        {review ? (
-          editingReview ? (
-            <>
-              <textarea
-                className="w-full border rounded-xl p-4"
-                rows={4}
-                value={reviewForm.comment}
-                onChange={(e) =>
-                  setReviewForm({
-                    ...reviewForm,
-                    comment: e.target.value,
-                  })
-                }
-              />
-              <div className="flex gap-3">
-                <button
-                  onClick={saveReview}
-                  className="bg-gray-900 text-white px-4 py-2 rounded-xl"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setEditingReview(false)}
-                  className="border px-4 py-2 rounded-xl"
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-gray-700">{review.comment}</p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setEditingReview(true)}
-                  className="text-blue-600 font-semibold"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={deleteReview}
-                  className="text-red-500 font-semibold"
-                >
-                  Delete
-                </button>
-              </div>
-            </>
-          )
+            <p className="text-gray-700 mt-4">{review.comment}</p>
+
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="mt-4 text-blue-600 font-semibold"
+            >
+              Edit Review
+            </button>
+          </>
         ) : (
-          <p className="text-gray-500">No review submitted.</p>
+          <>
+            <p className="text-gray-500">
+              You haven’t submitted a review yet.
+            </p>
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="text-blue-600 font-semibold"
+            >
+              Write a Review
+            </button>
+          </>
         )}
       </div>
     </div>
