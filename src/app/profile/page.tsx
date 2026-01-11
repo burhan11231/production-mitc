@@ -525,8 +525,11 @@ const handleDeleteAccount = async (options: {
 
 /* ---------------- PROVIDER FLAGS ---------------- */
 
-const hasGoogleProvider =
-  !!user?.providerData?.some(p => p.providerId === 'google.com');
+const hasGoogleProvider = useMemo(() => {
+  return !!auth.currentUser?.providerData?.some(
+    p => p.providerId === 'google.com'
+  );
+}, []);
 
   if (isLoading || !user) {
     return (
