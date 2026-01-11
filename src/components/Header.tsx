@@ -152,7 +152,9 @@ export default function Header() {
                 {user && (
                   <div className="px-4 py-4 bg-gray-50/50">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Signed in as</p>
-                    <p className="text-sm font-bold text-gray-900 truncate">{user.displayName || 'MITC User'}</p>
+                    <p className="text-sm font-bold text-gray-900 truncate">
+  {user.name || 'MITC User'}
+</p>
                     <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
                   </div>
                 )}
