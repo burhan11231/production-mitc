@@ -295,38 +295,45 @@ export default function ProfilePage() {
 };
 
   const handleDeleteAccount = async (keepReview: boolean) => {
-    setSaving(true);
-    try {
-      await performDelete(keepReview);
-      toast.success('Account deleted');
-      router.push('/');
-    } catch (error: any) {
-      // ✅ Handle Re-Auth without recursion
-      if (error.code === 'auth/requires-recent-login') {
-  const providerId =
-    user?.providerData && user.providerData.length > 0
-      ? user.providerData[0].providerId
-      : null;
+  setSaving(true);
+  try {
+    await performDelete(keepReview);
+    toast.success('Account deleted');
+    router.push('/');
+  } catch (error: any) {
+    if (error.code === 'auth/requires-recent-login') {
+      const providerId =
+        user?.providerData && user.providerData.length > 0
+          ? user.providerData[0].providerId
+          : null;
 
-  if (providerId === 'google.com') {
-    try {
-      const provider = new GoogleAuthProvider();
-      await reauthenticateWithPopup(auth.currentUser!, provider);
+      if (providerId === 'google.com') {
+        try {
+          const provider = new GoogleAuthProvider();
+          await reauthenticateWithPopup(auth.currentUser!, provider);
 
-      await performDelete(keepReview);
+          await performDelete(keepReview);
 
-      toast.success('Account deleted');
-      router.push('/');
-    } catch (reauthErr) {
-      console.error(reauthErr);
-      toast.error('Re-authentication failed. Cannot delete account.');
+          toast.success('Account deleted');
+          router.push('/');
+        } catch (reauthErr) {
+          console.error(reauthErr);
+          toast.error('Re-authentication failed. Cannot delete account.');
+        }
+      } else {
+        toast.error(
+          'Security update required: Please log out and log in again to delete your account.'
+        );
+      }
+    } else {
+      console.error(error);
+      toast.error('Failed to delete account. Contact support.');
     }
-  } else {
-    toast.error(
-      'Security update required: Please log out and log in again to delete your account.'
-    );
+  } finally {
+    setSaving(false);
+    setDeleteModalOpen(false);
   }
-}
+};
 
   if (isLoading || !user) return <div className="p-12 text-center">Loading Profile...</div>;
 
