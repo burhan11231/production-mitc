@@ -483,31 +483,38 @@ const connectGoogle = async () => {
   };
 
   const handleDeleteAccount = async (options: { keepReview: boolean; deleteAll: boolean }) => {
-    if (!auth.currentUser || !user) return;
+  if (!user) return;
 
-    const deleteAction = async () => {
-      try {
-        // Delete Firestore data FIRST
-        if (options.deleteAll || !options.keepReview) {
-          await deleteDoc(doc(db, 'reviews', user.uid)).catch(() => {});
-        }
-        
-        if (options.deleteAll) {
-          await deleteDoc(doc(db, 'users', user.uid)).catch(() => {});
-        }
-        
-        // Delete auth user LAST
-        await deleteUser(auth.currentUser);
-        toast.success('Account deleted');
-        router.push('/login');
-      } catch (error: any) {
-        toast.error('Failed to delete account: ' + error.message);
+  const deleteAction = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      toast.error('Session expired. Please log in again.');
+      return;
+    }
+
+    try {
+      // Delete Firestore data FIRST
+      if (options.deleteAll || !options.keepReview) {
+        await deleteDoc(doc(db, 'reviews', user.uid)).catch(() => {});
       }
-    };
 
-    requirePasswordConfirm(deleteAction);
-    setDeleteModalOpen(false);
+      if (options.deleteAll) {
+        await deleteDoc(doc(db, 'users', user.uid)).catch(() => {});
+      }
+
+      // Delete auth user LAST
+      await deleteUser(currentUser);
+
+      toast.success('Account deleted');
+      router.push('/login');
+    } catch (error: any) {
+      toast.error('Failed to delete account: ' + (error?.message || 'Unknown error'));
+    }
   };
+
+  requirePasswordConfirm(deleteAction);
+  setDeleteModalOpen(false);
+};
 
   const hasGoogleProvider = user?.providerData.some(p => p.providerId === 'google.com');
 
