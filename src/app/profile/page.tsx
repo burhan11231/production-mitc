@@ -24,7 +24,6 @@ import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import toast from 'react-hot-toast';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
 import ReviewForm from '@/components/ReviewForm';
-import { useBeforeUnload } from 'react-use';
 
 /* ---------------- TYPES ---------------- */
 
@@ -298,7 +297,7 @@ export default function ProfilePage() {
     }
   };
 
-  /* ---------------- UNSAVED CHANGES (Fixed useMemo) ---------------- */
+  /* ---------------- UNSAVED CHANGES ---------------- */
 
   const hasUnsavedChanges = useMemo(() => {
     const original = originalProfile.current;
@@ -311,9 +310,20 @@ export default function ProfilePage() {
     );
   }, [profile]);
 
-  useBeforeUnload(hasUnsavedChanges, 'You have unsaved changes. Are you sure?');
+  // REPLACED REACT-USE WITH NATIVE HOOK
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
 
-  /* ---------------- PROFILE COMPLETION (Optional improvement) ---------------- */
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges]);
+
+  /* ---------------- PROFILE COMPLETION ---------------- */
 
   const completion = useMemo(() => {
     let score = 0;
