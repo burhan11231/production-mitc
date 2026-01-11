@@ -303,34 +303,30 @@ export default function ProfilePage() {
     } catch (error: any) {
       // ✅ Handle Re-Auth without recursion
       if (error.code === 'auth/requires-recent-login') {
-        const providerId = user?.providerData[0]?.providerId;
-        
-        if (providerId === 'google.com') {
-          try {
-            const provider = new GoogleAuthProvider();
-            await reauthenticateWithPopup(user!, provider);
-            
-            // Retry delete exactly once
-            await performDelete(keepReview);
-            
-            toast.success('Account deleted');
-            router.push('/');
-          } catch (reauthErr) {
-            console.error(reauthErr);
-            toast.error('Re-authentication failed. Cannot delete account.');
-          }
-        } else {
-          toast.error('Security update required: Please log out and log in again to delete your account.');
-        }
-      } else {
-        console.error(error);
-        toast.error('Failed to delete account. Contact support.');
-      }
-    } finally {
-      setSaving(false);
-      setDeleteModalOpen(false);
+  const providerId =
+    user?.providerData && user.providerData.length > 0
+      ? user.providerData[0].providerId
+      : null;
+
+  if (providerId === 'google.com') {
+    try {
+      const provider = new GoogleAuthProvider();
+      await reauthenticateWithPopup(auth.currentUser!, provider);
+
+      await performDelete(keepReview);
+
+      toast.success('Account deleted');
+      router.push('/');
+    } catch (reauthErr) {
+      console.error(reauthErr);
+      toast.error('Re-authentication failed. Cannot delete account.');
     }
-  };
+  } else {
+    toast.error(
+      'Security update required: Please log out and log in again to delete your account.'
+    );
+  }
+}
 
   if (isLoading || !user) return <div className="p-12 text-center">Loading Profile...</div>;
 
@@ -475,8 +471,10 @@ export default function ProfilePage() {
                 <div>
                   <label className="text-xs uppercase text-gray-400 font-bold">Provider</label>
                   <p className="text-sm font-medium text-gray-700 capitalize">
-                    {user.providerData[0]?.providerId.replace('.com', '') || 'Email'}
-                  </p>
+  {user.providerData && user.providerData.length > 0
+    ? user.providerData[0].providerId.replace('.com', '')
+    : 'Email'}
+</p>
                 </div>
                 <div>
                   <label className="text-xs uppercase text-gray-400 font-bold">Member Since</label>
