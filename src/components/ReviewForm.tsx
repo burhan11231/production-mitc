@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { db } from '@/lib/firebase';
 import {
@@ -39,7 +39,7 @@ export default function ReviewForm({
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /* ---------------- INIT EDIT MODE ---------------- */
+  /* ---------------- INIT (EDIT MODE) ---------------- */
 
   useEffect(() => {
     if (existingReview) {
@@ -47,6 +47,16 @@ export default function ReviewForm({
       setComment(existingReview.comment);
     }
   }, [existingReview]);
+
+  /* ---------------- CHANGE DETECTION ---------------- */
+
+  const hasChanges = useMemo(() => {
+    if (!existingReview) return true;
+    return (
+      rating !== existingReview.rating ||
+      comment.trim() !== existingReview.comment.trim()
+    );
+  }, [existingReview, rating, comment]);
 
   /* ---------------- SUBMIT ---------------- */
 
@@ -58,13 +68,18 @@ export default function ReviewForm({
       return;
     }
 
-    if (rating < 1) {
-      toast.error('Please select a rating');
+    if (rating < 1 || rating > 5) {
+      toast.error('Please select a valid rating');
       return;
     }
 
     if (comment.trim().length < 10) {
       toast.error('Comment must be at least 10 characters');
+      return;
+    }
+
+    if (existingReview && !hasChanges) {
+      toast.error("You didn't make any changes");
       return;
     }
 
@@ -74,25 +89,23 @@ export default function ReviewForm({
       const ref = doc(db, 'reviews', user.uid);
 
       if (existingReview) {
-        /* ✏️ UPDATE REVIEW → back to moderation */
+        /* ✏️ UPDATE → FORCE RE-APPROVAL */
         await updateDoc(ref, {
           rating,
           comment,
           status: 'pending',
           updatedAt: serverTimestamp(),
 
-          /* keep user info in sync */
+          // keep display data in sync
           userName: user.displayName || 'User',
-          userPhoto: user.photoURL || '',
         });
 
-        toast.success('Review updated (pending approval)');
+        toast.success('Review updated and sent for approval');
       } else {
-        /* ✍️ CREATE REVIEW (docId = uid) */
+        /* ✍️ CREATE (docId = uid) */
         await setDoc(ref, {
           userId: user.uid,
           userName: user.displayName || 'User',
-          userPhoto: user.photoURL || '',
 
           rating,
           comment,
@@ -106,8 +119,8 @@ export default function ReviewForm({
       }
 
       onSuccess();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to submit review');
     } finally {
       setIsSubmitting(false);
@@ -124,8 +137,8 @@ export default function ReviewForm({
 
       <p className="text-gray-500 mb-6">
         {existingReview
-          ? 'Editing will send your review for re-approval.'
-          : 'Your review will be visible after approval.'}
+          ? 'Editing will send your review for admin re-approval.'
+          : 'Your review will be visible after admin approval.'}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -142,6 +155,7 @@ export default function ReviewForm({
                 type="button"
                 onClick={() => setRating(star)}
                 className="transition-transform hover:scale-110"
+                aria-label={`Rate ${star} stars`}
               >
                 <FaStar
                   size={30}
@@ -191,7 +205,8 @@ export default function ReviewForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50"
+            disabled={isSubmitting}
+            className="px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
           >
             Cancel
           </button>
