@@ -6,11 +6,12 @@ import { useAuth } from '@/lib/auth-context';
 import { db } from '@/lib/firebase';
 import {
   doc,
-  updateDoc,
   getDoc,
+  updateDoc,
   deleteDoc,
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
+import { compressImage, validateImageFile } from '@/lib/image-utils';
 
 /* ---------------- TYPES ---------------- */
 
@@ -21,70 +22,23 @@ interface UserReview {
   createdAt: any;
 }
 
-/* ---------------- IMAGE HELPERS ---------------- */
-
-async function compressImage(file: File, maxKB = 700): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const img = new Image();
-      img.src = reader.result as string;
-
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let { width, height } = img;
-
-        const max = 800;
-        if (width > height && width > max) {
-          height *= max / width;
-          width = max;
-        } else if (height > max) {
-          width *= max / height;
-          height = max;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('Canvas error');
-
-        ctx.drawImage(img, 0, 0, width, height);
-
-        let quality = 0.8;
-        let base64 = canvas.toDataURL('image/jpeg', quality);
-
-        while (base64.length / 1024 > maxKB && quality > 0.1) {
-          quality -= 0.1;
-          base64 = canvas.toDataURL('image/jpeg', quality);
-        }
-
-        resolve(base64);
-      };
-    };
-
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 /* ---------------- COMPONENT ---------------- */
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [profile, setProfile] = useState({
     name: '',
     email: '',
     phone: '',
     photoURL: '',
   });
 
-  const [userReview, setUserReview] = useState<UserReview | null>(null);
+  const [review, setReview] = useState<UserReview | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [editingReview, setEditingReview] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [loadingReview, setLoadingReview] = useState(true);
 
@@ -94,12 +48,12 @@ export default function ProfilePage() {
     if (!isLoading && !user) router.push('/login');
   }, [user, isLoading, router]);
 
-  /* ---------------- LOAD PROFILE + REVIEW ---------------- */
+  /* ---------------- LOAD PROFILE ---------------- */
 
   useEffect(() => {
     if (!user) return;
 
-    setFormData({
+    setProfile({
       name: user.displayName || '',
       email: user.email || '',
       phone: '',
@@ -114,7 +68,7 @@ export default function ProfilePage() {
     const snap = await getDoc(doc(db, 'users', user!.uid));
     if (snap.exists()) {
       const d = snap.data();
-      setFormData((p) => ({
+      setProfile((p) => ({
         ...p,
         name: d.name || '',
         phone: d.phone || '',
@@ -123,12 +77,14 @@ export default function ProfilePage() {
     }
   };
 
+  /* ---------------- LOAD REVIEW (ONE PER USER) ---------------- */
+
   const loadReview = async () => {
     try {
       const snap = await getDoc(doc(db, 'reviews', user!.uid));
       if (snap.exists()) {
         const d = snap.data();
-        setUserReview({
+        setReview({
           id: snap.id,
           rating: d.rating,
           comment: d.comment,
@@ -147,9 +103,9 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await updateDoc(doc(db, 'users', user!.uid), {
-        name: formData.name,
-        phone: formData.phone,
-        photoURL: formData.photoURL,
+        name: profile.name,
+        phone: profile.phone,
+        photoURL: profile.photoURL,
         updatedAt: new Date(),
       });
       toast.success('Profile updated');
@@ -160,21 +116,28 @@ export default function ProfilePage() {
     }
   };
 
-  /* ---------------- PROFILE PIC ---------------- */
+  /* ---------------- PROFILE PIC (USING YOUR LIB) ---------------- */
 
-  const onAvatarChange = async (file: File) => {
+  const handleAvatarChange = async (file: File) => {
+    const { valid, error } = validateImageFile(file);
+    if (!valid) {
+      toast.error(error!);
+      return;
+    }
+
     try {
-      const base64 = await compressImage(file);
-      setFormData((p) => ({ ...p, photoURL: base64 }));
-    } catch {
-      toast.error('Invalid image');
+      const base64 = await compressImage(file, 700);
+      setProfile((p) => ({ ...p, photoURL: base64 }));
+      toast.success('Image ready. Save profile to apply.');
+    } catch (err: any) {
+      toast.error(err.message || 'Image processing failed');
     }
   };
 
-  /* ---------------- REVIEW ---------------- */
+  /* ---------------- REVIEW UPDATE ---------------- */
 
   const saveReview = async () => {
-    if (!userReview) return;
+    if (!review) return;
 
     setSaving(true);
     try {
@@ -198,7 +161,7 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await deleteDoc(doc(db, 'reviews', user!.uid));
-      setUserReview(null);
+      setReview(null);
       toast.success('Review deleted');
     } finally {
       setSaving(false);
@@ -219,7 +182,8 @@ export default function ProfilePage() {
         {/* Avatar */}
         <div className="flex items-center gap-6 mb-8">
           <img
-            src={formData.photoURL || '/avatar.png'}
+            src={profile.photoURL || '/avatar.png'}
+            alt="Profile"
             className="w-24 h-24 rounded-full object-cover border"
           />
           <label className="cursor-pointer text-sm font-semibold text-blue-600">
@@ -229,7 +193,7 @@ export default function ProfilePage() {
               accept="image/*"
               hidden
               onChange={(e) =>
-                e.target.files && onAvatarChange(e.target.files[0])
+                e.target.files && handleAvatarChange(e.target.files[0])
               }
             />
           </label>
@@ -239,22 +203,24 @@ export default function ProfilePage() {
         <div className="space-y-4">
           <input
             className="w-full border rounded-xl px-4 py-3"
-            value={formData.name}
+            value={profile.name}
             onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
+              setProfile({ ...profile, name: e.target.value })
             }
             placeholder="Full name"
           />
+
           <input
             disabled
             className="w-full border rounded-xl px-4 py-3 bg-gray-100"
-            value={formData.email}
+            value={profile.email}
           />
+
           <input
             className="w-full border rounded-xl px-4 py-3"
-            value={formData.phone}
+            value={profile.phone}
             onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
+              setProfile({ ...profile, phone: e.target.value })
             }
             placeholder="Phone"
           />
@@ -274,8 +240,8 @@ export default function ProfilePage() {
         <h2 className="text-xl font-bold mb-6">My Review</h2>
 
         {loadingReview ? (
-          'Loading...'
-        ) : userReview ? (
+          <p>Loading…</p>
+        ) : review ? (
           editingReview ? (
             <>
               <div className="flex gap-2 mb-4">
@@ -330,7 +296,7 @@ export default function ProfilePage() {
                   <span
                     key={i}
                     className={`text-2xl ${
-                      i <= userReview.rating
+                      i <= review.rating
                         ? 'text-yellow-400'
                         : 'text-gray-300'
                     }`}
@@ -339,9 +305,9 @@ export default function ProfilePage() {
                   </span>
                 ))}
               </div>
-              <p className="text-gray-700 mb-6">
-                {userReview.comment}
-              </p>
+
+              <p className="text-gray-700 mb-6">{review.comment}</p>
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setEditingReview(true)}
