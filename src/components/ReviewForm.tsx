@@ -97,7 +97,7 @@ export default function ReviewForm({
           updatedAt: serverTimestamp(),
 
           // keep display data in sync
-          userName: user.displayName || 'User',
+          userName: user.name || 'User',
         });
 
         toast.success('Review updated and sent for approval');
@@ -105,7 +105,7 @@ export default function ReviewForm({
         /* ✍️ CREATE (docId = uid) */
         await setDoc(ref, {
           userId: user.uid,
-          userName: user.displayName || 'User',
+          userName: user.name || 'User',
 
           rating,
           comment,
