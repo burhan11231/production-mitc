@@ -276,19 +276,23 @@ export default function ProfilePage() {
     }
   };
 
-  // ✅ FIX 1: Non-recursive delete helper
+  
   const performDelete = async (keepReview: boolean) => {
-    // 1. Handle Review
-    if (!keepReview && review) {
-      await deleteDoc(doc(db, 'reviews', user!.uid));
-    }
+  if (!auth.currentUser) {
+    throw new Error('No authenticated user');
+  }
 
-    // 2. Delete User Data
-    await deleteDoc(doc(db, 'users', user!.uid));
+  // 1. Handle Review
+  if (!keepReview && review) {
+    await deleteDoc(doc(db, 'reviews', auth.currentUser.uid));
+  }
 
-    // 3. Delete Auth Account
-    await deleteUser(user!);
-  };
+  // 2. Delete Firestore user doc
+  await deleteDoc(doc(db, 'users', auth.currentUser.uid));
+
+  // 3. Delete Firebase Auth account (✅ correct type)
+  await deleteUser(auth.currentUser);
+};
 
   const handleDeleteAccount = async (keepReview: boolean) => {
     setSaving(true);
