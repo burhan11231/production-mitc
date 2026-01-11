@@ -251,7 +251,7 @@ export default function ProfilePage() {
         const merged = {
           name: data.name || user.displayName || '',
           phone: data.phone || '',
-          photoURL: data.photoURL || user.photoURL || '',
+          photoURL: data.photoURL || '',
           email: user.email!,
         };
 
@@ -373,10 +373,10 @@ export default function ProfilePage() {
 
       // Update auth profile
       if (auth.currentUser) {
-  await updateProfile(auth.currentUser, {
-    displayName: profile.name,
-    photoURL: photoURL,
-  });
+  // ✅ Auth ONLY needs displayName
+await updateProfile(auth.currentUser, {
+  displayName: profile.name,
+});
 }
 
       // Sync to review if exists
