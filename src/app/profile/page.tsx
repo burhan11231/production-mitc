@@ -228,7 +228,7 @@ export default function ProfilePage() {
     if (!user) return;
 
     const base = {
-      name: user.displayName || '',
+      name: user?.name || '',
       email: user.email || '',
       phone: '',
       photoURL: user.photoURL || '',
