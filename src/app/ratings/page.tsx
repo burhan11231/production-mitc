@@ -18,7 +18,7 @@ import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
 import { FaStar, FaPlus } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
-import ReviewForm from '@/components/reviews/ReviewForm';
+import ReviewForm from '@/components/ReviewForm';
 
 /* ---------------- TYPES ---------------- */
 
