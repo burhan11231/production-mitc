@@ -482,19 +482,26 @@ export default function AnalyticsDashboard() {
 
             {/* Peak Traffic */}
             {analytics.peakHours.map(({ hour, count }, i) => (
-              <div key={hour} className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-yellow-500 rounded-2xl flex flex-col items-center justify-center text-white font-bold text-sm">
-                    #{i + 1}
-                    <div className="text-xs -mt-1">Peak</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{formatHour(parseInt(hour))}</div>
-                    <div className="text-sm text-gray-600">Peak traffic: {count} visits</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+  <div
+    key={hour}
+    className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6 mb-6"
+  >
+    <div className="flex items-center gap-4">
+      <div className="w-16 h-16 bg-yellow-500 rounded-2xl flex flex-col items-center justify-center text-white font-bold text-sm">
+        #{i + 1}
+        <div className="text-xs -mt-1">Peak</div>
+      </div>
+      <div>
+        <div className="text-2xl font-bold text-gray-900">
+          {formatHour(hour)}
+        </div>
+        <div className="text-sm text-gray-600">
+          Peak traffic: {count} visits
+        </div>
+      </div>
+    </div>
+  </div>
+))}
           </>
         ) : (
           <div className="text-center py-24 text-gray-500">
