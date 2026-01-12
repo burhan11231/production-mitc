@@ -6,11 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { doc, Timestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 interface Visit {
-  id: string;
+  id: string;  // client-only, injected manually
   path: string;
   timestamp: Timestamp;
 }
@@ -59,7 +59,6 @@ export default function AnalyticsDashboard() {
     if (!isLoading && user?.role !== 'admin') {
       toast.error('Admin access required');
       router.push('/');
-     
     }
   }, [user, isLoading, router]);
 
@@ -105,10 +104,12 @@ export default function AnalyticsDashboard() {
       }
 
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...(doc.data() as Visit)
-      })) as Visit[];
+      
+      // ✅ FIXED: Proper TypeScript mapping with Omit
+      const data: Visit[] = snapshot.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<Visit, 'id'>),
+      }));
 
       setVisits(data);
     } catch (err) {
