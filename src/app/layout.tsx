@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Provider } from './provider';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import LayoutShell from '@/components/LayoutShell';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -32,14 +32,9 @@ export default function RootLayout({
       <body>
         <Provider>
           <Header />
-
-          {/* 
-            NOTE:
-            Footer is controlled at page level using a wrapper component
-            because RootLayout cannot read pathname (server component).
-          */}
-          {children}
-
+          <LayoutShell>
+            {children}
+          </LayoutShell>
         </Provider>
       </body>
     </html>
