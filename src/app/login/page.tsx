@@ -24,6 +24,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
+  const currentYear = new Date().getFullYear();
+
   const keyFail = `login_fail_${email}`;
   const keyLock = `login_lock_${email}`;
   const isLocked = Boolean(lockedUntil && Date.now() < lockedUntil);
@@ -81,7 +83,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-sky-50/60 flex min-h-[calc(100vh-64px)]">
+    <div className="relative flex bg-sky-50/60 min-h-[calc(100vh-64px)]">
 
       {/* LEFT – DESKTOP ILLUSTRATION */}
       <div className="hidden lg:flex w-1/2 items-center justify-center">
@@ -93,8 +95,8 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT – LOGIN */}
-      <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10 flex flex-col">
-        <div className="max-w-md mx-auto w-full">
+      <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10">
+        <div className="max-w-md mx-auto">
 
           <h1 className="text-3xl font-bold text-gray-900 mb-1">
             Sign in
@@ -169,13 +171,36 @@ export default function LoginPage() {
               Create one
             </Link>
           </p>
-        </div>
 
-        {/* COPYRIGHT */}
-        <p className="mt-10 text-center text-xs text-gray-400">
-          © MITC 2026. All rights reserved.
-        </p>
+        </div>
       </div>
+
+      {/* AUTH FOOTER – FULL WIDTH, SAFE-AREA AWARE */}
+      <div
+        className="absolute left-0 right-0 text-center text-xs text-gray-400"
+        style={{
+          bottom: 'calc(12px + env(safe-area-inset-bottom))',
+        }}
+      >
+        <div className="flex items-center justify-center gap-3">
+          <span>© MITC {currentYear}</span>
+          <span className="opacity-50">·</span>
+          <Link
+            href="/privacy"
+            className="hover:text-gray-600 pointer-events-auto"
+          >
+            Privacy
+          </Link>
+          <span className="opacity-50">·</span>
+          <Link
+            href="/terms"
+            className="hover:text-gray-600 pointer-events-auto"
+          >
+            Terms
+          </Link>
+        </div>
+      </div>
+
     </div>
   );
 }
