@@ -81,22 +81,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-50/60 flex">
+    <div className="bg-sky-50/60 flex min-h-[calc(100vh-64px)]">
 
       {/* LEFT – DESKTOP ILLUSTRATION */}
       <div className="hidden lg:flex w-1/2 items-center justify-center">
-        <div className="flex flex-col items-center opacity-90">
-          <Laptop
-            size={260}
-            strokeWidth={1}
-            className="text-sky-700"
-          />
-        </div>
+        <Laptop
+          size={260}
+          strokeWidth={1}
+          className="text-sky-700 opacity-90"
+        />
       </div>
 
       {/* RIGHT – LOGIN */}
-      <div className="w-full lg:w-1/2 px-6 py-10 sm:py-14">
-        <div className="max-w-md mx-auto">
+      <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10 flex flex-col">
+        <div className="max-w-md mx-auto w-full">
 
           <h1 className="text-3xl font-bold text-gray-900 mb-1">
             Sign in
@@ -171,8 +169,12 @@ export default function LoginPage() {
               Create one
             </Link>
           </p>
-
         </div>
+
+        {/* COPYRIGHT */}
+        <p className="mt-10 text-center text-xs text-gray-400">
+          © MITC 2026. All rights reserved.
+        </p>
       </div>
     </div>
   );
