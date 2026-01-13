@@ -7,10 +7,12 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import toast from 'react-hot-toast';
+
+import { Laptop } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME_MS = 5 * 60 * 1000;
@@ -21,7 +23,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
-  const [showForgot, setShowForgot] = useState(false);
 
   const keyFail = `login_fail_${email}`;
   const keyLock = `login_lock_${email}`;
@@ -50,14 +51,14 @@ export default function LoginPage() {
     setLockedUntil(null);
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLocked) return toast.error('Account temporarily locked');
+
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       clearFailures();
-      toast.success('Welcome back');
       router.push('/');
     } catch {
       recordFailure();
@@ -71,7 +72,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
-      toast.success('Logged in with Google');
       router.push('/');
     } catch {
       toast.error('Google login failed');
@@ -80,78 +80,56 @@ export default function LoginPage() {
     }
   };
 
-  const handleResetPassword = async () => {
-    if (!email) return toast.error('Enter email first');
-    try {
-      await sendPasswordResetEmail(auth, email);
-      toast.success('Reset email sent');
-      setShowForgot(false);
-    } catch {
-      toast.error('Reset failed');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-sky-50/60 flex">
 
-      {/* LEFT SECTION – PROFESSIONAL INFO */}
-      <div className="hidden lg:flex w-1/2 items-center justify-center px-16">
-        <div className="max-w-md">
-          <h1 className="text-4xl font-bold text-gray-900 leading-tight mb-4">
-            MITC Internal Access
-          </h1>
-          <p className="text-gray-600 mb-10">
-            Secure login for authorised staff. Access tools based on your role
-            — Sales, Manager, or Support.
-          </p>
-
-          <ul className="space-y-4 text-gray-700">
-            <li>• Role-based access control</li>
-            <li>• Secure authentication</li>
-            <li>• Staff-managed operations</li>
-            <li>• Centralised admin control</li>
-          </ul>
+      {/* LEFT – DESKTOP ILLUSTRATION */}
+      <div className="hidden lg:flex w-1/2 items-center justify-center">
+        <div className="flex flex-col items-center opacity-90">
+          <Laptop
+            size={260}
+            strokeWidth={1}
+            className="text-sky-700"
+          />
         </div>
       </div>
 
-      {/* RIGHT SECTION – LOGIN */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6">
-        <div className="w-full max-w-md">
+      {/* RIGHT – LOGIN */}
+      <div className="w-full lg:w-1/2 px-6 py-10 sm:py-14">
+        <div className="max-w-md mx-auto">
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
             Sign in
-          </h2>
-          <p className="text-gray-600 mb-10">
+          </h1>
+          <p className="text-gray-600 mb-8">
             Use your registered credentials
           </p>
 
-          <form onSubmit={handleEmailLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5">
 
-            {/* EMAIL */}
-            <div className="relative">
+            <div>
+              <label className="field-label">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="peer input-field"
+                placeholder="example@gmail.com"
+                className="input-field"
               />
-              <label className="floating-label">Email address</label>
             </div>
 
-            {/* PASSWORD */}
-            <div className="relative">
+            <div>
+              <label className="field-label">Password</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
+                placeholder="••••••••"
                 disabled={isLocked}
-                className="peer input-field"
+                className="input-field"
               />
-              <label className="floating-label">Password</label>
             </div>
 
             {isLocked && (
@@ -169,31 +147,21 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <button
-            onClick={() => setShowForgot(!showForgot)}
-            className="mt-4 text-sm text-blue-600 font-medium"
+          <Link
+            href="/reset-password"
+            className="inline-block mt-4 text-sm text-blue-600 font-medium"
           >
             Forgot password?
-          </button>
-
-          {showForgot && (
-            <div className="mt-4">
-              <button
-                onClick={handleResetPassword}
-                className="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold"
-              >
-                Send reset email
-              </button>
-            </div>
-          )}
+          </Link>
 
           <div className="my-8 text-center text-sm text-gray-400">OR</div>
 
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3 border border-gray-300 rounded-lg font-semibold hover:bg-white transition"
+            className="w-full py-3 border border-gray-300 rounded-lg font-semibold hover:bg-white transition flex items-center justify-center gap-3"
           >
+            <FcGoogle size={22} />
             Continue with Google
           </button>
 
