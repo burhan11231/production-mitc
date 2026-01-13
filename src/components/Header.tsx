@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   Dialog,
   DialogBackdrop,
@@ -21,12 +22,14 @@ import TeamModal from '@/components/TeamModal';
 import SalespersonModal from '@/components/SalespersonModal';
 import { Salesperson } from '@/lib/firestore-models';
 
+/* NAV LINKS */
 const navItems = [
   { href: '/services', label: 'Services' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
 
+/* ICONS */
 const IconUser = () => (
   <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -45,19 +48,51 @@ export default function Header() {
   const { user, isLoading } = useAuth();
   const { settings } = useSettings();
   const { salespersons } = useSalespersons();
+  const pathname = usePathname();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [personOpen, setPersonOpen] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
+  /* SORT ACTIVE SALESPERSONS */
   const activeSorted = useMemo(() => {
     return (salespersons || [])
       .filter(p => p?.isActive)
       .sort((a, b) => Number(a.order ?? 9999) - Number(b.order ?? 9999));
   }, [salespersons]);
+
+  /* CLOSE MENU ON ROUTE CHANGE */
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  /* PREVENT SCROLL BEHIND MENU */
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [menuOpen]);
+
+  /* SWIPE TO CLOSE */
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (diff > 60) setMenuOpen(false);
+    setTouchStartX(null);
+  };
 
   const handleSelectPerson = (p: Salesperson) => {
     setSelectedPerson(p);
@@ -74,6 +109,7 @@ export default function Header() {
           <button
             onClick={() => setMenuOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            aria-label="Open menu"
           >
             ☰
           </button>
@@ -100,7 +136,7 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* CENTER (PC) */}
+        {/* CENTER (DESKTOP) */}
         <div className="hidden lg:flex gap-10">
           {navItems.map(item => (
             <Link key={item.href} href={item.href} className="nav-link">
@@ -111,7 +147,6 @@ export default function Header() {
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
-
           {!isAdmin && (
             <button
               onClick={() => setTeamOpen(true)}
@@ -145,12 +180,18 @@ export default function Header() {
               <MenuItems className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border">
                 <div className="p-2">
                   <MenuItem>
-                    <Link href={isAdmin ? '/dashboard' : '/profile'} className="block px-3 py-2 font-bold rounded-lg hover:bg-gray-50">
+                    <Link
+                      href={isAdmin ? '/dashboard' : '/profile'}
+                      className="block px-3 py-2 font-bold rounded-lg hover:bg-gray-50"
+                    >
                       {isAdmin ? 'Admin Dashboard' : 'My Profile'}
                     </Link>
                   </MenuItem>
                   <MenuItem>
-                    <Link href="/auth/logout" className="flex items-center gap-2 px-3 py-2 text-red-600 font-bold rounded-lg hover:bg-red-50">
+                    <Link
+                      href="/auth/logout"
+                      className="flex items-center gap-2 px-3 py-2 text-red-600 font-bold rounded-lg hover:bg-red-50"
+                    >
                       <IconLogout /> Logout
                     </Link>
                   </MenuItem>
@@ -161,7 +202,50 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* TEAM + PERSON MODALS */}
+      {/* MOBILE DRAWER */}
+      <Transition show={menuOpen} as={Fragment}>
+        <Dialog onClose={setMenuOpen} className="lg:hidden relative z-[60]">
+          <DialogBackdrop className="fixed inset-0 bg-black/40" />
+          <DialogPanel
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+            className="fixed left-0 top-0 h-full w-[80%] max-w-[300px] bg-white shadow-xl flex flex-col"
+          >
+            <div className="h-16 px-6 flex items-center justify-between border-b">
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Menu</span>
+              <button onClick={() => setMenuOpen(false)}>✕</button>
+            </div>
+
+            <div className="flex-1 p-4 space-y-2">
+              {navItems.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block px-4 py-3 rounded-xl font-bold text-gray-900 hover:bg-gray-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {!user && (
+              <div
+                className="border-t bg-sky-50/60 p-4 space-y-3"
+                style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
+              >
+                <Link href="/login" className="block w-full text-center py-3 rounded-lg border bg-white font-bold">
+                  Login
+                </Link>
+                <Link href="/signup" className="block w-full text-center py-3 rounded-lg bg-black text-white font-bold">
+                  Create Account
+                </Link>
+              </div>
+            )}
+          </DialogPanel>
+        </Dialog>
+      </Transition>
+
+      {/* MODALS */}
       <TeamModal
         isOpen={teamOpen}
         onClose={() => setTeamOpen(false)}
