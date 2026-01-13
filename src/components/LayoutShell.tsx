@@ -17,7 +17,7 @@ export default function LayoutShell({
 
   return (
     <>
-      <main className={!hideFooterOnAuth ? 'min-h-screen' : undefined}>
+      <main className="min-h-screen">
         {children}
       </main>
 
