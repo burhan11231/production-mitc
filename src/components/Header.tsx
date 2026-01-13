@@ -21,14 +21,12 @@ import TeamModal from '@/components/TeamModal';
 import SalespersonModal from '@/components/SalespersonModal';
 import { Salesperson } from '@/lib/firestore-models';
 
-/* NAV LINKS */
 const navItems = [
   { href: '/services', label: 'Services' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
 
-/* ICONS */
 const IconUser = () => (
   <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -76,7 +74,6 @@ export default function Header() {
           <button
             onClick={() => setMenuOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-            aria-label="Open menu"
           >
             ☰
           </button>
@@ -103,7 +100,7 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* CENTER (PC ONLY) */}
+        {/* CENTER (PC) */}
         <div className="hidden lg:flex gap-10">
           {navItems.map(item => (
             <Link key={item.href} href={item.href} className="nav-link">
@@ -115,56 +112,31 @@ export default function Header() {
         {/* RIGHT */}
         <div className="flex items-center gap-3">
 
-          {/* CONNECT — NOW VISIBLE ON MOBILE + DESKTOP */}
           {!isAdmin && (
             <button
               onClick={() => setTeamOpen(true)}
-              className="
-                px-4 lg:px-5
-                h-10 lg:h-11
-                rounded-full
-                bg-blue-50 text-blue-700
-                font-bold
-                border border-blue-100
-                hover:bg-blue-100
-                transition
-              "
+              className="px-4 lg:px-5 h-10 lg:h-11 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100 hover:bg-blue-100 transition"
             >
               Connect
             </button>
           )}
 
-          {/* AUTH BUTTONS (DESKTOP ONLY) */}
           {!isLoading && !user && (
             <div className="hidden lg:flex gap-2">
-              <Link
-                href="/login"
-                className="px-4 h-10 flex items-center rounded-lg border bg-white text-gray-900 font-bold"
-              >
+              <Link href="/login" className="px-4 h-10 flex items-center rounded-lg border bg-white font-bold">
                 Login
               </Link>
-              <Link
-                href="/signup"
-                className="px-4 h-10 flex items-center rounded-lg bg-black text-white font-bold"
-              >
+              <Link href="/signup" className="px-4 h-10 flex items-center rounded-lg bg-black text-white font-bold">
                 Create Account
               </Link>
             </div>
           )}
 
-          {/* PROFILE (ONLY IF LOGGED IN) */}
           {user && (
             <Menu as="div" className="relative">
               <MenuButton className="w-10 h-10 rounded-full bg-gray-50 border flex items-center justify-center">
                 {user.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                    unoptimized
-                  />
+                  <Image src={user.photoURL} alt="Profile" width={40} height={40} className="rounded-full" unoptimized />
                 ) : (
                   <IconUser />
                 )}
@@ -173,18 +145,12 @@ export default function Header() {
               <MenuItems className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border">
                 <div className="p-2">
                   <MenuItem>
-                    <Link
-                      href={isAdmin ? '/dashboard' : '/profile'}
-                      className="block px-3 py-2 rounded-lg font-bold hover:bg-gray-50"
-                    >
+                    <Link href={isAdmin ? '/dashboard' : '/profile'} className="block px-3 py-2 font-bold rounded-lg hover:bg-gray-50">
                       {isAdmin ? 'Admin Dashboard' : 'My Profile'}
                     </Link>
                   </MenuItem>
                   <MenuItem>
-                    <Link
-                      href="/auth/logout"
-                      className="flex items-center gap-2 px-3 py-2 text-red-600 font-bold rounded-lg hover:bg-red-50"
-                    >
+                    <Link href="/auth/logout" className="flex items-center gap-2 px-3 py-2 text-red-600 font-bold rounded-lg hover:bg-red-50">
                       <IconLogout /> Logout
                     </Link>
                   </MenuItem>
@@ -195,55 +161,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* MOBILE DRAWER */}
-      <Transition show={menuOpen} as={Fragment}>
-        <Dialog onClose={setMenuOpen} className="lg:hidden relative z-[60]">
-          <DialogBackdrop className="fixed inset-0 bg-black/40" />
-
-          <DialogPanel className="fixed left-0 top-0 h-full w-[80%] max-w-[300px] bg-white shadow-xl flex flex-col">
-            <div className="h-16 px-6 flex items-center justify-between border-b">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Menu</span>
-              <button onClick={() => setMenuOpen(false)}>✕</button>
-            </div>
-
-            <div className="flex-1 p-4 space-y-2">
-              {navItems.map(item => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="block px-4 py-3 rounded-xl font-bold text-gray-900 hover:bg-gray-50"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-
-            {/* MOBILE AUTH FOOTER */}
-            {!user && (
-              <div
-                className="border-t bg-sky-50/60 p-4 space-y-3"
-                style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
-              >
-                <Link
-                  href="/login"
-                  className="block w-full text-center py-3 rounded-lg border bg-white text-black font-bold"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block w-full text-center py-3 rounded-lg bg-black text-white font-bold"
-                >
-                  Create Account
-                </Link>
-              </div>
-            )}
-          </DialogPanel>
-        </Dialog>
-      </Transition>
-
-      {/* TEAM MODAL */}
+      {/* TEAM + PERSON MODALS */}
       <TeamModal
         isOpen={teamOpen}
         onClose={() => setTeamOpen(false)}
@@ -255,7 +173,6 @@ export default function Header() {
         viewAllHref="/team"
       />
 
-      {/* PERSON MODAL */}
       <SalespersonModal
         isOpen={personOpen}
         salesperson={selectedPerson}
