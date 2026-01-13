@@ -12,26 +12,19 @@ import {
 import { auth } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
-/* ---------------- CONFIG ---------------- */
-
 const MAX_ATTEMPTS = 5;
-const LOCK_TIME_MS = 5 * 60 * 1000; // 5 minutes
+const LOCK_TIME_MS = 5 * 60 * 1000;
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [showForgot, setShowForgot] = useState(false);
 
-  /* ---------------- RATE LIMIT HELPERS ---------------- */
-
   const keyFail = `login_fail_${email}`;
   const keyLock = `login_lock_${email}`;
-
   const isLocked = Boolean(lockedUntil && Date.now() < lockedUntil);
 
   useEffect(() => {
@@ -43,12 +36,11 @@ export default function LoginPage() {
   const recordFailure = () => {
     const count = Number(localStorage.getItem(keyFail) || 0) + 1;
     localStorage.setItem(keyFail, String(count));
-
     if (count >= MAX_ATTEMPTS) {
       const until = Date.now() + LOCK_TIME_MS;
       localStorage.setItem(keyLock, String(until));
       setLockedUntil(until);
-      toast.error('Too many failed attempts. Account locked for 5 minutes.');
+      toast.error('Too many failed attempts. Locked for 5 minutes.');
     }
   };
 
@@ -58,174 +50,156 @@ export default function LoginPage() {
     setLockedUntil(null);
   };
 
-  /* ---------------- EMAIL LOGIN ---------------- */
-
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (isLocked) {
-      const mins = Math.ceil((lockedUntil! - Date.now()) / 60000);
-      return toast.error(`Account locked. Try again in ${mins} min`);
-    }
-
+    if (isLocked) return toast.error('Account temporarily locked');
     setLoading(true);
-
     try {
       await signInWithEmailAndPassword(auth, email, password);
       clearFailures();
       toast.success('Welcome back');
       router.push('/');
-    } catch (error: any) {
-      const code = error?.code;
-
+    } catch {
       recordFailure();
-
-      if (code === 'auth/user-not-found') {
-        toast.error('No account found with this email');
-      } else if (code === 'auth/wrong-password') {
-        toast.error('Incorrect password');
-      } else if (code === 'auth/too-many-requests') {
-        toast.error('Too many requests. Try again later');
-      } else if (code === 'auth/user-disabled') {
-        toast.error('This account has been disabled');
-      } else {
-        toast.error('Login failed');
-      }
+      toast.error('Invalid credentials');
     } finally {
       setLoading(false);
     }
   };
-
-  /* ---------------- GOOGLE LOGIN ---------------- */
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, new GoogleAuthProvider());
       toast.success('Logged in with Google');
       router.push('/');
-    } catch (error: any) {
-      const code = error?.code;
-
-      if (code === 'auth/account-exists-with-different-credential') {
-        toast.error(
-          'Email already registered with password. Login using email, then connect Google from profile.'
-        );
-      } else if (code === 'auth/popup-blocked') {
-        toast.error('Popup blocked. Please allow popups.');
-      } else if (code === 'auth/popup-closed-by-user') {
-        toast('Google login cancelled');
-      } else {
-        toast.error('Google login failed');
-      }
+    } catch {
+      toast.error('Google login failed');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------------- PASSWORD RESET ---------------- */
-
   const handleResetPassword = async () => {
-    if (!email) {
-      return toast.error('Enter your email first');
-    }
-
+    if (!email) return toast.error('Enter email first');
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success('Password reset email sent');
+      toast.success('Reset email sent');
       setShowForgot(false);
     } catch {
-      toast.error('Failed to send reset email');
+      toast.error('Reset failed');
     }
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-center mb-2">
-          Sign In
-        </h1>
-        <p className="text-center text-gray-600 mb-6">
-          Access your MITC account
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
+      
+      {/* LEFT PANEL – DESKTOP ONLY */}
+      <div className="hidden lg:flex w-1/2 bg-gray-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
+        <div className="relative z-10 p-16 flex flex-col justify-center">
+          <h2 className="text-4xl font-bold mb-4">Secure Store Access</h2>
+          <p className="text-gray-300 max-w-md mb-10">
+            Manage inventory, analytics, and customers securely from one dashboard.
+          </p>
 
-        <form onSubmit={handleEmailLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="input"
-          />
+          {/* Modern Lock Animation */}
+          <div className="relative w-40 h-40">
+            <div className="absolute inset-0 rounded-full border border-gray-600 animate-pulse" />
+            <div className="absolute inset-6 rounded-full bg-gray-800 flex items-center justify-center shadow-2xl">
+              <div className="w-10 h-10 border-2 border-white rounded-md relative">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-4 border-2 border-white rounded-t-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={isLocked}
-            className="input"
-          />
+      {/* RIGHT LOGIN FORM */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Sign In</h1>
+          <p className="text-gray-600 mb-8">Access your MITC account</p>
 
-          {isLocked && (
-            <p className="text-sm text-red-600 font-medium text-center">
-              Account locked for 5 minutes due to failed attempts
-            </p>
-          )}
+          <form onSubmit={handleEmailLogin} className="space-y-6">
+
+            {/* Email */}
+            <div className="relative">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="peer input-modern"
+              />
+              <label className="label-modern">Email address</label>
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                disabled={isLocked}
+                className="peer input-modern"
+              />
+              <label className="label-modern">Password</label>
+            </div>
+
+            {isLocked && (
+              <p className="text-sm text-red-600 text-center">
+                Account locked for 5 minutes
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || isLocked}
+              className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black transition disabled:opacity-50"
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
+            </button>
+          </form>
 
           <button
-            type="submit"
-            disabled={loading || isLocked}
-            className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold disabled:opacity-50"
+            onClick={() => setShowForgot(!showForgot)}
+            className="mt-4 text-sm text-blue-600 font-medium w-full text-center"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            Forgot password?
           </button>
-        </form>
 
-        <button
-          onClick={() => setShowForgot(!showForgot)}
-          className="mt-3 text-sm text-blue-600 font-medium w-full text-center"
-        >
-          Forgot password?
-        </button>
+          {showForgot && (
+            <div className="mt-4 bg-gray-50 rounded-xl p-4">
+              <button
+                onClick={handleResetPassword}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+              >
+                Send reset email
+              </button>
+            </div>
+          )}
 
-        {showForgot && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-xl text-center">
-            <p className="text-sm text-gray-600 mb-2">
-              Reset password via email
-            </p>
-            <button
-              onClick={handleResetPassword}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
-            >
-              Send Reset Email
-            </button>
-          </div>
-        )}
+          <div className="my-6 text-center text-sm text-gray-400">OR</div>
 
-        <div className="my-6 text-center text-sm text-gray-400">
-          OR
+          <button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-xl py-3 font-semibold hover:bg-gray-50 transition"
+          >
+            Continue with Google
+          </button>
+
+          <p className="text-center text-sm text-gray-600 mt-6">
+            Don’t have an account?{' '}
+            <Link href="/signup" className="font-bold text-blue-600">
+              Create one
+            </Link>
+          </p>
         </div>
-
-        <button
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          className="w-full border rounded-xl py-3 font-semibold hover:bg-gray-50"
-        >
-          Continue with Google
-        </button>
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="font-bold text-blue-600">
-            Create one
-          </Link>
-        </p>
       </div>
     </div>
   );
