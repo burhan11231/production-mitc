@@ -103,7 +103,7 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* CENTER (PC) */}
+        {/* CENTER (PC ONLY) */}
         <div className="hidden lg:flex gap-10">
           {navItems.map(item => (
             <Link key={item.href} href={item.href} className="nav-link">
@@ -115,15 +115,26 @@ export default function Header() {
         {/* RIGHT */}
         <div className="flex items-center gap-3">
 
-          {/* CONNECT — ALWAYS VISIBLE */}
-          <button
-            onClick={() => setTeamOpen(true)}
-            className="hidden lg:block px-5 h-11 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100"
-          >
-            Connect
-          </button>
+          {/* CONNECT — NOW VISIBLE ON MOBILE + DESKTOP */}
+          {!isAdmin && (
+            <button
+              onClick={() => setTeamOpen(true)}
+              className="
+                px-4 lg:px-5
+                h-10 lg:h-11
+                rounded-full
+                bg-blue-50 text-blue-700
+                font-bold
+                border border-blue-100
+                hover:bg-blue-100
+                transition
+              "
+            >
+              Connect
+            </button>
+          )}
 
-          {/* AUTH BUTTONS (DESKTOP) */}
+          {/* AUTH BUTTONS (DESKTOP ONLY) */}
           {!isLoading && !user && (
             <div className="hidden lg:flex gap-2">
               <Link
