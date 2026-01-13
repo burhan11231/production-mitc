@@ -21,7 +21,7 @@ import TeamModal from '@/components/TeamModal';
 import SalespersonModal from '@/components/SalespersonModal';
 import { Salesperson } from '@/lib/firestore-models';
 
-/* NAV LINKS (REMOVED HOME / RATINGS / TEAM) */
+/* NAV LINKS */
 const navItems = [
   { href: '/services', label: 'Services' },
   { href: '/about', label: 'About' },
@@ -115,14 +115,13 @@ export default function Header() {
         {/* RIGHT */}
         <div className="flex items-center gap-3">
 
-          {!isAdmin && (
-            <button
-              onClick={() => setTeamOpen(true)}
-              className="hidden lg:block px-5 h-11 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100"
-            >
-              Connect
-            </button>
-          )}
+          {/* CONNECT — ALWAYS VISIBLE */}
+          <button
+            onClick={() => setTeamOpen(true)}
+            className="hidden lg:block px-5 h-11 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100"
+          >
+            Connect
+          </button>
 
           {/* AUTH BUTTONS (DESKTOP) */}
           {!isLoading && !user && (
