@@ -1,19 +1,3 @@
-1. Remove home, ratings and team links completely.  
-2. Add a footer on mobile menu for login and Create Account and Logout buttons
-Footer color bg-sky-50/60  
-Black Bordered Login button white bg and black text  
-Create Account button black bg and white text no border
-Logout white button with red text and border
-3. Add same buttons on the right side of header for pc  
-4. Hide profile icon untill login and remove dropdown directly link to profile 
- 
-5. Apply Safe-area support for Android/iOS or etc  
-  
-
-Everything else remain same
-
-
-
 'use client'  
   
 import Link from 'next/link'  
