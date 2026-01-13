@@ -192,29 +192,33 @@ export default function Header() {
                     </>  
                   ) : (  
                     <div className="grid grid-cols-1 gap-1">  
-                      <MenuItem>  
-                        {({ active }) => (  
-                          <Link href="/login" className={`${active ? 'bg-gray-100' : ''} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-gray-900 transition`}>  
-                            Login  
-                          </Link>  
-                        )}  
-                      </MenuItem>  
-                      {({ active }) => (
-  <Link
-    href="/signup"
-    className={`
-      ${active ? 'bg-black' : 'bg-neutral-900'}
-      flex w-full items-center rounded-xl px-3 py-2.5
-      text-sm font-bold text-white
-      transition
-      hover:bg-black
-      shadow-md shadow-black/20
-    `}
-  >
-    Create Account
-  </Link>
-)}  
-                      </MenuItem>  
+                      <MenuItem>
+  {({ active }) => (
+    <Link
+      href="/login"
+      className={`${active ? 'bg-gray-100' : ''} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-gray-900 transition`}
+    >
+      Login
+    </Link>
+  )}
+</MenuItem>
+
+<MenuItem>
+  {({ active }) => (
+    <Link
+      href="/signup"
+      className={`
+        ${active ? 'bg-black' : 'bg-neutral-900'}
+        flex w-full items-center rounded-xl px-3 py-2.5
+        text-sm font-bold text-white
+        transition hover:bg-black
+        shadow-md shadow-black/20
+      `}
+    >
+      Create Account
+    </Link>
+  )}
+</MenuItem>  
                     </div>  
                   )}  
                 </div>  
