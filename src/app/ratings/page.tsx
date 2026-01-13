@@ -41,8 +41,9 @@ export default function RatingsPage() {
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [filterRating, setFilterRating] = useState<number | null>(null);
 
-  /* ---------------- FETCH PUBLISHED REVIEWS ---------------- */
+  /* ---------------- FETCH REVIEWS ---------------- */
 
   const fetchReviews = async () => {
     try {
@@ -54,7 +55,6 @@ export default function RatingsPage() {
       );
 
       const snap = await getDocs(q);
-
       setReviews(
         snap.docs.map((d) => ({
           id: d.id,
@@ -66,14 +66,11 @@ export default function RatingsPage() {
     }
   };
 
-  /* ---------------- FETCH MY REVIEW ---------------- */
-
   const fetchMyReview = async () => {
     if (!user) {
       setMyReview(null);
       return;
     }
-
     try {
       const snap = await getDoc(doc(db, 'reviews', user.uid));
       setMyReview(
@@ -96,17 +93,30 @@ export default function RatingsPage() {
   /* ---------------- STATS ---------------- */
 
   const stats = useMemo(() => {
-    if (!reviews.length)
-      return { avg: 0, count: 0 };
-
-    const count = reviews.length;
+    const total = reviews.length;
     const avg =
-      Math.round(
-        (reviews.reduce((a, r) => a + r.rating, 0) / count) * 10
-      ) / 10;
+      total === 0
+        ? 0
+        : Math.round(
+            (reviews.reduce((a, r) => a + r.rating, 0) / total) * 10
+          ) / 10;
 
-    return { avg, count };
+    const distribution = [5, 4, 3, 2, 1].map((star) => {
+      const count = reviews.filter((r) => r.rating === star).length;
+      return {
+        star,
+        count,
+        percent: total ? Math.round((count / total) * 100) : 0,
+      };
+    });
+
+    return { avg, total, distribution };
   }, [reviews]);
+
+  const visibleReviews = useMemo(() => {
+    if (!filterRating) return reviews;
+    return reviews.filter((r) => r.rating === filterRating);
+  }, [reviews, filterRating]);
 
   /* ---------------- DATE FORMAT ---------------- */
 
@@ -138,9 +148,11 @@ export default function RatingsPage() {
 
       <div className="max-w-7xl mx-auto px-6 -mt-8">
         <div className="grid lg:grid-cols-12 gap-8">
-          {/* LEFT – STATS + GATE */}
+
+          {/* LEFT – STATS */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-2xl border p-8 sticky top-8">
+              {/* Average */}
               <div className="text-center mb-6">
                 <div className="text-6xl font-black">{stats.avg}</div>
                 <div className="flex justify-center gap-1 my-2">
@@ -156,8 +168,38 @@ export default function RatingsPage() {
                   ))}
                 </div>
                 <p className="text-gray-500">
-                  Based on {stats.count} reviews
+                  Based on {stats.total} reviews
                 </p>
+              </div>
+
+              {/* DISTRIBUTION */}
+              <div className="space-y-2 mb-6">
+                {stats.distribution.map((d) => (
+                  <button
+                    key={d.star}
+                    onClick={() =>
+                      setFilterRating(
+                        filterRating === d.star ? null : d.star
+                      )
+                    }
+                    className={`w-full flex items-center gap-3 text-sm ${
+                      filterRating === d.star
+                        ? 'font-semibold'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    <span className="w-6">{d.star}★</span>
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-yellow-400"
+                        style={{ width: `${d.percent}%` }}
+                      />
+                    </div>
+                    <span className="w-10 text-right">
+                      {d.percent}%
+                    </span>
+                  </button>
+                ))}
               </div>
 
               <PublicReviewGate
@@ -167,7 +209,7 @@ export default function RatingsPage() {
             </div>
           </div>
 
-          {/* RIGHT – LIST */}
+          {/* RIGHT – REVIEWS */}
           <div className="lg:col-span-8 space-y-6">
             {showForm && !myReview && (
               <ReviewForm
@@ -184,9 +226,9 @@ export default function RatingsPage() {
               <div className="flex justify-center py-20">
                 <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full" />
               </div>
-            ) : reviews.length ? (
+            ) : visibleReviews.length ? (
               <div className="grid gap-6">
-                {reviews.map((r) => (
+                {visibleReviews.map((r) => (
                   <div
                     key={r.id}
                     className="bg-white p-6 rounded-2xl border shadow-sm"
@@ -225,13 +267,16 @@ export default function RatingsPage() {
                   size={48}
                   className="mx-auto text-gray-300 mb-4"
                 />
-                <h3 className="font-bold text-xl">No reviews yet</h3>
+                <h3 className="font-bold text-xl">
+                  No reviews for this rating
+                </h3>
                 <p className="text-gray-500">
-                  Be the first to share your experience.
+                  Try selecting a different rating.
                 </p>
               </div>
             )}
           </div>
+
         </div>
       </div>
     </div>
