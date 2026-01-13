@@ -13,6 +13,9 @@ import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
+import { Laptop } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
+
 interface SignupForm {
   name: string;
   email: string;
@@ -32,11 +35,13 @@ export default function SignupPage() {
     confirmPassword: '',
   });
 
+  const currentYear = new Date().getFullYear();
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(p => ({ ...p, [e.target.name]: e.target.value }));
   };
 
-  /* ---------------- FORM SIGN UP ---------------- */
+  /* ---------------- EMAIL SIGNUP ---------------- */
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,19 +65,17 @@ export default function SignupPage() {
 
       const user = cred.user;
 
-      // Auth display name only
       await updateProfile(user, {
         displayName: form.name,
       });
 
-      // Firestore profile
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         name: form.name,
         email: form.email,
         phone: form.phone || '',
         role: 'user',
-        photoURL: '', // first-letter avatar handled in UI
+        photoURL: '',
         authProviders: ['password'],
         createdAt: serverTimestamp(),
       });
@@ -83,7 +86,7 @@ export default function SignupPage() {
       const code = error?.code;
 
       if (code === 'auth/email-already-in-use') {
-        toast.error('Account already exists. Please log in.');
+        toast.error('Account already exists. Please sign in.');
       } else if (code === 'auth/invalid-email') {
         toast.error('Invalid email address');
       } else if (code === 'auth/weak-password') {
@@ -96,7 +99,7 @@ export default function SignupPage() {
     }
   };
 
-  /* ---------------- GOOGLE SIGN UP ---------------- */
+  /* ---------------- GOOGLE SIGNUP ---------------- */
 
   const handleGoogleSignup = async () => {
     setLoading(true);
@@ -139,87 +142,142 @@ export default function SignupPage() {
     }
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-center mb-2">Create Account</h1>
-        <p className="text-center text-gray-600 mb-6">
-          Join MITC community
-        </p>
+    <div className="relative flex bg-sky-50/60 min-h-[calc(100vh-64px)]">
 
-        <form onSubmit={handleSignup} className="space-y-4">
-          <input
-            name="name"
-            placeholder="Username"
-            value={form.name}
-            onChange={onChange}
-            required
-            className="input"
-          />
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={onChange}
-            required
-            className="input"
-          />
-          <input
-            name="phone"
-            placeholder="Phone (optional)"
-            value={form.phone}
-            onChange={onChange}
-            className="input"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={onChange}
-            required
-            className="input"
-          />
-          <input
-            name="confirmPassword"
-            type="password"
-            placeholder="Confirm Password"
-            value={form.confirmPassword}
-            onChange={onChange}
-            required
-            className="input"
-          />
+      {/* LEFT – DESKTOP ILLUSTRATION */}
+      <div className="hidden lg:flex w-1/2 items-center justify-center">
+        <Laptop
+          size={260}
+          strokeWidth={1}
+          className="text-sky-700 opacity-90"
+        />
+      </div>
+
+      {/* RIGHT – SIGNUP */}
+      <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10">
+        <div className="max-w-md mx-auto">
+
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Create account
+          </h1>
+          <p className="text-gray-600 mb-8">
+            Join MITC community
+          </p>
+
+          <form onSubmit={handleSignup} className="space-y-4">
+
+            <div>
+              <label className="field-label">Full name</label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={onChange}
+                placeholder="Your name"
+                required
+                className="input-field"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Email</label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={onChange}
+                placeholder="example@gmail.com"
+                required
+                className="input-field"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Phone (optional)</label>
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={onChange}
+                placeholder="Phone number"
+                className="input-field"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Password</label>
+              <input
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={onChange}
+                placeholder="••••••••"
+                required
+                className="input-field"
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Confirm password</label>
+              <input
+                name="confirmPassword"
+                type="password"
+                value={form.confirmPassword}
+                onChange={onChange}
+                placeholder="••••••••"
+                required
+                className="input-field"
+              />
+            </div>
+
+            <button
+              disabled={loading}
+              className="w-full py-3 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black transition disabled:opacity-50"
+            >
+              {loading ? 'Creating…' : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="my-8 text-center text-sm text-gray-400">OR</div>
 
           <button
+            onClick={handleGoogleSignup}
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold disabled:opacity-50"
+            className="w-full py-3 border border-gray-300 rounded-lg font-semibold hover:bg-white transition flex items-center justify-center gap-3"
           >
-            {loading ? 'Creating...' : 'Create Account'}
+            <FcGoogle size={22} />
+            Continue with Google
           </button>
-        </form>
 
-        <div className="my-6 text-center text-sm text-gray-400">
-          OR
+          <p className="mt-8 text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link href="/login" className="font-semibold text-blue-600">
+              Sign in
+            </Link>
+          </p>
+
         </div>
-
-        <button
-          onClick={handleGoogleSignup}
-          disabled={loading}
-          className="w-full border rounded-xl py-3 font-semibold hover:bg-gray-50"
-        >
-          Continue with Google
-        </button>
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Already have an account?{' '}
-          <Link href="/login" className="font-bold text-blue-600">
-            Sign in
-          </Link>
-        </p>
       </div>
+
+      {/* AUTH FOOTER – SAFE AREA AWARE */}
+      <div
+        className="absolute left-0 right-0 text-center text-xs text-gray-400"
+        style={{
+          bottom: 'calc(12px + env(safe-area-inset-bottom))',
+        }}
+      >
+        <div className="flex items-center justify-center gap-3">
+          <span>© MITC {currentYear}</span>
+          <span className="opacity-50">·</span>
+          <Link href="/privacy" className="hover:text-gray-600">
+            Privacy
+          </Link>
+          <span className="opacity-50">·</span>
+          <Link href="/terms" className="hover:text-gray-600">
+            Terms
+          </Link>
+        </div>
+      </div>
+
     </div>
   );
 }
