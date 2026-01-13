@@ -92,51 +92,55 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
-      
-      {/* LEFT PANEL – DESKTOP ONLY */}
-      <div className="hidden lg:flex w-1/2 bg-gray-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
-        <div className="relative z-10 p-16 flex flex-col justify-center">
-          <h2 className="text-4xl font-bold mb-4">Secure Store Access</h2>
-          <p className="text-gray-300 max-w-md mb-10">
-            Manage inventory, analytics, and customers securely from one dashboard.
+    <div className="min-h-screen bg-sky-50/60 flex">
+
+      {/* LEFT SECTION – PROFESSIONAL INFO */}
+      <div className="hidden lg:flex w-1/2 items-center justify-center px-16">
+        <div className="max-w-md">
+          <h1 className="text-4xl font-bold text-gray-900 leading-tight mb-4">
+            MITC Internal Access
+          </h1>
+          <p className="text-gray-600 mb-10">
+            Secure login for authorised staff. Access tools based on your role
+            — Sales, Manager, or Support.
           </p>
 
-          {/* Modern Lock Animation */}
-          <div className="relative w-40 h-40">
-            <div className="absolute inset-0 rounded-full border border-gray-600 animate-pulse" />
-            <div className="absolute inset-6 rounded-full bg-gray-800 flex items-center justify-center shadow-2xl">
-              <div className="w-10 h-10 border-2 border-white rounded-md relative">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-4 border-2 border-white rounded-t-full" />
-              </div>
-            </div>
-          </div>
+          <ul className="space-y-4 text-gray-700">
+            <li>• Role-based access control</li>
+            <li>• Secure authentication</li>
+            <li>• Staff-managed operations</li>
+            <li>• Centralised admin control</li>
+          </ul>
         </div>
       </div>
 
-      {/* RIGHT LOGIN FORM */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Sign In</h1>
-          <p className="text-gray-600 mb-8">Access your MITC account</p>
+      {/* RIGHT SECTION – LOGIN */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6">
+        <div className="w-full max-w-md">
+
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Sign in
+          </h2>
+          <p className="text-gray-600 mb-10">
+            Use your registered credentials
+          </p>
 
           <form onSubmit={handleEmailLogin} className="space-y-6">
 
-            {/* Email */}
+            {/* EMAIL */}
             <div className="relative">
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                className="peer input-modern"
+                placeholder="Email address"
+                className="peer input-field"
               />
-              <label className="label-modern">Email address</label>
+              <label className="floating-label">Email address</label>
             </div>
 
-            {/* Password */}
+            {/* PASSWORD */}
             <div className="relative">
               <input
                 type="password"
@@ -145,13 +149,13 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 disabled={isLocked}
-                className="peer input-modern"
+                className="peer input-field"
               />
-              <label className="label-modern">Password</label>
+              <label className="floating-label">Password</label>
             </div>
 
             {isLocked && (
-              <p className="text-sm text-red-600 text-center">
+              <p className="text-sm text-red-600">
                 Account locked for 5 minutes
               </p>
             )}
@@ -159,7 +163,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || isLocked}
-              className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black transition disabled:opacity-50"
+              className="w-full py-3 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black transition disabled:opacity-50"
             >
               {loading ? 'Signing in…' : 'Sign In'}
             </button>
@@ -167,38 +171,39 @@ export default function LoginPage() {
 
           <button
             onClick={() => setShowForgot(!showForgot)}
-            className="mt-4 text-sm text-blue-600 font-medium w-full text-center"
+            className="mt-4 text-sm text-blue-600 font-medium"
           >
             Forgot password?
           </button>
 
           {showForgot && (
-            <div className="mt-4 bg-gray-50 rounded-xl p-4">
+            <div className="mt-4">
               <button
                 onClick={handleResetPassword}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+                className="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold"
               >
                 Send reset email
               </button>
             </div>
           )}
 
-          <div className="my-6 text-center text-sm text-gray-400">OR</div>
+          <div className="my-8 text-center text-sm text-gray-400">OR</div>
 
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full border border-gray-300 rounded-xl py-3 font-semibold hover:bg-gray-50 transition"
+            className="w-full py-3 border border-gray-300 rounded-lg font-semibold hover:bg-white transition"
           >
             Continue with Google
           </button>
 
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="mt-8 text-sm text-gray-600">
             Don’t have an account?{' '}
-            <Link href="/signup" className="font-bold text-blue-600">
+            <Link href="/signup" className="font-semibold text-blue-600">
               Create one
             </Link>
           </p>
+
         </div>
       </div>
     </div>
