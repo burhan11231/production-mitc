@@ -6,11 +6,12 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'MITC - Mateen IT Corp | Laptop Sales & Services',
-  description: "Kashmir's premier destination for laptop sales, repairs, and technical services since 2013.",
+  description:
+    "Kashmir's premier destination for laptop sales, repairs, and technical services since 2013.",
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://mitc-store.com',
+    url: 'https://mitck.netlify.app',
     siteName: 'MITC - Mateen IT Corp',
   },
   twitter: {
@@ -31,9 +32,14 @@ export default function RootLayout({
       <body>
         <Provider>
           <Header />
-          <main className="min-h-screen">{children}</main>
-          
-          <Footer />
+
+          {/* 
+            NOTE:
+            Footer is controlled at page level using a wrapper component
+            because RootLayout cannot read pathname (server component).
+          */}
+          {children}
+
         </Provider>
       </body>
     </html>
