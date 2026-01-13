@@ -64,17 +64,20 @@ body {
 
 
 
-.input-modern {
-  @apply w-full px-4 pt-6 pb-3 rounded-xl border border-gray-300 bg-white
-         text-gray-900 placeholder-transparent
-         focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent
-         transition;
+.input-field {
+  @apply w-full px-4 pt-5 pb-2 rounded-lg border border-gray-300
+         bg-white text-gray-900 placeholder-transparent
+         focus:outline-none focus:ring-2 focus:ring-gray-900
+         focus:border-transparent transition;
 }
-.label-modern {
-  @apply absolute left-4 top-3 text-sm text-gray-500 pointer-events-none
+
+.floating-label {
+  @apply absolute left-4 top-1/2 -translate-y-1/2
+         text-gray-500 text-sm pointer-events-none
          transition-all;
 }
-.peer:focus ~ .label-modern,
-.peer:not(:placeholder-shown) ~ .label-modern {
-  @apply text-xs text-gray-700 -top-1;
+
+.peer:focus ~ .floating-label,
+.peer:not(:placeholder-shown) ~ .floating-label {
+  @apply top-2 text-xs text-gray-700;
 }
