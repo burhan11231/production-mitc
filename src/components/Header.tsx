@@ -199,12 +199,21 @@ export default function Header() {
                           </Link>  
                         )}  
                       </MenuItem>  
-                      <MenuItem>  
-                        {({ active }) => (  
-                          <Link href="/signup" className={`${active ? 'bg-black-700' : 'bg-black-600'} flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-white transition shadow-md shadow-blue-100`}>  
-                            Create Account  
-                          </Link>  
-                        )}  
+                      {({ active }) => (
+  <Link
+    href="/signup"
+    className={`
+      ${active ? 'bg-black' : 'bg-neutral-900'}
+      flex w-full items-center rounded-xl px-3 py-2.5
+      text-sm font-bold text-white
+      transition
+      hover:bg-black
+      shadow-md shadow-black/20
+    `}
+  >
+    Create Account
+  </Link>
+)}  
                       </MenuItem>  
                     </div>  
                   )}  
