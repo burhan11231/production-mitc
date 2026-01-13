@@ -11,13 +11,11 @@ import SalespersonModal from '@/components/SalespersonModal'
 import TeamModal from '@/components/TeamModal'  
 import { Salesperson } from '@/lib/firestore-models'  
   
-const navItems = [  
-  { href: '/', label: 'Home' },  
+const navItems = [    
   { href: '/services', label: 'Services' },  
   { href: '/about', label: 'About' },  
   { href: '/ratings', label: 'Ratings' },  
-  { href: '/contact', label: 'Contact' },  
-  { href: '/team', label: 'Team' },  
+  { href: '/contact', label: 'Contact' },    
 ]  
   
 const IconPhone = () => (  
