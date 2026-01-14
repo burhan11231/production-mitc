@@ -335,14 +335,11 @@ export default function ContactPage() {
 
     <div className="flex flex-col items-start">
       <a
-        href="/team"
-        className="w-full md:w-auto inline-flex justify-center items-center px-6 py-3
-                   bg-black text-white font-semibold
-                   hover:bg-neutral-900
-                   transition-colors duration-200 shadow-sm"
-      >
-        Meet Our Team
-      </a>
+  href="/team"
+  className="w-full md:w-auto inline-flex justify-center items-center px-6 py-3 bg-black text-white font-semibold hover:bg-neutral-900 transition-colors duration-200 shadow-sm"
+>
+  Meet Our Team
+</a>
 
       <p className="mt-3 text-sm text-slate-500 flex items-center gap-1.5">
         <span className="block w-2 h-2 bg-emerald-400 rounded-full" />
