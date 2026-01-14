@@ -50,6 +50,7 @@ interface Props {
 }
 
 const PER_PAGE = 10;
+const PAGE_WINDOW = 3;
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -63,6 +64,7 @@ export default function ReviewsClient({
   const [reviews, setReviews] = useState<Review[]>([]);
   const [lastDoc, setLastDoc] =
     useState<QueryDocumentSnapshot | null>(null);
+  const [hasNext, setHasNext] = useState(false);
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,17 +72,13 @@ export default function ReviewsClient({
   /* ---------------- FETCH STATS ---------------- */
 
   const fetchStats = async () => {
-    try {
-      const snap = await getDoc(doc(db, 'reviewStats', 'global'));
-      if (snap.exists()) {
-        setStats(snap.data() as ReviewStats);
-      }
-    } catch {
-      /* silent */
+    const snap = await getDoc(doc(db, 'reviewStats', 'global'));
+    if (snap.exists()) {
+      setStats(snap.data() as ReviewStats);
     }
   };
 
-  /* ---------------- FETCH REVIEWS (CURSOR PAGINATION) ---------------- */
+  /* ---------------- FETCH REVIEWS ---------------- */
 
   const fetchReviews = async () => {
     setLoading(true);
@@ -89,7 +87,7 @@ export default function ReviewsClient({
       const constraints: QueryConstraint[] = [
         where('status', '==', 'published'),
         orderBy('createdAt', 'desc'),
-        limit(PER_PAGE),
+        limit(PER_PAGE + 1),
       ];
 
       if (initialRating) {
@@ -103,13 +101,18 @@ export default function ReviewsClient({
       const q = query(collection(db, 'reviews'), ...constraints);
       const snap = await getDocs(q);
 
-      const items: Review[] = snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<Review, 'id'>),
-      }));
+      const docs = snap.docs;
+      const pageItems = docs.slice(0, PER_PAGE);
 
-      setReviews(items);
-      setLastDoc(snap.docs.at(-1) ?? null);
+      setReviews(
+        pageItems.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Review, 'id'>),
+        }))
+      );
+
+      setHasNext(docs.length > PER_PAGE);
+      setLastDoc(pageItems.at(-1) ?? null);
     } catch {
       toast.error('Failed to load reviews');
     } finally {
@@ -121,18 +124,13 @@ export default function ReviewsClient({
 
   const fetchMyReview = async () => {
     if (!user) return;
-
-    try {
-      const snap = await getDoc(doc(db, 'reviews', user.uid));
-      if (snap.exists()) {
-        setMyReview({
-          id: snap.id,
-          ...(snap.data() as Omit<Review, 'id'>),
-        });
-      } else {
-        setMyReview(null);
-      }
-    } catch {
+    const snap = await getDoc(doc(db, 'reviews', user.uid));
+    if (snap.exists()) {
+      setMyReview({
+        id: snap.id,
+        ...(snap.data() as Omit<Review, 'id'>),
+      });
+    } else {
       setMyReview(null);
     }
   };
@@ -153,12 +151,16 @@ export default function ReviewsClient({
     router.push(`/ratings${params.toString() ? `?${params}` : ''}`);
   };
 
+  const pageNumbers = Array.from(
+    { length: PAGE_WINDOW * 2 + 1 },
+    (_, i) => initialPage - PAGE_WINDOW + i
+  ).filter((p) => p > 0);
+
   /* ---------------- UI ---------------- */
 
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
 
-      {/* SEO SCHEMA (PAGE 1 ONLY) */}
       {stats && initialPage === 1 && (
         <>
           <AggregateRatingSchema
@@ -169,7 +171,6 @@ export default function ReviewsClient({
         </>
       )}
 
-      {/* HEADER */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-16 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold">
@@ -187,32 +188,53 @@ export default function ReviewsClient({
         <aside className="lg:col-span-4">
           <div className="bg-white rounded-3xl border p-8 sticky top-6">
             {stats && (
-              <div className="text-center mb-6">
-                <div className="text-6xl font-black">
-                  {stats.averageRating}
-                </div>
-                <div className="flex justify-center gap-1 my-2">
-                  {[1,2,3,4,5].map(i=>(
-                    <FaStar
-                      key={i}
-                      className={
-                        i <= Math.round(stats.averageRating)
+              <>
+                <div className="text-center mb-6">
+                  <div className="text-6xl font-black">
+                    {stats.averageRating}
+                  </div>
+                  <div className="flex justify-center gap-1 my-2">
+                    {[1,2,3,4,5].map(i=>(
+                      <FaStar
+                        key={i}
+                        className={i <= Math.round(stats.averageRating)
                           ? 'text-yellow-400'
-                          : 'text-gray-200'
-                      }
-                    />
-                  ))}
+                          : 'text-gray-200'}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-gray-500">
+                    {stats.totalReviews} reviews
+                  </p>
                 </div>
-                <p className="text-gray-500">
-                  {stats.totalReviews} reviews
-                </p>
-              </div>
+
+                <div className="space-y-2 mb-6">
+                  {[5,4,3,2,1].map((star) => {
+                    const count = stats.starCounts[String(star)] || 0;
+                    const percent = stats.totalReviews
+                      ? Math.round((count / stats.totalReviews) * 100)
+                      : 0;
+
+                    return (
+                      <div key={star} className="flex items-center gap-3 text-sm">
+                        <span className="w-4 font-semibold">{star}</span>
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-gray-500">
+                          {percent}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
 
-            <PublicReviewGate
-              myReview={myReview}
-              onWrite={() => {}}
-            />
+            <PublicReviewGate myReview={myReview} onWrite={() => {}} />
           </div>
         </aside>
 
@@ -227,10 +249,7 @@ export default function ReviewsClient({
             <>
               <div className="grid gap-6">
                 {reviews.map((r) => (
-                  <article
-                    key={r.id}
-                    className="bg-white rounded-3xl border p-6"
-                  >
+                  <article key={r.id} className="bg-white rounded-3xl border p-6">
                     <div className="flex justify-between">
                       <h4 className="font-bold">
                         {r.userName || 'Verified Customer'}
@@ -248,11 +267,9 @@ export default function ReviewsClient({
                         <FaStar
                           key={i}
                           size={14}
-                          className={
-                            i <= r.rating
-                              ? 'text-yellow-400'
-                              : 'text-gray-200'
-                          }
+                          className={i <= r.rating
+                            ? 'text-yellow-400'
+                            : 'text-gray-200'}
                         />
                       ))}
                     </div>
@@ -263,37 +280,44 @@ export default function ReviewsClient({
               </div>
 
               {/* PAGINATION */}
-              <div className="flex justify-center gap-3 pt-10">
+              <div className="flex justify-center items-center gap-2 pt-10 text-sm font-semibold">
                 {initialPage > 1 && (
                   <button
                     onClick={() => goToPage(initialPage - 1)}
-                    className="px-4 py-2 rounded-lg border"
+                    className="px-3 py-2 rounded-lg border hover:bg-gray-50"
                   >
-                    ⏮ Prev
+                    Previous
                   </button>
                 )}
 
-                <span className="px-4 py-2 font-semibold">
-                  Page {initialPage}
-                </span>
+                {pageNumbers.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => goToPage(p)}
+                    className={`px-3 py-2 rounded-lg ${
+                      p === initialPage
+                        ? 'bg-blue-600 text-white'
+                        : 'border hover:bg-gray-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
 
-                <button
-                  onClick={() => goToPage(initialPage + 1)}
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white"
-                >
-                  Next ⏭
-                </button>
+                {hasNext && (
+                  <button
+                    onClick={() => goToPage(initialPage + 1)}
+                    className="px-3 py-2 rounded-lg border hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                )}
               </div>
             </>
           ) : (
             <div className="bg-white p-16 rounded-3xl border text-center">
-              <MdMessage
-                size={48}
-                className="mx-auto text-gray-300 mb-4"
-              />
-              <h3 className="font-bold text-xl">
-                No reviews found
-              </h3>
+              <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
+              <h3 className="font-bold text-xl">No reviews found</h3>
             </div>
           )}
         </section>
