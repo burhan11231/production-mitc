@@ -18,8 +18,12 @@ import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
 import { FaStar } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
+
 import ReviewForm from '@/components/ReviewForm';
 import PublicReviewGate from '@/components/PublicReviewGate';
+
+import AggregateRatingSchema from './AggregateRatingSchema';
+import ReviewSchema from './ReviewSchema';
 
 /* ---------------- TYPES ---------------- */
 
@@ -78,7 +82,10 @@ export default function ReviewsClient() {
   };
 
   const fetchMyReview = async () => {
-    if (!user) return setMyReview(null);
+    if (!user) {
+      setMyReview(null);
+      return;
+    }
 
     try {
       const snap = await getDoc(doc(db, 'reviews', user.uid));
@@ -156,7 +163,19 @@ export default function ReviewsClient() {
 
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
-       {/* HEADER */}
+
+      {/* ✅ JSON-LD SCHEMA (REAL DATA ONLY) */}
+      {!isLoading && stats.total > 0 && (
+        <>
+          <AggregateRatingSchema
+            avg={stats.avg}
+            total={stats.total}
+          />
+          <ReviewSchema reviews={visibleReviews.slice(0, 10)} />
+        </>
+      )}
+
+      {/* HEADER */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-16 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold">
@@ -169,6 +188,7 @@ export default function ReviewsClient() {
       </header>
 
       <section className="max-w-7xl mx-auto px-6 -mt-10 grid lg:grid-cols-12 gap-8">
+
         {/* LEFT – STATS */}
         <aside className="lg:col-span-4">
           <div className="bg-white rounded-3xl border p-8 sticky top-6">
@@ -227,6 +247,7 @@ export default function ReviewsClient() {
 
         {/* RIGHT – REVIEWS */}
         <section className="lg:col-span-8 space-y-6">
+
           {showForm && !myReview && (
             <ReviewForm
               onSuccess={() => {
@@ -251,7 +272,7 @@ export default function ReviewsClient() {
                 >
                   <div className="flex justify-between items-start">
                     <h4 className="font-bold text-gray-900">
-                      {r.userName || 'User'}
+                      {r.userName || 'Verified Customer'}
                     </h4>
                     <span className="text-xs text-gray-400">
                       {formatDate(r.createdAt)}
