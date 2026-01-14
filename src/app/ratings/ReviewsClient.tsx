@@ -12,6 +12,7 @@ import {
   startAfter,
   Timestamp,
   QueryDocumentSnapshot,
+  QueryConstraint,
   doc,
   getDoc,
 } from 'firebase/firestore';
@@ -21,7 +22,6 @@ import toast from 'react-hot-toast';
 import { FaStar } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
 
-import ReviewForm from '@/components/ReviewForm';
 import PublicReviewGate from '@/components/PublicReviewGate';
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
@@ -49,7 +49,7 @@ interface Props {
   initialRating: number | null;
 }
 
-const REVIEWS_PER_PAGE = 10;
+const PER_PAGE = 10;
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -67,7 +67,7 @@ export default function ReviewsClient({
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ---------------- FETCH STATS (PRECOMPUTED) ---------------- */
+  /* ---------------- FETCH STATS ---------------- */
 
   const fetchStats = async () => {
     try {
@@ -76,7 +76,7 @@ export default function ReviewsClient({
         setStats(snap.data() as ReviewStats);
       }
     } catch {
-      /* silent fail – UI still works */
+      /* silent */
     }
   };
 
@@ -86,12 +86,10 @@ export default function ReviewsClient({
     setLoading(true);
 
     try {
-      const baseRef = collection(db, 'reviews');
-
-      const constraints = [
+      const constraints: QueryConstraint[] = [
         where('status', '==', 'published'),
         orderBy('createdAt', 'desc'),
-        limit(REVIEWS_PER_PAGE),
+        limit(PER_PAGE),
       ];
 
       if (initialRating) {
@@ -102,7 +100,7 @@ export default function ReviewsClient({
         constraints.push(startAfter(lastDoc));
       }
 
-      const q = query(baseRef, ...constraints);
+      const q = query(collection(db, 'reviews'), ...constraints);
       const snap = await getDocs(q);
 
       const items: Review[] = snap.docs.map((d) => ({
@@ -160,7 +158,7 @@ export default function ReviewsClient({
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
 
-      {/* SEO SCHEMA – PAGE 1 ONLY */}
+      {/* SEO SCHEMA (PAGE 1 ONLY) */}
       {stats && initialPage === 1 && (
         <>
           <AggregateRatingSchema
@@ -185,7 +183,7 @@ export default function ReviewsClient({
 
       <section className="max-w-7xl mx-auto px-6 -mt-10 grid lg:grid-cols-12 gap-8">
 
-        {/* LEFT – STATS */}
+        {/* LEFT */}
         <aside className="lg:col-span-4">
           <div className="bg-white rounded-3xl border p-8 sticky top-6">
             {stats && (
@@ -194,7 +192,7 @@ export default function ReviewsClient({
                   {stats.averageRating}
                 </div>
                 <div className="flex justify-center gap-1 my-2">
-                  {[1, 2, 3, 4, 5].map((i) => (
+                  {[1,2,3,4,5].map(i=>(
                     <FaStar
                       key={i}
                       className={
@@ -218,7 +216,7 @@ export default function ReviewsClient({
           </div>
         </aside>
 
-        {/* RIGHT – REVIEWS */}
+        {/* RIGHT */}
         <section className="lg:col-span-8 space-y-6">
 
           {loading ? (
@@ -246,7 +244,7 @@ export default function ReviewsClient({
                     </div>
 
                     <div className="flex gap-1 my-2">
-                      {[1, 2, 3, 4, 5].map((i) => (
+                      {[1,2,3,4,5].map(i=>(
                         <FaStar
                           key={i}
                           size={14}
