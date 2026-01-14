@@ -98,7 +98,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   ogDescription: "Kashmir's premier destination for laptop sales, repairs, and technical services.",
   ogImageUrl: 'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
   twitterCardType: 'summary_large_image',
-  canonicalUrl: 'https://mitc-store.com',
+  canonicalUrl: 'https://mitck.netlify.app',
 
   // Social Links
   instagram: 'https://instagram.com',
