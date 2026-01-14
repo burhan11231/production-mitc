@@ -90,11 +90,11 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
     const snap = await getDocs(q);
 
     setReviews(
-      snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Review),
-      }))
-    );
+  snap.docs.map((d) => ({
+    id: d.id,
+    ...(d.data() as Omit<Review, 'id'>),
+  }))
+);
 
     setLastDoc(snap.docs.at(-1) ?? null);
   } catch {
