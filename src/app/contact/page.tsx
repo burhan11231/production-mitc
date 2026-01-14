@@ -290,62 +290,62 @@ export default function ContactPage() {
       </section>
 
 
-<section class="bg-sky-50/60 py-12 md:py-16">
-  <div class="max-w-6xl mx-auto px-6 md:px-8">
-    
-    <div class="text-left mb-8">
-      <h2 class="text-2xl md:text-3xl font-semibold text-slate-900">
+<section className="bg-sky-50/60 py-12 md:py-16">
+  <div className="max-w-6xl mx-auto px-6 md:px-8">
+
+    <div className="text-left mb-8">
+      <h2 className="text-2xl md:text-3xl font-semibold text-slate-900">
         Talk directly with the MITC Team
       </h2>
-      <p class="mt-3 text-lg text-slate-600 max-w-2xl">
+      <p className="mt-3 text-lg text-slate-600 max-w-2xl">
         Skip the generic queues and get personalized guidance on products and technical queries from our experts.
       </p>
     </div>
 
-    <div class="flex flex-col md:flex-row gap-4 md:gap-8 mb-10 border-l-2 border-sky-200 pl-4 md:border-l-0 md:pl-0">
-      
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    <div className="flex flex-col md:flex-row gap-4 md:gap-8 mb-10 border-l-2 border-sky-200 pl-4 md:border-l-0 md:pl-0">
+
+      <div className="flex items-center gap-2">
+        <svg className="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span class="text-slate-700 font-medium text-sm md:text-base">
+        <span className="text-slate-700 font-medium text-sm md:text-base">
           Expert technical assistance
         </span>
       </div>
 
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <div className="flex items-center gap-2">
+        <svg className="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span class="text-slate-700 font-medium text-sm md:text-base">
+        <span className="text-slate-700 font-medium text-sm md:text-base">
           Faster response times
         </span>
       </div>
 
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+      <div className="flex items-center gap-2">
+        <svg className="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
-        <span class="text-slate-700 font-medium text-sm md:text-base">
+        <span className="text-slate-700 font-medium text-sm md:text-base">
           Product-specific inquiries
         </span>
       </div>
 
     </div>
 
-    <div class="flex flex-col items-start">
+    <div className="flex flex-col items-start">
       <a
         href="/team"
-        class="w-full md:w-auto inline-flex justify-center items-center px-6 py-3
-               bg-black text-white font-semibold
-               hover:bg-neutral-900
-               transition-colors duration-200 shadow-sm"
+        className="w-full md:w-auto inline-flex justify-center items-center px-6 py-3
+                   bg-black text-white font-semibold
+                   hover:bg-neutral-900
+                   transition-colors duration-200 shadow-sm"
       >
         Meet Our Team
       </a>
-      
-      <p class="mt-3 text-sm text-slate-500 flex items-center gap-1.5">
-        <span class="block w-2 h-2 bg-emerald-400 rounded-full"></span>
+
+      <p className="mt-3 text-sm text-slate-500 flex items-center gap-1.5">
+        <span className="block w-2 h-2 bg-emerald-400 rounded-full" />
         We usually respond within business hours
       </p>
     </div>
