@@ -17,6 +17,9 @@ import {
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
+// 👇 IMPORT THE NEW COMPONENT HERE
+import RecalculateStats from '@/components/admin/RecalculateStats';
+
 /* ---------------- TYPES ---------------- */
 
 type FilterMode = 'all' | 'published' | 'pending';
@@ -211,7 +214,7 @@ export default function AdminReviewsPage() {
           </div>
 
           {/* CONTROLS */}
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3 items-center">
             {(['all', 'published', 'pending'] as FilterMode[]).map(
               (mode) => (
                 <button
@@ -244,6 +247,12 @@ export default function AdminReviewsPage() {
             >
               Refresh
             </button>
+            
+            {/* 👇 THIS IS THE NEW BUTTON */}
+            <div className="ml-auto">
+              <RecalculateStats />
+            </div>
+
           </div>
         </div>
       </div>
