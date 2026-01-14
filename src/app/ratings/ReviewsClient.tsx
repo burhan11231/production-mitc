@@ -137,7 +137,7 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
             Customer <span className="text-blue-600">Reviews</span>
           </h1>
           <p className="text-gray-600 mt-3">
-            Verified feedback from real MITC customers
+            Verified feedback from MITC customers
           </p>
         </div>
       </header>
@@ -159,7 +159,7 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
                     ))}
                   </div>
                   <p className="text-gray-500">
-                    Based on {stats.totalReviews} reviews
+                    {stats.totalReviews} reviews
                   </p>
                 </div>
               </>
