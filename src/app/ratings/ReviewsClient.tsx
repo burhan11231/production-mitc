@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   collection,
   getDocs,
@@ -10,19 +10,23 @@ import {
   query,
   where,
   startAfter,
+  Timestamp,
   QueryDocumentSnapshot,
+  QueryConstraint,
   doc,
   getDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaTimes } from 'react-icons/fa'; // Added FaTimes for clearing filters
 import { MdMessage } from 'react-icons/md';
 
+import PublicReviewGate from '@/components/PublicReviewGate';
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
-import PublicReviewGate from '@/components/PublicReviewGate';
+
+/* ---------------- TYPES ---------------- */
 
 interface Review {
   id: string;
@@ -31,136 +35,227 @@ interface Review {
   rating: number;
   comment: string;
   status: 'published' | 'pending';
-  createdAt?: any;
+  createdAt?: Timestamp | Date | string | number | null;
+}
+
+interface ReviewStats {
+  totalReviews: number;
+  averageRating: number;
+  starCounts: Record<string, number>;
+}
+
+interface Props {
+  initialPage: number;
+  initialRating: number | null;
 }
 
 const PER_PAGE = 10;
+const PAGE_WINDOW = 3;
 
-export default function ReviewsClient() {
+// Fallback to prevent UI crash if stats doc is missing
+const DEFAULT_STATS: ReviewStats = {
+  totalReviews: 0,
+  averageRating: 0,
+  starCounts: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 },
+};
+
+/* ---------------- HELPER ---------------- */
+
+const formatDate = (dateValue: any) => {
+  if (!dateValue) return '';
+  try {
+    // Handle Firestore Timestamp
+    if (typeof dateValue.toDate === 'function') {
+      return dateValue.toDate().toLocaleDateString();
+    }
+    // Handle JS Date or String
+    return new Date(dateValue).toLocaleDateString();
+  } catch (e) {
+    return '';
+  }
+};
+
+/* ---------------- COMPONENT ---------------- */
+
+export default function ReviewsClient({
+  initialPage,
+  initialRating,
+}: Props) {
   const { user } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const ratingParam = searchParams.get('rating');
-  const initialRating = ratingParam && !isNaN(Number(ratingParam)) && Number(ratingParam) >= 1 && Number(ratingParam) <= 5 
-    ? Number(ratingParam) 
-    : null;
 
   const [reviews, setReviews] = useState<Review[]>([]);
+  // Store all loaded docs to allow "Previous" button to work without re-fetching
+  // (Optional optimization: you can keep it simple, but this helps stability)
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+  
   const [hasNext, setHasNext] = useState(false);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<ReviewStats>(DEFAULT_STATS);
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingNext, setLoadingNext] = useState(false);
 
-  /** 🔥 PERFECTED fetchReviews - Clean deps + functional updates */
-  const fetchReviews = useCallback(async (append = false, ratingFilter: number | null = null) => {
-    setLoading(!append);
-    if (append) setLoadingNext(true);
+  /* ---------------- SAFETY CHECK ---------------- */
 
-    try {
-      let constraints = [
-        where('status', '==', 'published'),
-        orderBy('createdAt', 'desc'),
-      ];
-
-      if (ratingFilter) {
-        constraints = [where('rating', '==', ratingFilter), ...constraints];
-      }
-
-      let q;
-      if (!append || !lastDoc) {
-        q = query(collection(db, 'reviews'), ...constraints, limit(PER_PAGE + 1));
-      } else {
-        q = query(collection(db, 'reviews'), ...constraints, startAfter(lastDoc), limit(PER_PAGE + 1));
-      }
-
-      const snap = await getDocs(q);
-      const docs = snap.docs;
-      const pageDocs = docs.slice(0, PER_PAGE);
-
-const pageItems: Review[] = pageDocs.map(d => ({
-  id: d.id,
-  ...(d.data() as Omit<Review, 'id'>),
-}));
-
-setReviews(prev =>
-  append ? [...prev, ...pageItems] : pageItems
-);
-
-// ✅ cursor MUST be snapshot, not mapped object
-setLastDoc(pageDocs.at(-1) ?? null);
-
-setHasNext(docs.length > PER_PAGE);
-    } catch {
-      toast.error('Failed to load reviews');
-    } finally {
-      setLoading(false);
-      setLoadingNext(false);
+  // If user refreshes on page 2, we lose 'lastDoc'. 
+  // Firestore needs 'lastDoc' for cursor pagination. 
+  // We must reset to page 1 to ensure data consistency.
+  useEffect(() => {
+    if (initialPage > 1 && !lastDoc) {
+       // Keep the rating param if it exists, but reset page
+       const params = new URLSearchParams();
+       if (initialRating) params.set('rating', String(initialRating));
+       router.replace(`/ratings${params.toString() ? `?${params}` : ''}`);
     }
-  }, [lastDoc]); // ✅ PERFECT - only cursor dependency
+  }, [initialPage, lastDoc, initialRating, router]);
+
+  /* ---------------- FETCH STATS ---------------- */
 
   const fetchStats = async () => {
     try {
       const snap = await getDoc(doc(db, 'reviewStats', 'global'));
-      if (snap.exists()) setStats(snap.data());
-    } catch {}
+      if (snap.exists()) {
+        setStats(snap.data() as ReviewStats);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      // Keep default stats so UI doesn't break
+    }
   };
+
+  /* ---------------- FETCH REVIEWS ---------------- */
+
+  const fetchReviews = async () => {
+    // If we are on page > 1 but don't have a cursor, stop here (Safety Check effect will handle redirect)
+    if (initialPage > 1 && !lastDoc) return;
+
+    setLoading(true);
+
+    try {
+      const constraints: QueryConstraint[] = [
+        where('status', '==', 'published'),
+        orderBy('createdAt', 'desc'),
+        limit(PER_PAGE + 1), // Fetch 1 extra to check 'hasNext'
+      ];
+
+      if (initialRating) {
+        // NOTE: This requires a Composite Index in Firestore
+        // (status ASC, rating ASC, createdAt DESC)
+        // Check your browser console for a link to create it if this fails!
+        constraints.unshift(where('rating', '==', initialRating));
+      }
+
+      if (initialPage > 1 && lastDoc) {
+        constraints.push(startAfter(lastDoc));
+      }
+
+      const q = query(collection(db, 'reviews'), ...constraints);
+      const snap = await getDocs(q);
+
+      const docs = snap.docs;
+      const hasMore = docs.length > PER_PAGE;
+      const pageItems = hasMore ? docs.slice(0, PER_PAGE) : docs;
+
+      setReviews(
+        pageItems.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Review, 'id'>),
+        }))
+      );
+
+      setHasNext(hasMore);
+      // Update lastDoc to the actual last item of the *current* page
+      if (pageItems.length > 0) {
+        setLastDoc(pageItems[pageItems.length - 1]);
+      }
+    } catch (error) {
+      console.error("Review Fetch Error:", error);
+      toast.error('Failed to load reviews. Check console for index errors.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- FETCH MY REVIEW ---------------- */
 
   const fetchMyReview = async () => {
     if (!user) return;
     try {
       const snap = await getDoc(doc(db, 'reviews', user.uid));
       if (snap.exists()) {
-        setMyReview({ id: snap.id, ...(snap.data() as any) });
+        setMyReview({
+          id: snap.id,
+          ...(snap.data() as Omit<Review, 'id'>),
+        });
+      } else {
+        setMyReview(null);
       }
-    } catch {}
+    } catch (e) {
+      console.error(e);
+    }
   };
-
-  /** 🔥 SINGLE SOURCE OF TRUTH */
-  useEffect(() => {
-    setReviews([]);
-    setLastDoc(null);
-    setHasNext(false);
-    fetchReviews(false, initialRating);
-  }, [initialRating, fetchReviews]);
 
   useEffect(() => {
     fetchStats();
+    fetchReviews();
     fetchMyReview();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPage, initialRating, user?.uid]); 
 
-  const updateFilter = (rating: number | null) => {
+  /* ---------------- NAVIGATE ---------------- */
+
+  const goToPage = (page: number) => {
     const params = new URLSearchParams();
-    if (rating) params.set('rating', rating.toString());
+    if (initialRating) params.set('rating', String(initialRating));
+    if (page > 1) params.set('page', String(page));
     router.push(`/ratings${params.toString() ? `?${params}` : ''}`);
   };
 
-  const loadNext = () => {
-    if (hasNext && !loadingNext) {
-      fetchReviews(true, initialRating);
-    }
+  const clearFilters = () => {
+    router.push('/ratings');
   };
 
-  const clearFilter = () => updateFilter(null);
+  /* ---------------- UI HELPERS ---------------- */
+  
+  // Calculate bars based on stats
+  const renderBars = () => {
+    return [5, 4, 3, 2, 1].map((star) => {
+      const count = stats.starCounts?.[String(star)] || 0;
+      const total = stats.totalReviews || 1; // avoid divide by zero
+      const percent = Math.round((count / total) * 100);
 
-  /** 🔥 BULLETPROOF DATE FORMATTING */
-  const formatDate = (createdAt: any) => {
-    if (!createdAt) return '';
-    if (createdAt && typeof createdAt === 'object' && 'toDate' in createdAt) {
-      return createdAt.toDate().toLocaleDateString();
-    }
-    return new Date(createdAt as any).toLocaleDateString();
+      return (
+        <div key={star} className="flex items-center gap-3 text-sm">
+           {/* Click bar to filter by that rating */}
+          <button 
+            onClick={() => router.push(`/ratings?rating=${star}`)}
+            className="w-4 font-semibold hover:text-blue-600 transition-colors"
+          >
+            {star}
+          </button>
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+          <span className="w-8 text-right text-gray-500">
+            {percent}%
+          </span>
+        </div>
+      );
+    });
   };
 
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
-      {/* ✅ TIGHTENED SCHEMA CONDITION */}
-      {stats && !initialRating && reviews.length >= 1 && (
+      
+      {initialPage === 1 && (
         <>
-          <AggregateRatingSchema avg={stats.averageRating} total={stats.totalReviews} />
-          <ReviewSchema reviews={reviews.slice(0, 5)} />
+          <AggregateRatingSchema
+            avg={stats.averageRating}
+            total={stats.totalReviews}
+          />
+          <ReviewSchema reviews={reviews} />
         </>
       )}
 
@@ -170,131 +265,131 @@ setHasNext(docs.length > PER_PAGE);
             Customer <span className="text-blue-600">Reviews</span>
           </h1>
           <p className="text-gray-600 mt-3">
-            {initialRating ? `${initialRating}-star reviews` : 'Verified feedback'} from MITC customers
+            Verified feedback from MITC customers
           </p>
         </div>
       </header>
 
       <section className="max-w-7xl mx-auto px-6 -mt-10 grid lg:grid-cols-12 gap-8">
+        
+        {/* LEFT SIDEBAR */}
         <aside className="lg:col-span-4">
-          <div className="bg-white rounded-3xl border p-8 sticky top-6 space-y-6">
-            {stats && (
-              <>
-                <div className="text-center mb-6">
-                  <div className="text-6xl font-black">{stats.averageRating}</div>
-                  <div className="flex justify-center gap-1 my-2">
-                    {[1,2,3,4,5].map(i => (
-                      <FaStar key={i} className={i <= Math.round(stats.averageRating) ? 'text-yellow-400' : 'text-gray-200'} />
-                    ))}
-                  </div>
-                  <p className="text-gray-500">{stats.totalReviews} total reviews</p>
-                </div>
+          <div className="bg-white rounded-3xl border p-8 sticky top-6">
+            
+            <div className="text-center mb-6">
+              <div className="text-6xl font-black">
+                {stats.averageRating.toFixed(1)}
+              </div>
+              <div className="flex justify-center gap-1 my-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <FaStar
+                    key={i}
+                    className={
+                      i <= Math.round(stats.averageRating)
+                        ? 'text-yellow-400'
+                        : 'text-gray-200'
+                    }
+                  />
+                ))}
+              </div>
+              <p className="text-gray-500">
+                {stats.totalReviews} reviews
+              </p>
+            </div>
 
-                <div className="space-y-2">
-                  {[5,4,3,2,1].map((star) => {
-                    const count = stats.starCounts[String(star)] || 0;
-                    const percent = stats.totalReviews ? Math.round((count / stats.totalReviews) * 100) : 0;
-                    return (
-                      <button
-                        key={star}
-                        onClick={() => updateFilter(star)}
-                        className={`w-full flex items-center gap-3 text-sm p-2 rounded-xl hover:bg-blue-50 transition-all cursor-pointer ${
-                          initialRating === star ? 'bg-blue-100 border-2 border-blue-400 ring-2 ring-blue-200' : ''
-                        }`}
-                      >
-                        <span className="w-4 font-semibold">{star}</span>
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all" 
-                               style={{ width: `${percent}%` }} />
-                        </div>
-                        <span className="w-8 text-right text-gray-500 font-mono">{percent}%</span>
-                        <span className="text-xs text-gray-400">({count})</span>
-                      </button>
-                    );
-                  })}
-                  {initialRating && (
-                    <button
-                      onClick={clearFilter}
-                      className="w-full bg-blue-50 border-2 border-blue-200 text-blue-700 text-sm font-semibold py-3 px-4 hover:bg-blue-100 rounded-xl transition-all flex items-center justify-center gap-2"
-                    >
-                      ✨ Show All Reviews
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
+            <div className="space-y-2 mb-6">
+              {renderBars()}
+            </div>
+
             <PublicReviewGate myReview={myReview} onWrite={() => {}} />
           </div>
         </aside>
 
+        {/* RIGHT CONTENT */}
         <section className="lg:col-span-8 space-y-6">
+          
+          {/* Active Filter Display */}
+          {initialRating && (
+            <div className="flex items-center justify-between bg-blue-50 text-blue-900 px-4 py-3 rounded-xl border border-blue-100">
+              <span className="font-medium">Showing only {initialRating}-star reviews</span>
+              <button 
+                onClick={clearFilters}
+                className="flex items-center gap-2 text-sm font-bold hover:underline"
+              >
+                <FaTimes /> Clear Filter
+              </button>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex justify-center py-20">
-              <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
+              <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600" />
             </div>
           ) : reviews.length ? (
             <>
               <div className="grid gap-6">
                 {reviews.map((r) => (
-                  <article key={r.id} className="bg-white rounded-3xl border p-6 hover:shadow-xl transition-all duration-200">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-bold text-gray-900 pr-4 flex-1 min-w-0 truncate">
+                  <article key={r.id} className="bg-white rounded-3xl border p-6">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold">
                         {r.userName || 'Verified Customer'}
                       </h4>
-                      <span className="text-xs text-gray-400 whitespace-nowrap">
+                      <span className="text-xs text-gray-400">
                         {formatDate(r.createdAt)}
                       </span>
                     </div>
+
                     <div className="flex gap-1 my-2">
-                      {[1,2,3,4,5].map(i => (
-                        <FaStar key={i} size={14} className={i <= r.rating ? 'text-yellow-400' : 'text-gray-200'} />
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <FaStar
+                          key={i}
+                          size={14}
+                          className={
+                            i <= r.rating
+                              ? 'text-yellow-400'
+                              : 'text-gray-200'
+                          }
+                        />
                       ))}
                     </div>
-                    <p className="text-gray-700 leading-relaxed">{r.comment}</p>
+
+                    <p className="text-gray-700 whitespace-pre-wrap">{r.comment}</p>
                   </article>
                 ))}
               </div>
 
-              {hasNext && (
-                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-12 pb-8">
+              {/* PAGINATION - Only show if we actually need it */}
+              {(hasNext || initialPage > 1) && (
+                <div className="flex justify-center items-center gap-2 pt-10 text-sm font-semibold">
+                  
                   <button
-                    onClick={loadNext}
-                    disabled={loadingNext}
-                    className="px-12 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-2xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-200 text-lg"
+                    onClick={() => goToPage(initialPage - 1)}
+                    disabled={initialPage <= 1}
+                    className="px-4 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loadingNext ? (
-                      <>
-                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white inline-block mr-2" />
-                        Loading more...
-                      </>
-                    ) : (
-                      `Load More Reviews (+${PER_PAGE})`
-                    )}
+                    Previous
                   </button>
-                  <div className="text-center sm:text-left">
-                    <p className="text-sm text-gray-500 font-mono">
-                      {reviews.length} of <span className="font-bold text-gray-900">{stats?.totalReviews || '∞'}</span> reviews loaded
-                    </p>
+
+                  <div className="px-4 text-gray-500">
+                    Page {initialPage}
                   </div>
+
+                  <button
+                    onClick={() => goToPage(initialPage + 1)}
+                    disabled={!hasNext}
+                    className="px-4 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
                 </div>
               )}
             </>
           ) : (
-            <div className="bg-gradient-to-br from-gray-50 to-white p-16 rounded-3xl border-2 border-dashed border-gray-200 text-center">
-              <MdMessage size={56} className="mx-auto text-gray-300 mb-6" />
-              <h3 className="font-bold text-2xl text-gray-900 mb-2">No reviews match your filter</h3>
-              {initialRating ? (
-                <>
-                  <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                    There are no {initialRating}-star reviews yet. Try another rating or{' '}
-                    <button onClick={clearFilter} className="text-blue-600 hover:underline font-semibold">
-                      show all reviews
-                    </button>
-                    .
-                  </p>
-                </>
-              ) : (
-                <p className="text-gray-500 text-lg">Be the first to leave a review!</p>
+            <div className="bg-white p-16 rounded-3xl border text-center">
+              <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
+              <h3 className="font-bold text-xl">No reviews found</h3>
+              {initialRating && (
+                 <p className="text-gray-500 mt-2">Try clearing the star filter.</p>
               )}
             </div>
           )}
