@@ -73,19 +73,21 @@ export default function ReviewsClient() {
 
       const snap = await getDocs(q);
       const docs = snap.docs;
-      const pageItems = docs.slice(0, PER_PAGE).map(d => ({
-        id: d.id,
-        ...(d.data() as Omit<Review, 'id'>)
-      }));
+      const pageDocs = docs.slice(0, PER_PAGE);
 
-      setReviews(prevReviews => 
-        append 
-          ? [...prevReviews, ...pageItems]
-          : pageItems
-      );
-      
-      setHasNext(docs.length > PER_PAGE);
-      setLastDoc(pageItems.at(-1) ?? null);
+const pageItems: Review[] = pageDocs.map(d => ({
+  id: d.id,
+  ...(d.data() as Omit<Review, 'id'>),
+}));
+
+setReviews(prev =>
+  append ? [...prev, ...pageItems] : pageItems
+);
+
+// ✅ cursor MUST be snapshot, not mapped object
+setLastDoc(pageDocs.at(-1) ?? null);
+
+setHasNext(docs.length > PER_PAGE);
     } catch {
       toast.error('Failed to load reviews');
     } finally {
