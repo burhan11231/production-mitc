@@ -1,121 +1,239 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Our Services | MITC - Mateen IT Corp',
-  description: 'Professional laptop sales, technical support, and IT consulting services in Srinagar, Kashmir.',
+  title: 'Services | Laptop Sales, Repairs & IT Support in Srinagar – MITC',
+  description:
+    'Explore MITC services in Srinagar: laptop sales, diagnostics, repairs, upgrades, and professional IT support. Transparent guidance and in-store service since 2013.',
+  openGraph: {
+    title: 'MITC Services – Laptop Sales & Repairs in Srinagar',
+    description:
+      'Professional laptop sales, repairs, upgrades, and IT support at MITC Srinagar. Transparent diagnostics and expert guidance since 2013.',
+    type: 'website',
+    url: 'https://mitck.netlify.app/services',
+    siteName: 'MITC Srinagar',
+    images: [
+      {
+        url: 'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'MITC Srinagar Laptop Services',
+      },
+    ],
+  },
 };
-
-const SERVICES = [
-  {
-    id: 1,
-    title: 'Laptop Sales',
-    description: 'Premium quality laptops from leading brands including Dell, HP, Lenovo, Apple, and Asus at competitive prices.',
-    icon: '🖥️',
-    features: ['Latest Models', 'Authorized Dealers', 'Warranty Support', 'Flexible Payment'],
-  },
-  {
-    id: 2,
-    title: 'Hardware Repair',
-    description: 'Expert repair services for laptops, desktops, and peripherals with genuine spare parts.',
-    icon: '🔧',
-    features: ['Screen Replacement', 'Battery Service', 'Motherboard Repair', 'Fast Turnaround'],
-  },
-  {
-    id: 3,
-    title: 'Software Solutions',
-    description: 'OS installation, driver updates, antivirus setup, and performance optimization.',
-    icon: '💾',
-    features: ['OS Installation', 'Malware Removal', 'Performance Tuning', 'Data Recovery'],
-  },
-  {
-    id: 4,
-    title: 'Technical Consultation',
-    description: 'Professional guidance for choosing the right technology solutions for your business or personal needs.',
-    icon: '💡',
-    features: ['System Design', 'Budget Planning', 'Compatibility Check', 'Future-Proof Solutions'],
-  },
-  {
-    id: 5,
-    title: 'Maintenance Contracts',
-    description: 'Annual maintenance packages ensuring your systems run smoothly and efficiently.',
-    icon: '📋',
-    features: ['Regular Checkups', 'Priority Support', '24/7 Emergency', 'Discounted Parts'],
-  },
-  {
-    id: 6,
-    title: 'Data Backup & Security',
-    description: 'Secure data backup solutions and cybersecurity implementation to protect your valuable information.',
-    icon: '🔒',
-    features: ['Cloud Backup', 'Encryption', 'Security Audit', 'Disaster Recovery'],
-  },
-];
 
 export default function ServicesPage() {
   return (
-    <>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary-50 to-blue-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">Our Services</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Comprehensive technology solutions tailored to your needs. From sales to support, we've got you covered.
+    <main className="overflow-x-hidden bg-white">
+
+      {/* ================= HERO ================= */}
+      <section className="relative bg-gray-950 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
+
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-28 lg:py-36">
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold tracking-widest uppercase">
+            Services in Srinagar
+          </span>
+
+          <h1 className="mt-8 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+            Laptop sales, repairs & IT services
+          </h1>
+
+          <p className="mt-8 text-lg text-white/70 max-w-3xl leading-relaxed">
+            MITC provides transparent laptop sales, professional diagnostics,
+            upgrades, and IT services from our physical showroom in Srinagar.
+            No blind purchases. No unnecessary repairs.
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Services Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {SERVICES.map((service) => (
-            <div key={service.id} className="card p-8 hover:shadow-lg transition-shadow">
-              <div className="text-6xl mb-4">{service.icon}</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">{service.title}</h3>
-              <p className="text-gray-600 mb-6">{service.description}</p>
-              <ul className="space-y-2">
-                {service.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-gray-700">
-                    <span className="text-primary-600">✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* ================= SERVICE OVERVIEW ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
 
-      {/* Why Choose Us Section */}
-      <div className="bg-gray-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Why Choose MITC?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="max-w-3xl mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+              What we help you with
+            </h2>
+            <p className="mt-4 text-lg text-gray-600">
+              Practical services designed for students, professionals, and businesses.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-4 gap-8">
             {[
-              { label: '12+ Years', value: 'Industry Experience' },
-              { label: '1000+', value: 'Happy Customers' },
-              { label: '24/7', value: 'Support Available' },
-              { label: '100%', value: 'Satisfaction Guarantee' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-4xl font-bold text-primary-600 mb-2">{stat.label}</div>
-                <p className="text-gray-600">{stat.value}</p>
+              {
+                title: 'Laptop Sales',
+                desc: 'Commercial-grade laptops with verified condition and specifications.',
+              },
+              {
+                title: 'Repairs & Diagnostics',
+                desc: 'Honest diagnostics performed transparently, often in front of you.',
+              },
+              {
+                title: 'Upgrades & Performance',
+                desc: 'RAM, SSD, OS, and thermal upgrades to extend device lifespan.',
+              },
+              {
+                title: 'Business IT Support',
+                desc: 'Guidance and maintenance support for offices and professionals.',
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all"
+              >
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA Section */}
-      <div className="bg-white py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">Ready to Get Started?</h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Contact us today for a free consultation about your technology needs.
-          </p>
-          <a href="/contact" className="btn-primary text-lg px-8 py-3 inline-block">
-            Contact Us Today
-          </a>
+      {/* ================= LAPTOP SALES ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-sky-50/60">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+
+          <div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Laptop sales (in-store)
+            </h2>
+
+            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              MITC specializes in commercial-grade laptops suitable for
+              students, professionals, and office environments.
+            </p>
+
+            <ul className="space-y-4 text-gray-700">
+              <li>• Refurbished and pre-owned business laptops</li>
+              <li>• Clear specifications and condition disclosure</li>
+              <li>• Upgrade recommendations before purchase</li>
+              <li>• Physical testing before you decide</li>
+            </ul>
+
+            <p className="mt-6 text-sm text-gray-500">
+              No online checkout. Visit, test, and choose with confidence.
+            </p>
+          </div>
+
         </div>
-      </div>
-    </>
+      </section>
+
+      {/* ================= REPAIRS & DIAGNOSTICS ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+
+          <div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Repairs & diagnostics
+            </h2>
+
+            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              We believe in diagnosing first, repairing only when it makes sense.
+            </p>
+
+            <ul className="space-y-4 text-gray-700">
+              <li>• Hardware diagnostics</li>
+              <li>• Chip-level repair</li>
+              <li>• Screen and battery replacement</li>
+              <li>• Keyboard, ports, and motherboard fixes</li>
+              <li>• BIOS and firmware issues</li>
+            </ul>
+
+            <p className="mt-6 text-sm text-gray-500">
+              If repair is not worth it, we tell you upfront.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ================= UPGRADES ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-sky-50/60">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+
+          <div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Upgrades & performance optimization
+            </h2>
+
+            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              Often, a smart upgrade delivers better value than replacement.
+            </p>
+
+            <ul className="space-y-4 text-gray-700">
+              <li>• RAM upgrades</li>
+              <li>• SSD upgrades</li>
+              <li>• OS installation and optimization</li>
+              <li>• Thermal servicing and cleaning</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ================= BUSINESS IT ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+
+          <div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Business & professional IT support
+            </h2>
+
+            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              MITC works with offices and professionals who need reliable,
+              long-term IT support.
+            </p>
+
+            <ul className="space-y-4 text-gray-700">
+              <li>• Office laptop consultation</li>
+              <li>• Bulk diagnostics and upgrades</li>
+              <li>• Maintenance and support guidance</li>
+              <li>• Requirement-based solutions</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ================= CTA ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-gray-950 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            Need help with a laptop?
+          </h2>
+
+          <p className="text-lg text-white/70 mb-10">
+            Visit our Srinagar showroom or talk to an expert before deciding.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-white text-gray-900 font-bold hover:bg-gray-100 transition"
+            >
+              Contact MITC
+            </Link>
+
+            <Link
+              href="/about"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-white/30 text-white font-bold hover:bg-white/10 transition"
+            >
+              Learn about MITC
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
   );
 }
