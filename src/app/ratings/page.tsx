@@ -8,17 +8,19 @@ export const metadata = {
 };
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     rating?: string;
-  };
+  }>;
 };
 
-export default function ReviewsPage({ searchParams }: PageProps) {
+export default async function ReviewsPage({ searchParams }: PageProps) {
+  const params = (await searchParams) || {};
+
   const rating =
-    searchParams?.rating &&
-    Number(searchParams.rating) >= 1 &&
-    Number(searchParams.rating) <= 5
-      ? Number(searchParams.rating)
+    params.rating &&
+    Number(params.rating) >= 1 &&
+    Number(params.rating) <= 5
+      ? Number(params.rating)
       : null;
 
   return (
