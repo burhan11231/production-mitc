@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useSettings } from '@/hooks/useSettings';
 import { db } from '@/lib/firebase';
@@ -15,6 +15,7 @@ import {
 import toast from 'react-hot-toast';
 
 const MAX_MESSAGES_PER_MONTH = 30;
+
 const DAYS_ORDER = [
   'Monday',
   'Tuesday',
@@ -29,7 +30,7 @@ export default function ContactPage() {
   const { user } = useAuth();
   const { settings } = useSettings();
 
-  /* ---------------- FORM STATE (UNCHANGED LOGIC) ---------------- */
+  /* ---------------- FORM STATE ---------------- */
 
   const [isLoading, setIsLoading] = useState(false);
   const [messagesUsed, setMessagesUsed] = useState<number | null>(null);
@@ -118,7 +119,7 @@ export default function ContactPage() {
         createdAt: serverTimestamp(),
       });
 
-      toast.success('Message sent');
+      toast.success('Message sent successfully');
       setFormData(prev => ({ ...prev, message: '' }));
       setMessagesUsed(prev => (prev === null ? null : prev + 1));
     } catch {
@@ -135,24 +136,6 @@ export default function ContactPage() {
   const todayName = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
   });
-
-  const todayHours = settings?.workingHours?.[season]?.[todayName];
-
-  const isOpenNow = useMemo(() => {
-    if (!todayHours || todayHours.closed) return false;
-
-    const now = new Date();
-    const [oh, om] = todayHours.open.split(':').map(Number);
-    const [ch, cm] = todayHours.close.split(':').map(Number);
-
-    const open = new Date();
-    open.setHours(oh, om, 0);
-
-    const close = new Date();
-    close.setHours(ch, cm, 0);
-
-    return now >= open && now <= close;
-  }, [todayHours]);
 
   /* ---------------- UI ---------------- */
 
@@ -177,13 +160,13 @@ export default function ContactPage() {
           <div className="bg-white rounded-3xl shadow-xl p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
 
-              {/* Labels restored (fixes mobile issue) */}
               <div>
                 <label className="field-label">Full Name</label>
                 <input
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
+                  placeholder="Your name"
                   className="input h-12"
                   required
                 />
@@ -196,6 +179,7 @@ export default function ContactPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  placeholder="you@example.com"
                   className="input h-12"
                   required
                 />
@@ -209,24 +193,26 @@ export default function ContactPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  placeholder="+91 7006 XXX XXX"
                   className="input h-12"
                 />
               </div>
 
               <div>
-                <label className="field-label">Message</label>
+                <label className="field-label">How can we help?</label>
                 <textarea
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
+                  placeholder="Laptop model, specifications or any questions you have..."
                   rows={4}
-                  className="input py-3"
+                  className="input py-3 resize-none"
                   required
                 />
               </div>
 
               <button
-                disabled={isLoading}
+                disabled={isLoading || messagesLeft === 0}
                 className="submit-btn h-12"
               >
                 {isLoading ? 'Sending…' : 'Send Message ↗'}
@@ -240,7 +226,7 @@ export default function ContactPage() {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-12">
 
-          {/* HOURS */}
+          {/* BUSINESS HOURS */}
           <div className="bg-sky-50/60 rounded-3xl p-8 border">
 
             <div className="flex items-center justify-between mb-6">
@@ -263,16 +249,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div
-              className={`inline-flex mb-6 px-4 py-2 rounded-full text-xs font-bold ${
-                isOpenNow
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-red-100 text-red-700'
-              }`}
-            >
-              {isOpenNow ? 'Open Now' : 'Closed'}
-            </div>
-
             <div className="space-y-2">
               {DAYS_ORDER.map(day => {
                 const h = settings?.workingHours?.[season]?.[day];
@@ -281,10 +257,10 @@ export default function ContactPage() {
                 return (
                   <div
                     key={day}
-                    className={`flex justify-between px-4 py-2 rounded-xl ${
+                    className={`flex justify-between px-4 py-2 rounded-xl border ${
                       isToday
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'bg-white border'
+                        ? 'bg-blue-50 border-blue-200'
+                        : 'bg-white border-gray-200'
                     }`}
                   >
                     <span className="font-semibold">{day}</span>
@@ -303,7 +279,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* MAP */}
+          {/* MAP (STABLE) */}
           {settings?.mapEmbedUrl && (
             <div
               className="rounded-3xl overflow-hidden border min-h-[450px]"
@@ -326,6 +302,7 @@ export default function ContactPage() {
           border-radius: 14px;
           border: 2px solid #e5e7eb;
           padding: 0 14px;
+          font-size: 14px;
         }
         .submit-btn {
           width: 100%;
@@ -333,6 +310,10 @@ export default function ContactPage() {
           color: white;
           border-radius: 9999px;
           font-weight: 700;
+          transition: 0.2s;
+        }
+        .submit-btn:hover:not(:disabled) {
+          background: #000;
         }
       `}</style>
     </div>
