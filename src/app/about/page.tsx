@@ -8,6 +8,32 @@ import { useSalespersons } from '@/hooks/useSalespersons'
 import SalespersonModal from '@/components/SalespersonModal'
 import { Salesperson } from '@/lib/firestore-models'
 
+/* ================= SEO METADATA ================= */
+
+export const metadata = {
+  title: 'About MITC | Trusted Laptop Showroom in Srinagar, Kashmir',
+  description:
+    'Learn about MITC (Mateen IT Corp), a trusted laptop showroom in Srinagar, Kashmir since 2013. We offer transparent laptop sales, diagnostics, upgrades, and expert guidance—online and in-store.',
+  alternates: {
+    canonical: 'https://mitc-store.com/about',
+  },
+  openGraph: {
+    title: 'About MITC | Laptop Sales & Services in Srinagar',
+    description:
+      'MITC is a professional laptop showroom in Srinagar, Kashmir, offering transparent laptop sales, upgrades, and expert guidance since 2013.',
+    url: 'https://mitc-store.com/about',
+    siteName: 'MITC - Mateen IT Corp',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About MITC | Laptop Showroom in Srinagar',
+    description:
+      'MITC is a trusted laptop showroom in Srinagar, Kashmir providing honest guidance, diagnostics, and upgrades since 2013.',
+  },
+}
+
 /* ================= CONSTANTS ================= */
 
 const FALLBACK_IMAGE =
@@ -18,17 +44,12 @@ const FALLBACK_IMAGE =
 export default function AboutPage() {
   const { settings } = useSettings()
   const { salespersons } = useSalespersons()
-
   const [selected, setSelected] = useState<Salesperson | null>(null)
-
-  /* ---------- Safe Images ---------- */
 
   const heroImage =
     settings?.featuredImageUrl ||
     settings?.logoUrl ||
     FALLBACK_IMAGE
-
-  /* ---------- Team Logic ---------- */
 
   const visibleTeam = salespersons
     .filter(p => p.isActive)
@@ -39,189 +60,186 @@ export default function AboutPage() {
     <main className="bg-white overflow-x-hidden">
 
       {/* ================= HERO ================= */}
-      <section className="relative min-h-[70vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(0,113,227,0.08),transparent_55%)]" />
+      <section className="relative bg-gray-950 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-24">
-          <div className="max-w-4xl">
-            <span className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/80 border backdrop-blur shadow">
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-600 animate-pulse" />
-              <span className="text-sm font-bold tracking-widest uppercase">
-                About MITC
-              </span>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-28 lg:py-36">
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold tracking-widest uppercase">
+            About MITC
+          </span>
+
+          <h1 className="mt-8 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+            Trusted laptop showroom in Srinagar
+            <span className="block mt-3 text-white/60 text-2xl lg:text-3xl font-medium">
+              Serving Kashmir with clarity and confidence since 2013
             </span>
+          </h1>
 
-            <h1 className="mt-10 text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900">
-              A Digital Showroom
-              <span className="block mt-4 text-3xl lg:text-4xl font-light text-gray-600">
-                Built on Trust, Not Transactions
-              </span>
-            </h1>
-
-            <p className="mt-10 text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
-              MITC (Mateen IT Corp) was created to bring transparency,
-              clarity, and human guidance back into laptop buying—online
-              and offline. We are not an e-commerce store. We are a
-              showroom experience.
-            </p>
-          </div>
+          <p className="mt-8 text-lg text-white/70 max-w-3xl leading-relaxed">
+            Mateen IT Corp (MITC) is a professional laptop showroom based in
+            Srinagar, Jammu & Kashmir. We help students, professionals, and
+            businesses choose the right laptops through transparent information,
+            real inventory, and direct expert guidance.
+          </p>
         </div>
       </section>
 
       {/* ================= STORY ================= */}
-      <section className="py-28 px-6 bg-white">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section className="py-24 lg:py-32 px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+
           <div>
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-8">
-              Our Story
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Our journey in Kashmir
             </h2>
 
             <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              MITC began as a physical laptop showroom in Maisuma,
-              Srinagar—serving customers who valued honest advice over
-              aggressive sales tactics.
+              MITC started as a physical laptop showroom in Maisuma, Srinagar,
+              focused on honest advice and long-term trust rather than quick sales.
             </p>
 
             <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              As demand grew, we realized buyers wanted the same clarity
-              before visiting a store. That insight led to our digital
-              showroom—explore real stock, compare specs, read genuine
-              reviews, and speak directly with knowledgeable people.
+              Over the years, customers across Kashmir trusted us for laptop
+              diagnostics, upgrades, repairs, and guidance. As demand grew,
+              we expanded digitally to help people explore options before
+              visiting the store.
             </p>
 
             <p className="text-lg text-gray-700 leading-relaxed">
-              Today, MITC blends physical presence with digital
-              transparency. One platform for discovery. One showroom
-              for confidence.
+              Today, MITC combines a physical showroom with a digital platform—
+              offering clarity, transparency, and confidence at every step.
             </p>
           </div>
 
           <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
               src={heroImage}
-              alt="MITC Showroom"
+              alt="MITC laptop showroom in Srinagar"
               fill
               className="object-cover"
               priority
             />
           </div>
+
         </div>
       </section>
 
-      {/* ================= DIFFERENCE ================= */}
-      <section className="py-28 px-6 bg-slate-50">
-        <div className="max-w-6xl mx-auto text-center mb-20">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900">
-            What Makes MITC Different
-          </h2>
-        </div>
+      {/* ================= VALUE PROPOSITION ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-sky-50/60">
+        <div className="max-w-7xl mx-auto">
 
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-10">
-          {[
-            {
-              title: 'A Showroom, Not E-commerce',
-              desc:
-                'No carts. No instant checkout. No false urgency. Customers explore, compare, and then connect with experts.'
-            },
-            {
-              title: 'Direct Human Communication',
-              desc:
-                'Talk directly with salespersons. Faster responses. Clear answers. Real conversations.'
-            },
-            {
-              title: 'Built on Trust',
-              desc:
-                'Every product reflects actual showroom stock—no automation, no misleading listings, no surprises.'
-            }
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="p-10 bg-white rounded-3xl border shadow-sm hover:shadow-xl transition-all"
-            >
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                {item.title}
-              </h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                {item.desc}
-              </p>
-            </div>
-          ))}
+          <div className="max-w-3xl mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+              Why customers choose MITC
+            </h2>
+            <p className="mt-4 text-lg text-gray-600">
+              Built for people who value clarity before purchase.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Physical showroom in Srinagar',
+                desc:
+                  'Visit, test, and understand laptops in person—no blind online purchases.'
+              },
+              {
+                title: 'Expert laptop guidance',
+                desc:
+                  'Get advice from experienced professionals, not automated recommendations.'
+              },
+              {
+                title: 'Transparent inventory',
+                desc:
+                  'Every product listed reflects actual showroom stock with clear specifications.'
+              }
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm hover:shadow-xl transition-all"
+              >
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
 
       {/* ================= TEAM ================= */}
       {visibleTeam.length > 0 && (
-        <section className="py-28 px-6 bg-white">
-          <div className="max-w-6xl mx-auto text-center mb-20">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900">
-              Meet Our Team
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Real people. Real guidance. No scripts.
-            </p>
-          </div>
+        <section className="py-24 lg:py-32 px-6 bg-white">
+          <div className="max-w-7xl mx-auto">
 
-          <div
-            className={`max-w-6xl mx-auto flex flex-wrap gap-10 ${
-              visibleTeam.length === 1 ? 'justify-center' : 'justify-between'
-            }`}
-          >
-            {visibleTeam.map(person => {
-              const avatar = person.imageUrl || FALLBACK_IMAGE
+            <div className="max-w-3xl mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+                Meet our team
+              </h2>
+              <p className="mt-4 text-lg text-gray-600">
+                Local experts who understand real-world requirements.
+              </p>
+            </div>
 
-              return (
-                <button
-                  key={person.id}
-                  onClick={() => setSelected(person)}
-                  className="group w-full sm:w-[48%] lg:w-[22%] text-center"
-                >
-                  <div className="relative h-64 rounded-3xl overflow-hidden shadow-lg mb-6 bg-slate-100">
-                    <Image
-                      src={avatar}
-                      alt={person.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform"
-                    />
-                  </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+              {visibleTeam.map(person => {
+                const avatar = person.imageUrl || FALLBACK_IMAGE
 
-                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {person.name}
-                  </h3>
-                  <p className="text-gray-500 font-medium mt-1">
-                    {person.role}
-                  </p>
-                </button>
-              )
-            })}
+                return (
+                  <button
+                    key={person.id}
+                    onClick={() => setSelected(person)}
+                    className="text-left group"
+                  >
+                    <div className="relative h-64 rounded-3xl overflow-hidden bg-gray-100 shadow-lg mb-5">
+                      <Image
+                        src={avatar}
+                        alt={`${person.name} - MITC laptop expert`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {person.name}
+                    </h3>
+                    <p className="text-gray-500 font-medium">
+                      {person.role}
+                    </p>
+                  </button>
+                )
+              })}
+            </div>
+
           </div>
         </section>
       )}
 
-      {/* ================= CONTACT CTA ================= */}
-      <section className="py-28 px-6 bg-gray-900">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-            Need Help Choosing the Right Laptop?
+      {/* ================= CTA ================= */}
+      <section className="py-24 lg:py-32 px-6 bg-gray-950 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            Visit MITC or talk to an expert today
           </h2>
-          <p className="text-lg text-white/80 mb-12">
-            Explore options, ask questions, or visit our showroom.
-            We’re here to help—without pressure.
+
+          <p className="text-lg text-white/70 mb-10">
+            Explore laptops, ask questions, or visit our Srinagar showroom.
+            We help you decide—without pressure.
           </p>
 
           <Link
             href="/contact"
-            className="inline-flex items-center gap-3 px-10 py-5 rounded-2xl bg-white text-gray-900 font-bold text-lg hover:bg-gray-100 transition-all shadow-xl"
+            className="inline-flex items-center gap-3 px-10 py-4 rounded-full bg-white text-gray-900 font-bold hover:bg-gray-100 transition"
           >
-            Contact Us
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            Contact MITC
           </Link>
+
         </div>
       </section>
 
