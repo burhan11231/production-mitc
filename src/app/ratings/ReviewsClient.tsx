@@ -67,31 +67,42 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
   /* ---------------- FETCH REVIEWS (SERVER PAGINATION) ---------------- */
 
   const fetchReviews = async () => {
-    setLoading(true);
+  setLoading(true);
 
-    const constraints: any[] = [
-      collection(db, 'reviews'),
+  try {
+    const baseRef = collection(db, 'reviews');
+
+    const constraints: Parameters<typeof query>[1][] = [
       where('status', '==', 'published'),
       orderBy('createdAt', 'desc'),
       limit(PER_PAGE),
     ];
 
     if (initialRating) {
-      constraints.splice(1, 0, where('rating', '==', initialRating));
+      constraints.unshift(where('rating', '==', initialRating));
     }
 
     if (initialPage > 1 && lastDoc) {
       constraints.push(startAfter(lastDoc));
     }
 
-    const snap = await getDocs(query(...constraints));
+    const q = query(baseRef, ...constraints);
+    const snap = await getDocs(q);
 
     setReviews(
-      snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))
+      snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Review),
+      }))
     );
-    setLastDoc(snap.docs.at(-1) || null);
+
+    setLastDoc(snap.docs.at(-1) ?? null);
+  } catch {
+    toast.error('Failed to load reviews');
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const fetchMyReview = async () => {
     if (!user) return;
