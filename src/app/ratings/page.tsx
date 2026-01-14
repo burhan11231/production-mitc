@@ -4,25 +4,21 @@ import ReviewsClient from './ReviewsClient';
 export const metadata = {
   title: 'Customer Reviews | MITC Srinagar',
   description:
-    'Verified customer reviews for MITC Srinagar. Read real feedback from customers who purchased or serviced laptops at our showroom.',
+    'Verified customer reviews for MITC Srinagar.',
 };
 
 type PageProps = {
-  searchParams?: Promise<{
-    page?: string;
+  searchParams?: {
     rating?: string;
-  }>;
+  };
 };
 
-export default async function ReviewsPage({ searchParams }: PageProps) {
-  const params = (await searchParams) || {};
-
-  const page =
-    params.page && Number(params.page) > 0 ? Number(params.page) : 1;
-
+export default function ReviewsPage({ searchParams }: PageProps) {
   const rating =
-    params.rating && Number(params.rating) >= 1 && Number(params.rating) <= 5
-      ? Number(params.rating)
+    searchParams?.rating &&
+    Number(searchParams.rating) >= 1 &&
+    Number(searchParams.rating) <= 5
+      ? Number(searchParams.rating)
       : null;
 
   return (
@@ -33,7 +29,7 @@ export default async function ReviewsPage({ searchParams }: PageProps) {
         </div>
       }
     >
-      <ReviewsClient initialPage={page} initialRating={rating} />
+      <ReviewsClient initialRating={rating} />
     </Suspense>
   );
 }
