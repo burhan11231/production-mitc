@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   collection,
   getDocs,
@@ -10,7 +10,6 @@ import {
   query,
   where,
   startAfter,
-  Timestamp,
   QueryDocumentSnapshot,
   QueryConstraint,
   doc,
@@ -35,7 +34,8 @@ interface Review {
   rating: number;
   comment: string;
   status: 'published' | 'pending';
-  createdAt?: Timestamp | Date | string | number | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createdAt?: any; 
 }
 
 interface ReviewStats {
@@ -50,7 +50,7 @@ interface Props {
 }
 
 const PER_PAGE = 10;
-const PAGE_WINDOW = 2; // Reduced window for cleaner mobile look
+const PAGE_WINDOW = 2;
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -60,76 +60,90 @@ export default function ReviewsClient({
 }: Props) {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+  // State
   const [reviews, setReviews] = useState<Review[]>([]);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Loading States
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [loadingStats, setLoadingStats] = useState(true);
+  
+  // Pagination State
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   /* ---------------- FETCH STATS ---------------- */
 
   const fetchStats = async () => {
     try {
+      setLoadingStats(true);
       const snap = await getDoc(doc(db, 'reviewStats', 'global'));
       if (snap.exists()) {
         setStats(snap.data() as ReviewStats);
+      } else {
+        setStats(null); // Explicitly null if not found
       }
     } catch (error) {
       console.error("Error fetching stats:", error);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
   /* ---------------- FETCH REVIEWS ---------------- */
 
   const fetchReviews = async () => {
-    setLoading(true);
+    setLoadingReviews(true);
 
     try {
       const constraints: QueryConstraint[] = [
         where('status', '==', 'published'),
         orderBy('createdAt', 'desc'),
-        limit(PER_PAGE),
+        // Fetch one extra to know if there is a next page
+        limit(PER_PAGE + 1),
       ];
 
-      // FIX: Apply Rating Filter
+      // 1. Apply Rating Filter
       if (initialRating) {
         constraints.unshift(where('rating', '==', initialRating));
       }
 
-      // FIX: Pagination Logic
-      // Note: This relies on maintaining 'lastDoc' state correctly. 
-      // If jumping deep into pages via URL, simple offset/startAfter(lastDoc) 
-      // might break without loading previous pages. 
-      // For this example, we assume sequential navigation or valid lastDoc.
-      // If deep linking (e.g. page 5) without previous data, Firestore 
-      // usually requires 'offset' (expensive) or a snapshot. 
-      // Resetting to page 1 if no lastDoc is present on >1 page is a safer fallback.
+      // 2. Pagination Logic (Basic offset simulation)
+      // Note: For robust deep-linking (page 5 directly), you need 'offset' or cursors. 
+      // This simple implementation assumes standard navigation.
       if (initialPage > 1 && lastDoc) {
         constraints.push(startAfter(lastDoc));
-      } else if (initialPage > 1 && !lastDoc) {
-        // Fallback: If we loaded page 5 directly from URL but don't have the doc cursor,
-        // we essentially have to load page 1 or implement specific offset logic.
-        // For now, let's allow the query to run (it will show first page data) 
-        // or handle it by resetting page.
       }
 
       const q = query(collection(db, 'reviews'), ...constraints);
       const snap = await getDocs(q);
+      const docs = snap.docs;
+
+      // Check if we have more results than PER_PAGE
+      const hasMore = docs.length > PER_PAGE;
+      setHasNextPage(hasMore);
+
+      // Slice to get the actual items for this page
+      const pageItems = hasMore ? docs.slice(0, PER_PAGE) : docs;
 
       setReviews(
-        snap.docs.map((d) => ({
+        pageItems.map((d) => ({
           id: d.id,
           ...(d.data() as Omit<Review, 'id'>),
         }))
       );
 
-      setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
+      // Set cursor for next page
+      setLastDoc(pageItems[pageItems.length - 1] || null);
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to load reviews');
+      console.error("Query Error:", error);
+      // Don't show toast on first load to prevent layout shift annoyance
+      if (reviews.length > 0) toast.error('Failed to load reviews');
     } finally {
-      setLoading(false);
+      setLoadingReviews(false);
     }
   };
 
@@ -144,79 +158,69 @@ export default function ReviewsClient({
           id: snap.id,
           ...(snap.data() as Omit<Review, 'id'>),
         });
-      } else {
-        setMyReview(null);
       }
     } catch (e) {
       console.error(e);
     }
   };
 
+  /* ---------------- EFFECTS ---------------- */
+
   useEffect(() => {
     fetchStats();
     fetchMyReview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, []);
 
   useEffect(() => {
-    // When params change, fetch new reviews
-    // Reset lastDoc if going back to page 1 or changing filter
+    // Reset cursor if we went back to page 1 via URL
     if (initialPage === 1) setLastDoc(null);
     fetchReviews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPage, initialRating]);
 
 
-  /* ---------------- PAGINATION LOGIC ---------------- */
+  /* ---------------- ACTIONS ---------------- */
 
-  const goToPage = (page: number) => {
-    const params = new URLSearchParams();
+  const updateURL = (newPage: number, newRating: number | null) => {
+    const params = new URLSearchParams(searchParams.toString());
     
-    // Preserve rating if exists
-    if (initialRating) params.set('rating', String(initialRating));
-    
-    // Set page (only if > 1)
-    if (page > 1) params.set('page', String(page));
-    
-    router.push(`/ratings${params.toString() ? `?${params}` : ''}`);
+    if (newRating) params.set('rating', String(newRating));
+    else params.delete('rating');
+
+    if (newPage > 1) params.set('page', String(newPage));
+    else params.delete('page');
+
+    router.push(`/ratings?${params.toString()}`);
   };
 
-  const clearFilter = () => {
-    router.push('/ratings'); // Reset to all reviews
-  };
+  const goToPage = (p: number) => updateURL(p, initialRating);
+  const filterByStar = (star: number) => updateURL(1, star);
+  const clearFilter = () => router.push('/ratings');
 
-  // FIX: Accurate Page Calculation
+  /* ---------------- CALCULATIONS ---------------- */
+
+  // Calculate total pages ONLY if we have stats (accurate count)
+  // Otherwise we rely on Prev/Next buttons
   const totalPages = useMemo(() => {
-    if (!stats) return 0;
-    
-    // If filtering, we don't strictly know the count unless we query for count.
-    // However, if NOT filtering, we use global stats.
-    if (initialRating) {
-      // Rough estimate or rely on "next" button only for filtered views
-      // Since we don't have specific count stats for "5 star reviews only" easily available
-      // without a separate counter, we will hide numbered pagination for filters 
-      // unless we implement a specific counter.
-      return -1; 
-    }
-
+    if (!stats || initialRating) return -1; // Unknown pages when filtered or no stats
     return Math.ceil(stats.totalReviews / PER_PAGE);
   }, [stats, initialRating]);
 
   const pageNumbers = useMemo(() => {
-    if (totalPages === -1) return []; // Filtered mode
-    
+    if (totalPages === -1) return [];
     return Array.from(
       { length: PAGE_WINDOW * 2 + 1 },
       (_, i) => initialPage - PAGE_WINDOW + i
     ).filter((p) => p > 0 && p <= totalPages);
   }, [initialPage, totalPages]);
 
-
   /* ---------------- UI ---------------- */
 
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
-
+      
+      {/* Schema Markup for SEO */}
       {stats && initialPage === 1 && !initialRating && (
         <>
           <AggregateRatingSchema
@@ -227,70 +231,78 @@ export default function ReviewsClient({
         </>
       )}
 
+      {/* HEADER */}
       <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold">
+        <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 text-center">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900">
             Customer <span className="text-blue-600">Reviews</span>
           </h1>
-          <p className="text-gray-600 mt-3">
+          <p className="text-gray-500 mt-3 text-sm md:text-base">
             Verified feedback from MITC customers
           </p>
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-6 -mt-10 grid lg:grid-cols-12 gap-8">
-
-        {/* LEFT ASIDE (STATS) */}
-        <aside className="lg:col-span-4">
-          <div className="bg-white rounded-3xl border p-8 sticky top-6">
-            {stats ? (
+      <section className="max-w-7xl mx-auto px-4 md:px-6 -mt-8 md:-mt-10 grid lg:grid-cols-12 gap-8">
+        
+        {/* LEFT SIDEBAR (Stats & Review Gate) */}
+        <aside className="lg:col-span-4 space-y-6">
+          <div className="bg-white rounded-3xl border shadow-sm p-6 md:p-8">
+            
+            {/* STATS SECTION */}
+            {loadingStats ? (
+              // Skeleton Loader
+              <div className="animate-pulse space-y-4 mb-8">
+                <div className="h-16 bg-gray-100 rounded-xl w-3/4 mx-auto" />
+                <div className="h-4 bg-gray-100 rounded w-1/2 mx-auto" />
+                <div className="space-y-2 pt-4">
+                  {[1,2,3,4,5].map(i => <div key={i} className="h-4 bg-gray-100 rounded w-full" />)}
+                </div>
+              </div>
+            ) : stats ? (
+              // Actual Stats
               <>
-                <div className="text-center mb-6">
-                  <div className="text-6xl font-black">
-                    {stats.averageRating.toFixed(1)}
+                <div className="text-center mb-8">
+                  <div className="text-5xl md:text-6xl font-black text-gray-900">
+                    {stats.averageRating?.toFixed(1) || '0.0'}
                   </div>
-                  <div className="flex justify-center gap-1 my-2">
+                  <div className="flex justify-center gap-1 my-3 text-yellow-400">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <FaStar
                         key={i}
-                        className={i <= Math.round(stats.averageRating)
-                          ? 'text-yellow-400'
-                          : 'text-gray-200'}
+                        className={i <= Math.round(stats.averageRating || 0) ? 'text-yellow-400' : 'text-gray-200'}
+                        size={20}
                       />
                     ))}
                   </div>
-                  <p className="text-gray-500">
-                    {stats.totalReviews} reviews
+                  <p className="text-gray-400 text-sm font-medium">
+                    Based on {stats.totalReviews} reviews
                   </p>
                 </div>
 
-                <div className="space-y-2 mb-6">
-                  {/* FIX: Bars Logic reversed 5->1 */}
+                <div className="space-y-2 mb-8">
                   {[5, 4, 3, 2, 1].map((star) => {
-                    // FIX: Safe access to starCounts
                     const count = stats.starCounts?.[String(star)] || 0;
-                    
                     const percent = stats.totalReviews > 0
                       ? Math.round((count / stats.totalReviews) * 100)
                       : 0;
 
-                    // Click to filter by this star
                     return (
                       <button
                         key={star}
-                        onClick={() => goToPage(1) /* Reset to page 1 when filtering logic added */ } 
-                        // Note: To make bars clickable to filter:
-                        // onClick={() => { const p = new URLSearchParams(); p.set('rating', String(star)); router.push(`/ratings?${p}`); }}
-                        className="w-full flex items-center gap-3 text-sm group cursor-default"
+                        onClick={() => filterByStar(star)}
+                        className="w-full flex items-center gap-3 text-sm group"
                       >
-                        <span className="w-4 font-semibold">{star}</span>
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <span className="w-4 font-bold text-gray-700">{star}</span>
+                        <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-600 transition-all duration-500"
+                            className={`h-full transition-all duration-500 ${
+                              initialRating === star ? 'bg-blue-600' : 'bg-yellow-400 group-hover:bg-yellow-500'
+                            }`}
                             style={{ width: `${percent}%` }}
                           />
                         </div>
-                        <span className="w-8 text-right text-gray-500">
+                        <span className="w-9 text-right text-gray-400 text-xs">
                           {percent}%
                         </span>
                       </button>
@@ -299,62 +311,56 @@ export default function ReviewsClient({
                 </div>
               </>
             ) : (
-              <div className="animate-pulse space-y-4 mb-6">
-                 <div className="h-20 bg-gray-200 rounded-xl w-full"></div>
-                 <div className="h-40 bg-gray-200 rounded-xl w-full"></div>
+              // Fallback if Stats Missing (hides the bars completely)
+              <div className="text-center mb-6">
+                 <p className="text-gray-500">Average Rating</p>
+                 <div className="text-4xl font-bold text-gray-300 mt-1">--</div>
               </div>
             )}
 
+            {/* WRITE REVIEW CTA */}
             <PublicReviewGate myReview={myReview} onWrite={() => {}} />
           </div>
         </aside>
 
-        {/* RIGHT CONTENT (LIST) */}
+        {/* RIGHT CONTENT (Review List) */}
         <section className="lg:col-span-8 space-y-6">
 
-          {/* FIX: Filter Status Banner */}
+          {/* ACTIVE FILTER BANNER */}
           {initialRating && (
-            <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between">
-              <div className="flex items-center gap-2 text-blue-800 font-semibold">
+            <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-2 text-blue-900 font-semibold">
                 <FaStar className="text-yellow-500" />
-                Showing only {initialRating}-star reviews
+                <span>Showing {initialRating}-star reviews</span>
               </div>
               <button 
                 onClick={clearFilter}
-                className="flex items-center gap-1 text-sm bg-white px-3 py-1.5 rounded-lg border hover:bg-gray-50 text-gray-600 transition-colors"
+                className="flex items-center gap-1.5 text-xs md:text-sm bg-white px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors shadow-sm"
               >
-                <MdClose /> Clear Filter
+                <MdClose size={16} /> Clear Filter
               </button>
             </div>
           )}
 
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600" />
+          {/* LOADING STATE */}
+          {loadingReviews ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+              <p className="text-gray-400 text-sm">Loading reviews...</p>
             </div>
-          ) : reviews.length ? (
+          ) : reviews.length > 0 ? (
             <>
-              <div className="grid gap-6">
+              {/* LIST */}
+              <div className="grid gap-4">
                 {reviews.map((r) => (
-                  <article key={r.id} className="bg-white rounded-3xl border p-6">
-                    <div className="flex justify-between items-start">
+                  <article key={r.id} className="bg-white rounded-3xl border p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-bold text-lg">
+                        <h4 className="font-bold text-gray-900">
                           {r.userName || 'Verified Customer'}
                         </h4>
-                         <div className="flex gap-1 my-1">
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <FaStar
-                              key={i}
-                              size={14}
-                              className={i <= r.rating
-                                ? 'text-yellow-400'
-                                : 'text-gray-200'}
-                            />
-                          ))}
-                        </div>
                       </div>
-                      <span className="text-xs text-gray-400 mt-1">
+                      <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
                         {r.createdAt && (
                           // @ts-ignore
                           r.createdAt?.toDate?.() ?? new Date(r.createdAt)
@@ -362,53 +368,57 @@ export default function ReviewsClient({
                       </span>
                     </div>
 
-                    <p className="text-gray-700 mt-3 leading-relaxed">{r.comment}</p>
+                    <div className="flex gap-1 mb-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <FaStar
+                          key={i}
+                          size={14}
+                          className={i <= r.rating ? 'text-yellow-400' : 'text-gray-200'}
+                        />
+                      ))}
+                    </div>
+
+                    <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+                      {r.comment}
+                    </p>
                   </article>
                 ))}
               </div>
 
-              {/* FIX: PAGINATION VISIBILITY */}
-              {/* Only show if we have pages > 1 OR if we are in Filter mode (hasNext check) */}
-              {(totalPages > 1 || initialRating) && (
-                <div className="flex justify-center items-center gap-2 pt-10 text-sm font-semibold">
+              {/* PAGINATION */}
+              {/* Only show pagination if there are multiple pages or we are on a deeper page */}
+              {(initialPage > 1 || hasNextPage) && (
+                <div className="flex justify-center items-center gap-2 pt-8">
                   
-                  {/* Prev Button */}
+                  {/* Prev */}
                   <button
                     onClick={() => goToPage(initialPage - 1)}
                     disabled={initialPage <= 1}
-                    className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                    className="px-4 py-2 rounded-xl border bg-white font-semibold text-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
                   >
                     Previous
                   </button>
 
-                  {/* Page Numbers (Hidden if filtered, as we don't know total count easily) */}
-                  {!initialRating && pageNumbers.map((p) => (
+                  {/* Page Numbers (Only if stats available to calc total) */}
+                  {pageNumbers.map((p) => (
                     <button
                       key={p}
                       onClick={() => goToPage(p)}
-                      className={`px-3 py-2 rounded-lg transition-colors ${
+                      className={`w-10 h-10 rounded-xl font-bold text-sm flex items-center justify-center transition-colors ${
                         p === initialPage
-                          ? 'bg-blue-600 text-white'
-                          : 'border hover:bg-gray-50'
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                          : 'bg-white border hover:bg-gray-50 text-gray-600'
                       }`}
                     >
                       {p}
                     </button>
                   ))}
 
-                  {/* Next Button */}
-                  {/* 
-                     If filtered: Show Next if we pulled a full page (reviews.length === PER_PAGE).
-                     If not filtered: Show Next if current page < totalPages
-                  */}
+                  {/* Next */}
                   <button
                     onClick={() => goToPage(initialPage + 1)}
-                    disabled={
-                      initialRating 
-                        ? reviews.length < PER_PAGE // Rough estimate for filters
-                        : initialPage >= totalPages
-                    }
-                    className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                    disabled={!hasNextPage}
+                    className="px-4 py-2 rounded-xl border bg-white font-semibold text-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
                   >
                     Next
                   </button>
@@ -416,15 +426,23 @@ export default function ReviewsClient({
               )}
             </>
           ) : (
-            <div className="bg-white p-16 rounded-3xl border text-center">
-              <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
-              <h3 className="font-bold text-xl">No reviews found</h3>
+            // EMPTY STATE
+            <div className="bg-white p-12 rounded-3xl border text-center">
+              <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MdMessage size={24} className="text-gray-400" />
+              </div>
+              <h3 className="font-bold text-lg text-gray-900">No reviews found</h3>
+              <p className="text-gray-500 text-sm mt-1">
+                {initialRating 
+                  ? `There are no ${initialRating}-star reviews yet.`
+                  : "Be the first to share your experience!"}
+              </p>
               {initialRating && (
                 <button 
                   onClick={clearFilter}
-                  className="mt-4 text-blue-600 font-semibold hover:underline"
+                  className="mt-4 text-blue-600 font-semibold text-sm hover:underline"
                 >
-                  Clear filters to see all reviews
+                  View all reviews
                 </button>
               )}
             </div>
