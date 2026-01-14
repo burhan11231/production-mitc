@@ -19,6 +19,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import { FaStar, FaFilter } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
+import toast from 'react-hot-toast';
 
 import ReviewForm from '@/components/ReviewForm';
 import PublicReviewGate from '@/components/PublicReviewGate';
