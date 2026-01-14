@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link'; // Added for the profile link
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   collection,
@@ -18,7 +19,7 @@ import {
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaPen } from 'react-icons/fa'; // Added FaPen
 import { MdMessage, MdClose } from 'react-icons/md';
 
 import PublicReviewGate from '@/components/PublicReviewGate';
@@ -67,11 +68,11 @@ export default function ReviewsClient({
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
-  
+
   // Loading States
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
-  
+
   // Pagination State
   const [hasNextPage, setHasNextPage] = useState(false);
 
@@ -84,7 +85,7 @@ export default function ReviewsClient({
       if (snap.exists()) {
         setStats(snap.data() as ReviewStats);
       } else {
-        setStats(null); // Explicitly null if not found
+        setStats(null);
       }
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -102,18 +103,13 @@ export default function ReviewsClient({
       const constraints: QueryConstraint[] = [
         where('status', '==', 'published'),
         orderBy('createdAt', 'desc'),
-        // Fetch one extra to know if there is a next page
         limit(PER_PAGE + 1),
       ];
 
-      // 1. Apply Rating Filter
       if (initialRating) {
         constraints.unshift(where('rating', '==', initialRating));
       }
 
-      // 2. Pagination Logic (Basic offset simulation)
-      // Note: For robust deep-linking (page 5 directly), you need 'offset' or cursors. 
-      // This simple implementation assumes standard navigation.
       if (initialPage > 1 && lastDoc) {
         constraints.push(startAfter(lastDoc));
       }
@@ -122,11 +118,9 @@ export default function ReviewsClient({
       const snap = await getDocs(q);
       const docs = snap.docs;
 
-      // Check if we have more results than PER_PAGE
       const hasMore = docs.length > PER_PAGE;
       setHasNextPage(hasMore);
 
-      // Slice to get the actual items for this page
       const pageItems = hasMore ? docs.slice(0, PER_PAGE) : docs;
 
       setReviews(
@@ -136,11 +130,9 @@ export default function ReviewsClient({
         }))
       );
 
-      // Set cursor for next page
       setLastDoc(pageItems[pageItems.length - 1] || null);
     } catch (error) {
       console.error("Query Error:", error);
-      // Don't show toast on first load to prevent layout shift annoyance
       if (reviews.length > 0) toast.error('Failed to load reviews');
     } finally {
       setLoadingReviews(false);
@@ -173,7 +165,6 @@ export default function ReviewsClient({
   }, []);
 
   useEffect(() => {
-    // Reset cursor if we went back to page 1 via URL
     if (initialPage === 1) setLastDoc(null);
     fetchReviews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -184,13 +175,10 @@ export default function ReviewsClient({
 
   const updateURL = (newPage: number, newRating: number | null) => {
     const params = new URLSearchParams(searchParams.toString());
-    
     if (newRating) params.set('rating', String(newRating));
     else params.delete('rating');
-
     if (newPage > 1) params.set('page', String(newPage));
     else params.delete('page');
-
     router.push(`/ratings?${params.toString()}`);
   };
 
@@ -198,12 +186,11 @@ export default function ReviewsClient({
   const filterByStar = (star: number) => updateURL(1, star);
   const clearFilter = () => router.push('/ratings');
 
-  /* ---------------- CALCULATIONS ---------------- */
+  /* ---------------- CALCULATIONS (MERGED LIST) ---------------- */
 
-  // Calculate total pages ONLY if we have stats (accurate count)
-  // Otherwise we rely on Prev/Next buttons
+  // 1. Calculate Pagination
   const totalPages = useMemo(() => {
-    if (!stats || initialRating) return -1; // Unknown pages when filtered or no stats
+    if (!stats || initialRating) return -1;
     return Math.ceil(stats.totalReviews / PER_PAGE);
   }, [stats, initialRating]);
 
@@ -215,12 +202,29 @@ export default function ReviewsClient({
     ).filter((p) => p > 0 && p <= totalPages);
   }, [initialPage, totalPages]);
 
+  // 2. Merge My Review + General Reviews (No Duplicates)
+  const displayedReviews = useMemo(() => {
+    // A. Filter out my own review from the fetched list (to prevent duplicates)
+    const otherReviews = reviews.filter((r) => r.id !== user?.uid);
+
+    // B. If on Page 1, Prepend my review to the top
+    if (initialPage === 1 && myReview) {
+      // Respect the rating filter if active
+      if (!initialRating || myReview.rating === initialRating) {
+        return [myReview, ...otherReviews];
+      }
+    }
+
+    return otherReviews;
+  }, [reviews, myReview, initialPage, initialRating, user]);
+
+
   /* ---------------- UI ---------------- */
 
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
-      
-      {/* Schema Markup for SEO */}
+
+      {/* SEO Schema */}
       {stats && initialPage === 1 && !initialRating && (
         <>
           <AggregateRatingSchema
@@ -244,14 +248,13 @@ export default function ReviewsClient({
       </header>
 
       <section className="max-w-7xl mx-auto px-4 md:px-6 -mt-8 md:-mt-10 grid lg:grid-cols-12 gap-8">
-        
-        {/* LEFT SIDEBAR (Stats & Review Gate) */}
+
+        {/* LEFT SIDEBAR (Stats) */}
         <aside className="lg:col-span-4 space-y-6">
           <div className="bg-white rounded-3xl border shadow-sm p-6 md:p-8">
-            
+
             {/* STATS SECTION */}
             {loadingStats ? (
-              // Skeleton Loader
               <div className="animate-pulse space-y-4 mb-8">
                 <div className="h-16 bg-gray-100 rounded-xl w-3/4 mx-auto" />
                 <div className="h-4 bg-gray-100 rounded w-1/2 mx-auto" />
@@ -260,7 +263,6 @@ export default function ReviewsClient({
                 </div>
               </div>
             ) : stats ? (
-              // Actual Stats
               <>
                 <div className="text-center mb-8">
                   <div className="text-5xl md:text-6xl font-black text-gray-900">
@@ -311,15 +313,20 @@ export default function ReviewsClient({
                 </div>
               </>
             ) : (
-              // Fallback if Stats Missing (hides the bars completely)
               <div className="text-center mb-6">
                  <p className="text-gray-500">Average Rating</p>
                  <div className="text-4xl font-bold text-gray-300 mt-1">--</div>
               </div>
             )}
 
-            {/* WRITE REVIEW CTA */}
-            <PublicReviewGate myReview={myReview} onWrite={() => {}} />
+            {/* 
+               Goal 1 & 2: Hide "Write a Review" if user already has a review. 
+               Only show PublicReviewGate if myReview is NULL.
+            */}
+            {!myReview && (
+              <PublicReviewGate myReview={null} onWrite={() => {}} />
+            )}
+            
           </div>
         </aside>
 
@@ -348,49 +355,77 @@ export default function ReviewsClient({
               <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
               <p className="text-gray-400 text-sm">Loading reviews...</p>
             </div>
-          ) : reviews.length > 0 ? (
+          ) : displayedReviews.length > 0 ? (
             <>
               {/* LIST */}
               <div className="grid gap-4">
-                {reviews.map((r) => (
-                  <article key={r.id} className="bg-white rounded-3xl border p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-bold text-gray-900">
-                          {r.userName || 'Verified Customer'}
-                        </h4>
+                {displayedReviews.map((r) => {
+                  const isMyReview = r.id === user?.uid;
+
+                  return (
+                    <article 
+                      key={r.id} 
+                      className={`rounded-3xl border p-6 shadow-sm hover:shadow-md transition-shadow ${
+                        isMyReview ? 'bg-blue-50/50 border-blue-200' : 'bg-white'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-gray-900">
+                              {/* Goal 3: Label duplicate check */}
+                              {isMyReview ? 'Your Review' : (r.userName || 'Verified Customer')}
+                            </h4>
+                            
+                            {/* Status badge for my review */}
+                            {isMyReview && r.status === 'pending' && (
+                              <span className="text-[10px] uppercase font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+                                Pending Approval
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+                          {r.createdAt && (
+                            // @ts-ignore
+                            r.createdAt?.toDate?.() ?? new Date(r.createdAt)
+                          ).toLocaleDateString()}
+                        </span>
                       </div>
-                      <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
-                        {r.createdAt && (
-                          // @ts-ignore
-                          r.createdAt?.toDate?.() ?? new Date(r.createdAt)
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
 
-                    <div className="flex gap-1 mb-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <FaStar
-                          key={i}
-                          size={14}
-                          className={i <= r.rating ? 'text-yellow-400' : 'text-gray-200'}
-                        />
-                      ))}
-                    </div>
+                      <div className="flex gap-1 mb-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <FaStar
+                            key={i}
+                            size={14}
+                            className={i <= r.rating ? 'text-yellow-400' : 'text-gray-200'}
+                          />
+                        ))}
+                      </div>
 
-                    <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-                      {r.comment}
-                    </p>
-                  </article>
-                ))}
+                      <p className="text-gray-600 leading-relaxed text-sm md:text-base whitespace-pre-line">
+                        {r.comment}
+                      </p>
+
+                      {/* Goal 3: Edit on Profile Link */}
+                      {isMyReview && (
+                        <div className="mt-4 pt-4 border-t border-blue-100">
+                          <Link 
+                            href="/profile" 
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                          >
+                            <FaPen size={12} /> Edit Review on Profile
+                          </Link>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
 
               {/* PAGINATION */}
-              {/* Only show pagination if there are multiple pages or we are on a deeper page */}
               {(initialPage > 1 || hasNextPage) && (
                 <div className="flex justify-center items-center gap-2 pt-8">
-                  
-                  {/* Prev */}
                   <button
                     onClick={() => goToPage(initialPage - 1)}
                     disabled={initialPage <= 1}
@@ -399,7 +434,6 @@ export default function ReviewsClient({
                     Previous
                   </button>
 
-                  {/* Page Numbers (Only if stats available to calc total) */}
                   {pageNumbers.map((p) => (
                     <button
                       key={p}
@@ -414,7 +448,6 @@ export default function ReviewsClient({
                     </button>
                   ))}
 
-                  {/* Next */}
                   <button
                     onClick={() => goToPage(initialPage + 1)}
                     disabled={!hasNextPage}
