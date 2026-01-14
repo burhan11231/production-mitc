@@ -28,7 +28,7 @@ export default function RecalculateStats() {
         const rating = r.rating || 0;
         sumRating += rating;
         
-        // Count specific stars (e.g., how many 5 stars)
+        // Count specific stars
         if (starCounts[String(rating)] !== undefined) {
           starCounts[String(rating)]++;
         }
@@ -47,6 +47,8 @@ export default function RecalculateStats() {
       });
 
       toast.success(`Stats updated! Avg: ${averageRating}, Total: ${totalReviews}`);
+      // Optional: reload page to see new stats in header
+      window.location.reload(); 
     } catch (error) {
       console.error(error);
       toast.error('Failed to update stats');
@@ -59,7 +61,7 @@ export default function RecalculateStats() {
     <button
       onClick={handleRecalculate}
       disabled={loading}
-      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+      className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
     >
       {loading ? 'Calculating...' : 'Recalculate Stats'}
     </button>
