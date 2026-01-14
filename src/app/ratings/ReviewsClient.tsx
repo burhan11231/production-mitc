@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -18,6 +19,10 @@ import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
 import { FaStar } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
+
+import AggregateRatingSchema from './AggregateRatingSchema';
+import ReviewSchema from './ReviewSchema';
+import PublicReviewGate from '@/components/PublicReviewGate';
 
 interface Review {
   id: string;
