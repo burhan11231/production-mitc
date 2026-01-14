@@ -45,19 +45,14 @@ interface ReviewStats {
 }
 
 interface Props {
-  initialPage: number;
   initialRating: number | null;
 }
 
 const PER_PAGE = 10;
-const PAGE_WINDOW = 3;
 
 /* ---------------- COMPONENT ---------------- */
 
-export default function ReviewsClient({
-  initialPage,
-  initialRating,
-}: Props) {
+export default function ReviewsClient({ initialRating }: Props) {
   const { user } = useAuth();
   const router = useRouter();
 
@@ -65,9 +60,10 @@ export default function ReviewsClient({
   const [lastDoc, setLastDoc] =
     useState<QueryDocumentSnapshot | null>(null);
   const [hasNext, setHasNext] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
-  const [loading, setLoading] = useState(true);
 
   /* ---------------- FETCH STATS ---------------- */
 
@@ -80,7 +76,7 @@ export default function ReviewsClient({
 
   /* ---------------- FETCH REVIEWS ---------------- */
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (cursor?: QueryDocumentSnapshot | null) => {
     setLoading(true);
 
     try {
@@ -94,8 +90,8 @@ export default function ReviewsClient({
         constraints.unshift(where('rating', '==', initialRating));
       }
 
-      if (initialPage > 1 && lastDoc) {
-        constraints.push(startAfter(lastDoc));
+      if (cursor) {
+        constraints.push(startAfter(cursor));
       }
 
       const q = query(collection(db, 'reviews'), ...constraints);
@@ -111,8 +107,8 @@ export default function ReviewsClient({
         }))
       );
 
-      setHasNext(docs.length > PER_PAGE);
       setLastDoc(pageItems.at(-1) ?? null);
+      setHasNext(docs.length > PER_PAGE);
     } catch {
       toast.error('Failed to load reviews');
     } finally {
@@ -130,38 +126,27 @@ export default function ReviewsClient({
         id: snap.id,
         ...(snap.data() as Omit<Review, 'id'>),
       });
-    } else {
-      setMyReview(null);
     }
   };
 
+  /* ---------------- EFFECTS ---------------- */
+
   useEffect(() => {
+    // reset pagination when rating changes
+    setLastDoc(null);
     fetchStats();
-    fetchReviews();
+    fetchReviews(null);
     fetchMyReview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialPage, initialRating]);
-
-  /* ---------------- PAGINATION ---------------- */
-
-  const goToPage = (page: number) => {
-    const params = new URLSearchParams();
-    if (initialRating) params.set('rating', String(initialRating));
-    if (page > 1) params.set('page', String(page));
-    router.push(`/ratings${params.toString() ? `?${params}` : ''}`);
-  };
-
-  const pageNumbers = Array.from(
-    { length: PAGE_WINDOW * 2 + 1 },
-    (_, i) => initialPage - PAGE_WINDOW + i
-  ).filter((p) => p > 0);
+  }, [initialRating]);
 
   /* ---------------- UI ---------------- */
 
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
 
-      {stats && initialPage === 1 && (
+      {/* SEO SCHEMA (ONLY FIRST PAGE) */}
+      {stats && (
         <>
           <AggregateRatingSchema
             avg={stats.averageRating}
@@ -208,6 +193,7 @@ export default function ReviewsClient({
                   </p>
                 </div>
 
+                {/* BARS */}
                 <div className="space-y-2 mb-6">
                   {[5,4,3,2,1].map((star) => {
                     const count = stats.starCounts[String(star)] || 0;
@@ -280,36 +266,13 @@ export default function ReviewsClient({
               </div>
 
               {/* PAGINATION */}
-              <div className="flex justify-center items-center gap-2 pt-10 text-sm font-semibold">
-                {initialPage > 1 && (
+              <div className="flex justify-center gap-4 pt-10">
+                {lastDoc && (
                   <button
-                    onClick={() => goToPage(initialPage - 1)}
-                    className="px-3 py-2 rounded-lg border hover:bg-gray-50"
+                    onClick={() => fetchReviews(lastDoc)}
+                    className="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold"
                   >
-                    Previous
-                  </button>
-                )}
-
-                {pageNumbers.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => goToPage(p)}
-                    className={`px-3 py-2 rounded-lg ${
-                      p === initialPage
-                        ? 'bg-blue-600 text-white'
-                        : 'border hover:bg-gray-50'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-
-                {hasNext && (
-                  <button
-                    onClick={() => goToPage(initialPage + 1)}
-                    className="px-3 py-2 rounded-lg border hover:bg-gray-50"
-                  >
-                    Next
+                    Load More
                   </button>
                 )}
               </div>
