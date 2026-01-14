@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   collection,
   getDocs,
@@ -9,23 +9,21 @@ import {
   orderBy,
   query,
   where,
+  startAfter,
   Timestamp,
+  QueryDocumentSnapshot,
   doc,
   getDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
-import toast from 'react-hot-toast';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaFilter } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
 
 import ReviewForm from '@/components/ReviewForm';
 import PublicReviewGate from '@/components/PublicReviewGate';
-
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
-
-/* ---------------- TYPES ---------------- */
 
 interface Review {
   id: string;
@@ -34,129 +32,86 @@ interface Review {
   rating: number;
   comment: string;
   createdAt?: Timestamp | Date | string | number | null;
-  status: 'pending' | 'published';
 }
 
-/* ---------------- COMPONENT ---------------- */
+interface Stats {
+  totalReviews: number;
+  averageRating: number;
+  starCounts: Record<string, number>;
+}
 
-export default function ReviewsClient() {
+interface Props {
+  initialPage: number;
+  initialRating: number | null;
+}
+
+const PER_PAGE = 10;
+
+export default function ReviewsClient({ initialPage, initialRating }: Props) {
   const { user } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const ratingParam = searchParams.get('rating');
-  const initialRating =
-    ratingParam && Number(ratingParam) >= 1 && Number(ratingParam) <= 5
-      ? Number(ratingParam)
-      : null;
 
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
   const [myReview, setMyReview] = useState<Review | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [filterRating, setFilterRating] = useState<number | null>(
-    initialRating
-  );
 
-  /* ---------------- FETCH DATA ---------------- */
+  /* ---------------- FETCH STATS (NO CLIENT MATH) ---------------- */
+
+  const fetchStats = async () => {
+    const snap = await getDoc(doc(db, 'reviewStats', 'global'));
+    if (snap.exists()) setStats(snap.data() as Stats);
+  };
+
+  /* ---------------- FETCH REVIEWS (SERVER PAGINATION) ---------------- */
 
   const fetchReviews = async () => {
-    try {
-      const q = query(
-        collection(db, 'reviews'),
-        where('status', '==', 'published'),
-        orderBy('createdAt', 'desc'),
-        limit(200)
-      );
+    setLoading(true);
 
-      const snap = await getDocs(q);
-      setReviews(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Review, 'id'>),
-        }))
-      );
-    } catch {
-      toast.error('Failed to load reviews');
+    const constraints: any[] = [
+      collection(db, 'reviews'),
+      where('status', '==', 'published'),
+      orderBy('createdAt', 'desc'),
+      limit(PER_PAGE),
+    ];
+
+    if (initialRating) {
+      constraints.splice(1, 0, where('rating', '==', initialRating));
     }
+
+    if (initialPage > 1 && lastDoc) {
+      constraints.push(startAfter(lastDoc));
+    }
+
+    const snap = await getDocs(query(...constraints));
+
+    setReviews(
+      snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))
+    );
+    setLastDoc(snap.docs.at(-1) || null);
+    setLoading(false);
   };
 
   const fetchMyReview = async () => {
-    if (!user) {
-      setMyReview(null);
-      return;
-    }
-
-    try {
-      const snap = await getDoc(doc(db, 'reviews', user.uid));
-      setMyReview(
-        snap.exists()
-          ? ({ id: snap.id, ...snap.data() } as Review)
-          : null
-      );
-    } catch {
-      setMyReview(null);
-    }
+    if (!user) return;
+    const snap = await getDoc(doc(db, 'reviews', user.uid));
+    if (snap.exists()) setMyReview({ id: snap.id, ...(snap.data() as any) });
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    Promise.all([fetchReviews(), fetchMyReview()]).finally(() =>
-      setIsLoading(false)
-    );
-  }, [user]);
+    fetchStats();
+    fetchReviews();
+    fetchMyReview();
+  }, [initialPage, initialRating]);
 
-  /* ---------------- URL FILTER SYNC ---------------- */
+  /* ---------------- NAVIGATION ---------------- */
 
-  const setRatingFilter = (rating: number | null) => {
-    setFilterRating(rating);
-
-    if (!rating) {
-      router.replace('/ratings', { scroll: false });
-    } else {
-      router.replace(`/ratings?rating=${rating}`, { scroll: false });
-    }
-  };
-
-  /* ---------------- STATS ---------------- */
-
-  const stats = useMemo(() => {
-    const total = reviews.length;
-    const avg =
-      total === 0
-        ? 0
-        : Math.round(
-            (reviews.reduce((a, r) => a + r.rating, 0) / total) * 10
-          ) / 10;
-
-    const distribution = [5, 4, 3, 2, 1].map((star) => {
-      const count = reviews.filter((r) => r.rating === star).length;
-      return {
-        star,
-        percent: total ? Math.round((count / total) * 100) : 0,
-      };
-    });
-
-    return { avg, total, distribution };
-  }, [reviews]);
-
-  /* ---------------- FILTER ---------------- */
-
-  const visibleReviews = useMemo(() => {
-    if (!filterRating) return reviews;
-    return reviews.filter((r) => r.rating === filterRating);
-  }, [reviews, filterRating]);
-
-  /* ---------------- DATE FORMAT ---------------- */
-
-  const formatDate = (v: Review['createdAt']) => {
-    try {
-      // @ts-ignore
-      if (v?.toDate) return v.toDate().toLocaleDateString();
-      return new Date(v as any).toLocaleDateString();
-    } catch {
-      return '';
-    }
+  const goToPage = (p: number) => {
+    const params = new URLSearchParams();
+    if (initialRating) params.set('rating', String(initialRating));
+    if (p > 1) params.set('page', String(p));
+    router.push(`/ratings?${params.toString()}`);
   };
 
   /* ---------------- UI ---------------- */
@@ -164,14 +119,14 @@ export default function ReviewsClient() {
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
 
-      {/* ✅ JSON-LD SCHEMA (REAL DATA ONLY) */}
-      {!isLoading && stats.total > 0 && (
+      {/* SCHEMA ONLY ON PAGE 1 */}
+      {stats && initialPage === 1 && (
         <>
           <AggregateRatingSchema
-            avg={stats.avg}
-            total={stats.total}
+            avg={stats.averageRating}
+            total={stats.totalReviews}
           />
-          <ReviewSchema reviews={visibleReviews.slice(0, 10)} />
+          <ReviewSchema reviews={reviews} />
         </>
       )}
 
@@ -192,125 +147,91 @@ export default function ReviewsClient() {
         {/* LEFT – STATS */}
         <aside className="lg:col-span-4">
           <div className="bg-white rounded-3xl border p-8 sticky top-6">
-            <div className="text-center mb-6">
-              <div className="text-6xl font-black">{stats.avg}</div>
-              <div className="flex justify-center gap-1 my-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <FaStar
-                    key={i}
-                    className={
-                      i <= Math.round(stats.avg)
-                        ? 'text-yellow-400'
-                        : 'text-gray-200'
-                    }
-                  />
-                ))}
-              </div>
-              <p className="text-gray-500">
-                Based on {stats.total} reviews
-              </p>
-            </div>
-
-            {/* STAR FILTER BARS */}
-            <div className="space-y-3 mb-6">
-              {stats.distribution.map((d) => (
-                <button
-                  key={d.star}
-                  onClick={() =>
-                    setRatingFilter(
-                      filterRating === d.star ? null : d.star
-                    )
-                  }
-                  className="w-full flex items-center gap-3 text-sm"
-                >
-                  <span className="w-24 flex">
-                    {Array.from({ length: d.star }).map((_, i) => (
-                      <FaStar key={i} className="text-yellow-400" />
-                    ))}
-                  </span>
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-yellow-400"
-                      style={{ width: `${d.percent}%` }}
-                    />
+            {stats && (
+              <>
+                <div className="text-center mb-6">
+                  <div className="text-6xl font-black">
+                    {stats.averageRating}
                   </div>
-                </button>
-              ))}
-            </div>
+                  <div className="flex justify-center gap-1 my-2">
+                    {[1,2,3,4,5].map(i=>(
+                      <FaStar key={i} className={i<=Math.round(stats.averageRating)?'text-yellow-400':'text-gray-200'} />
+                    ))}
+                  </div>
+                  <p className="text-gray-500">
+                    Based on {stats.totalReviews} reviews
+                  </p>
+                </div>
+              </>
+            )}
 
             <PublicReviewGate
               myReview={myReview}
-              onWrite={() => setShowForm(true)}
+              onWrite={() => {}}
             />
           </div>
         </aside>
 
-        {/* RIGHT – REVIEWS */}
+        {/* RIGHT – LIST */}
         <section className="lg:col-span-8 space-y-6">
 
-          {showForm && !myReview && (
-            <ReviewForm
-              onSuccess={() => {
-                setShowForm(false);
-                fetchReviews();
-                fetchMyReview();
-              }}
-              onCancel={() => setShowForm(false)}
-            />
-          )}
-
-          {isLoading ? (
+          {loading ? (
             <div className="flex justify-center py-20">
-              <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full" />
+              <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600" />
             </div>
-          ) : visibleReviews.length ? (
-            <div className="grid gap-6">
-              {visibleReviews.map((r) => (
-                <article
-                  key={r.id}
-                  className="bg-white rounded-3xl border p-6 shadow-sm"
+          ) : reviews.length ? (
+            <>
+              <div className="grid gap-6">
+                {reviews.map((r) => (
+                  <article key={r.id} className="bg-white rounded-3xl border p-6">
+                    <div className="flex justify-between">
+                      <h4 className="font-bold">
+                        {r.userName || 'Verified Customer'}
+                      </h4>
+                      <span className="text-xs text-gray-400">
+                        {new Date(
+                          // @ts-ignore
+                          r.createdAt?.toDate?.() ?? r.createdAt
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex gap-1 my-2">
+                      {[1,2,3,4,5].map(i=>(
+                        <FaStar key={i} size={14} className={i<=r.rating?'text-yellow-400':'text-gray-200'} />
+                      ))}
+                    </div>
+                    <p className="text-gray-700">{r.comment}</p>
+                  </article>
+                ))}
+              </div>
+
+              {/* PAGINATION */}
+              <div className="flex justify-center gap-2 pt-10">
+                {initialPage > 1 && (
+                  <button
+                    onClick={() => goToPage(initialPage - 1)}
+                    className="px-4 py-2 rounded-lg border"
+                  >
+                    ⏮ Prev
+                  </button>
+                )}
+
+                <span className="px-4 py-2 font-semibold">
+                  Page {initialPage}
+                </span>
+
+                <button
+                  onClick={() => goToPage(initialPage + 1)}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white"
                 >
-                  <div className="flex justify-between items-start">
-                    <h4 className="font-bold text-gray-900">
-                      {r.userName || 'Verified Customer'}
-                    </h4>
-                    <span className="text-xs text-gray-400">
-                      {formatDate(r.createdAt)}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-1 my-2">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <FaStar
-                        key={i}
-                        size={14}
-                        className={
-                          i <= r.rating
-                            ? 'text-yellow-400'
-                            : 'text-gray-200'
-                        }
-                      />
-                    ))}
-                  </div>
-
-                  <p className="text-gray-700 leading-relaxed">
-                    {r.comment}
-                  </p>
-                </article>
-              ))}
-            </div>
+                  Next ⏭
+                </button>
+              </div>
+            </>
           ) : (
             <div className="bg-white p-16 rounded-3xl border text-center">
-              <MdMessage
-                size={48}
-                className="mx-auto text-gray-300 mb-4"
-              />
-              <h3 className="font-bold text-xl">
-                No reviews match this filter
-              </h3>
-              <p className="text-gray-500">
-                Try another rating or reset filters.
-              </p>
+              <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
+              <h3 className="font-bold text-xl">No reviews found</h3>
             </div>
           )}
         </section>
