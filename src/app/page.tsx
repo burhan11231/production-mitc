@@ -14,6 +14,10 @@ export const metadata: Metadata = {
     title: 'MITC – Laptop Sales & IT Services in Srinagar',
     description:
       'Buy, upgrade, and repair laptops with confidence at MITC Srinagar. Serving Kashmir since 2013.',
+    url: 'https://mitck.netlify.app/', // ✅ THIS FIXES og:url WARNING
+    siteName: 'MITC – Mateen IT Corp',
+    locale: 'en_IN',
+    type: 'website',
     images: [
       {
         url: 'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
