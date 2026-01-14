@@ -32,6 +32,8 @@ interface Review {
   status: 'pending' | 'published';
 }
 
+type SortMode = 'newest' | 'oldest' | 'rating';
+
 /* ---------------- COMPONENT ---------------- */
 
 export default function RatingsPage() {
@@ -41,7 +43,9 @@ export default function RatingsPage() {
   const [myReview, setMyReview] = useState<Review | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+
   const [filterRating, setFilterRating] = useState<number | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>('newest');
 
   /* ---------------- FETCH REVIEWS ---------------- */
 
@@ -113,10 +117,25 @@ export default function RatingsPage() {
     return { avg, total, distribution };
   }, [reviews]);
 
+  /* ---------------- FILTER + SORT ---------------- */
+
   const visibleReviews = useMemo(() => {
-    if (!filterRating) return reviews;
-    return reviews.filter((r) => r.rating === filterRating);
-  }, [reviews, filterRating]);
+    let list = [...reviews];
+
+    if (filterRating) {
+      list = list.filter((r) => r.rating === filterRating);
+    }
+
+    if (sortMode === 'oldest') {
+      list.reverse();
+    }
+
+    if (sortMode === 'rating') {
+      list.sort((a, b) => b.rating - a.rating);
+    }
+
+    return list;
+  }, [reviews, filterRating, sortMode]);
 
   /* ---------------- DATE FORMAT ---------------- */
 
@@ -152,7 +171,6 @@ export default function RatingsPage() {
           {/* LEFT – STATS */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-2xl border p-8 sticky top-8">
-              {/* Average */}
               <div className="text-center mb-6">
                 <div className="text-6xl font-black">{stats.avg}</div>
                 <div className="flex justify-center gap-1 my-2">
@@ -172,36 +190,6 @@ export default function RatingsPage() {
                 </p>
               </div>
 
-              {/* DISTRIBUTION */}
-              <div className="space-y-2 mb-6">
-                {stats.distribution.map((d) => (
-                  <button
-                    key={d.star}
-                    onClick={() =>
-                      setFilterRating(
-                        filterRating === d.star ? null : d.star
-                      )
-                    }
-                    className={`w-full flex items-center gap-3 text-sm ${
-                      filterRating === d.star
-                        ? 'font-semibold'
-                        : 'text-gray-600'
-                    }`}
-                  >
-                    <span className="w-6">{d.star}★</span>
-                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-yellow-400"
-                        style={{ width: `${d.percent}%` }}
-                      />
-                    </div>
-                    <span className="w-10 text-right">
-                      {d.percent}%
-                    </span>
-                  </button>
-                ))}
-              </div>
-
               <PublicReviewGate
                 myReview={myReview}
                 onWrite={() => setShowForm(true)}
@@ -209,8 +197,49 @@ export default function RatingsPage() {
             </div>
           </div>
 
-          {/* RIGHT – REVIEWS */}
+          {/* RIGHT – FILTER + REVIEWS */}
           <div className="lg:col-span-8 space-y-6">
+
+            {/* FILTER BAR */}
+            <div className="bg-white border rounded-2xl p-5 flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold">Filter:</span>
+                {[5, 4, 3, 2, 1].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() =>
+                      setFilterRating(filterRating === star ? null : star)
+                    }
+                    className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${
+                      filterRating === star
+                        ? 'bg-yellow-400 border-yellow-400 text-black'
+                        : 'bg-white border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {star}★
+                  </button>
+                ))}
+                {filterRating && (
+                  <button
+                    onClick={() => setFilterRating(null)}
+                    className="text-sm text-blue-600 ml-2"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+
+              <select
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value as SortMode)}
+                className="border rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="rating">Highest rating</option>
+              </select>
+            </div>
+
             {showForm && !myReview && (
               <ReviewForm
                 onSuccess={() => {
@@ -268,10 +297,10 @@ export default function RatingsPage() {
                   className="mx-auto text-gray-300 mb-4"
                 />
                 <h3 className="font-bold text-xl">
-                  No reviews for this rating
+                  No reviews match this filter
                 </h3>
                 <p className="text-gray-500">
-                  Try selecting a different rating.
+                  Try a different rating or reset filters.
                 </p>
               </div>
             )}
