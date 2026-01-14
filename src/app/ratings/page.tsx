@@ -7,15 +7,22 @@ export const metadata = {
     'Verified customer reviews for MITC Srinagar. Read real feedback from customers who purchased or serviced laptops at our showroom.',
 };
 
-export default function ReviewsPage({
-  searchParams,
-}: {
-  searchParams: { page?: string; rating?: string };
-}) {
-  const page = Number(searchParams.page) || 1;
+type PageProps = {
+  searchParams?: Promise<{
+    page?: string;
+    rating?: string;
+  }>;
+};
+
+export default async function ReviewsPage({ searchParams }: PageProps) {
+  const params = (await searchParams) || {};
+
+  const page =
+    params.page && Number(params.page) > 0 ? Number(params.page) : 1;
+
   const rating =
-    searchParams.rating && Number(searchParams.rating) >= 1
-      ? Number(searchParams.rating)
+    params.rating && Number(params.rating) >= 1 && Number(params.rating) <= 5
+      ? Number(params.rating)
       : null;
 
   return (
