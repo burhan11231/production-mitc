@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     'Learn about MITC (Mateen IT Corp), a trusted laptop showroom in Srinagar, Kashmir since 2013. Transparent laptop sales, diagnostics, upgrades, and expert guidance.',
   alternates: {
-    canonical: 'https://mitc.netlify.app/about',
+    canonical: 'https://mitck.netlify.app/about',
   },
   openGraph: {
     title: 'About MITC – Mateen IT Corp',
