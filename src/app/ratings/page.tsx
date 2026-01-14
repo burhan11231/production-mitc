@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
 import { FaStar } from 'react-icons/fa';
 import { MdMessage } from 'react-icons/md';
+import { HiChevronDown } from 'react-icons/hi2';
 import ReviewForm from '@/components/ReviewForm';
 import PublicReviewGate from '@/components/PublicReviewGate';
 
@@ -47,7 +48,7 @@ export default function RatingsPage() {
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>('newest');
 
-  /* ---------------- FETCH REVIEWS ---------------- */
+  /* ---------------- FETCH ---------------- */
 
   const fetchReviews = async () => {
     try {
@@ -71,10 +72,7 @@ export default function RatingsPage() {
   };
 
   const fetchMyReview = async () => {
-    if (!user) {
-      setMyReview(null);
-      return;
-    }
+    if (!user) return setMyReview(null);
     try {
       const snap = await getDoc(doc(db, 'reviews', user.uid));
       setMyReview(
@@ -122,22 +120,14 @@ export default function RatingsPage() {
   const visibleReviews = useMemo(() => {
     let list = [...reviews];
 
-    if (filterRating) {
-      list = list.filter((r) => r.rating === filterRating);
-    }
-
-    if (sortMode === 'oldest') {
-      list.reverse();
-    }
-
-    if (sortMode === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
-    }
+    if (filterRating) list = list.filter((r) => r.rating === filterRating);
+    if (sortMode === 'oldest') list.reverse();
+    if (sortMode === 'rating') list.sort((a, b) => b.rating - a.rating);
 
     return list;
   }, [reviews, filterRating, sortMode]);
 
-  /* ---------------- DATE FORMAT ---------------- */
+  /* ---------------- DATE ---------------- */
 
   const formatDate = (v: Review['createdAt']) => {
     try {
@@ -152,7 +142,7 @@ export default function RatingsPage() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20">
+    <div className="min-h-screen bg-gray-50/60 pb-20">
       {/* HEADER */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-16 text-center">
@@ -169,9 +159,9 @@ export default function RatingsPage() {
         <div className="grid lg:grid-cols-12 gap-8">
 
           {/* LEFT – STATS */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-2xl border p-8 sticky top-8">
-              <div className="text-center mb-6">
+          <div className="lg:col-span-4">
+            <div className="bg-white rounded-2xl border p-8 sticky top-8 space-y-6">
+              <div className="text-center">
                 <div className="text-6xl font-black">{stats.avg}</div>
                 <div className="flex justify-center gap-1 my-2">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -190,6 +180,34 @@ export default function RatingsPage() {
                 </p>
               </div>
 
+              {/* DISTRIBUTION BARS */}
+              <div className="space-y-2">
+                {stats.distribution.map((d) => (
+                  <button
+                    key={d.star}
+                    onClick={() =>
+                      setFilterRating(
+                        filterRating === d.star ? null : d.star
+                      )
+                    }
+                    className={`w-full flex items-center gap-3 text-sm ${
+                      filterRating === d.star
+                        ? 'font-semibold text-gray-900'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    <span className="w-8">{d.star}★</span>
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-yellow-400"
+                        style={{ width: `${d.percent}%` }}
+                      />
+                    </div>
+                    <span className="w-10 text-right">{d.percent}%</span>
+                  </button>
+                ))}
+              </div>
+
               <PublicReviewGate
                 myReview={myReview}
                 onWrite={() => setShowForm(true)}
@@ -202,18 +220,18 @@ export default function RatingsPage() {
 
             {/* FILTER BAR */}
             <div className="bg-white border rounded-2xl p-5 flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">Filter:</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold mr-1">Filter:</span>
                 {[5, 4, 3, 2, 1].map((star) => (
                   <button
                     key={star}
                     onClick={() =>
                       setFilterRating(filterRating === star ? null : star)
                     }
-                    className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${
+                    className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition ${
                       filterRating === star
                         ? 'bg-yellow-400 border-yellow-400 text-black'
-                        : 'bg-white border-gray-200 text-gray-600'
+                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {star}★
@@ -229,15 +247,19 @@ export default function RatingsPage() {
                 )}
               </div>
 
-              <select
-                value={sortMode}
-                onChange={(e) => setSortMode(e.target.value as SortMode)}
-                className="border rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="rating">Highest rating</option>
-              </select>
+              {/* SORT */}
+              <div className="relative">
+                <select
+                  value={sortMode}
+                  onChange={(e) => setSortMode(e.target.value as SortMode)}
+                  className="appearance-none border rounded-xl pl-4 pr-10 py-2 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="rating">Highest rating</option>
+                </select>
+                <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             {showForm && !myReview && (
@@ -260,14 +282,14 @@ export default function RatingsPage() {
                 {visibleReviews.map((r) => (
                   <div
                     key={r.id}
-                    className="bg-white p-6 rounded-2xl border shadow-sm"
+                    className="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-lg transition"
                   >
-                    <div className="flex justify-between mb-4">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h4 className="font-bold">
-                          {r.userName || 'User'}
+                        <h4 className="font-bold text-gray-900">
+                          {r.userName || 'Customer'}
                         </h4>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 mt-1">
                           {[1, 2, 3, 4, 5].map((i) => (
                             <FaStar
                               key={i}
@@ -286,7 +308,9 @@ export default function RatingsPage() {
                       </span>
                     </div>
 
-                    <p className="text-gray-600">{r.comment}</p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {r.comment}
+                    </p>
                   </div>
                 ))}
               </div>
