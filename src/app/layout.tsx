@@ -5,17 +5,43 @@ import LayoutShell from '@/components/LayoutShell';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'MITC - Mateen IT Corp | Laptop Sales & Services',
+  title: 'MITC – Trusted Laptop Showroom & IT Services in Srinagar | Mateen IT Corp',
   description:
-    "Kashmir's premier destination for laptop sales, repairs, and technical services since 2013.",
+    "Kashmir's Tech Authority Since 2013. Professional laptop sales, repairs, and IT services in Srinagar.",
+
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://mitck.netlify.app',
-    siteName: 'MITC - Mateen IT Corp',
+    url: 'https://mitck.netlify.app/',
+    siteName: 'MITC Srinagar',
+
+    title: 'MITC – Trusted Laptop Showroom & IT Services in Srinagar | Mateen IT Corp',
+    description:
+      'Professional laptop sales, repairs, and IT services in Srinagar. Visit our Gaw Kadal showroom.',
+
+    images: [
+      {
+        url: 'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'MITC Srinagar Laptop Showroom – Gaw Kadal',
+      },
+    ],
   },
+
   twitter: {
     card: 'summary_large_image',
+    title: 'MITC – Trusted Laptop Showroom & IT Services in Srinagar',
+    description:
+      'Laptop repairs, upgrades & professional IT services in Srinagar since 2013.',
+    images: [
+      'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+    ],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -27,14 +53,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="theme-color" content="#1F2937" />
+        <meta name="theme-color" content="#111827" />
       </head>
       <body>
         <Provider>
           <Header />
-          <LayoutShell>
-            {children}
-          </LayoutShell>
+          <LayoutShell>{children}</LayoutShell>
         </Provider>
       </body>
     </html>
