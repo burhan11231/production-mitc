@@ -1,7 +1,12 @@
-import { Review } from './types'; // or inline type
+interface ReviewSchemaItem {
+  userName?: string;
+  rating: number;
+  comment: string;
+  createdAt?: any;
+}
 
 interface Props {
-  reviews: Review[];
+  reviews: ReviewSchemaItem[];
 }
 
 export default function ReviewSchema({ reviews }: Props) {
@@ -19,10 +24,9 @@ export default function ReviewSchema({ reviews }: Props) {
       },
       datePublished: (() => {
         try {
-          // @ts-ignore
           return r.createdAt?.toDate
             ? r.createdAt.toDate().toISOString().split('T')[0]
-            : new Date(r.createdAt as any).toISOString().split('T')[0];
+            : new Date(r.createdAt).toISOString().split('T')[0];
         } catch {
           return undefined;
         }
@@ -30,9 +34,9 @@ export default function ReviewSchema({ reviews }: Props) {
       reviewBody: r.comment,
       reviewRating: {
         '@type': 'Rating',
-        ratingValue: r.rating.toString(),
-        bestRating: '5',
-        worstRating: '1',
+        ratingValue: r.rating,
+        bestRating: 5,
+        worstRating: 1,
       },
     })),
   };
@@ -40,7 +44,9 @@ export default function ReviewSchema({ reviews }: Props) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(schema),
+      }}
     />
   );
 }
