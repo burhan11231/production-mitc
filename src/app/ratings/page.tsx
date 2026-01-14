@@ -1,13 +1,32 @@
 import { Suspense } from 'react';
 import ReviewsClient from './ReviewsClient';
 
+interface ReviewsPageProps {
+  searchParams?: {
+    page?: string;
+    rating?: string;
+  };
+}
+
 export const metadata = {
   title: 'Customer Reviews | MITC Srinagar',
   description:
     'Verified customer reviews for MITC Srinagar. Read real feedback from customers who purchased or serviced laptops at our showroom.',
 };
 
-export default function ReviewsPage() {
+export default function ReviewsPage({ searchParams }: ReviewsPageProps) {
+  const page =
+    searchParams?.page && Number(searchParams.page) > 0
+      ? Number(searchParams.page)
+      : 1;
+
+  const rating =
+    searchParams?.rating &&
+    Number(searchParams.rating) >= 1 &&
+    Number(searchParams.rating) <= 5
+      ? Number(searchParams.rating)
+      : null;
+
   return (
     <Suspense
       fallback={
@@ -16,7 +35,10 @@ export default function ReviewsPage() {
         </div>
       }
     >
-      <ReviewsClient />
+      <ReviewsClient
+        initialPage={page}
+        initialRating={rating}
+      />
     </Suspense>
   );
 }
