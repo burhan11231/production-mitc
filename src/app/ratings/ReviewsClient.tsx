@@ -17,14 +17,16 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
-import { FaStar, FaFilter } from 'react-icons/fa';
-import { MdMessage } from 'react-icons/md';
 import toast from 'react-hot-toast';
+import { FaStar } from 'react-icons/fa';
+import { MdMessage } from 'react-icons/md';
 
 import ReviewForm from '@/components/ReviewForm';
 import PublicReviewGate from '@/components/PublicReviewGate';
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
+
+/* ---------------- TYPES ---------------- */
 
 interface Review {
   id: string;
@@ -32,10 +34,11 @@ interface Review {
   userName?: string;
   rating: number;
   comment: string;
+  status: 'published' | 'pending';
   createdAt?: Timestamp | Date | string | number | null;
 }
 
-interface Stats {
+interface ReviewStats {
   totalReviews: number;
   averageRating: number;
   starCounts: Record<string, number>;
@@ -46,84 +49,110 @@ interface Props {
   initialRating: number | null;
 }
 
-const PER_PAGE = 10;
+const REVIEWS_PER_PAGE = 10;
 
-export default function ReviewsClient({ initialPage, initialRating }: Props) {
+/* ---------------- COMPONENT ---------------- */
+
+export default function ReviewsClient({
+  initialPage,
+  initialRating,
+}: Props) {
   const { user } = useAuth();
   const router = useRouter();
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot | null>(null);
+  const [stats, setStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  /* ---------------- FETCH STATS (NO CLIENT MATH) ---------------- */
+  /* ---------------- FETCH STATS (PRECOMPUTED) ---------------- */
 
   const fetchStats = async () => {
-    const snap = await getDoc(doc(db, 'reviewStats', 'global'));
-    if (snap.exists()) setStats(snap.data() as Stats);
+    try {
+      const snap = await getDoc(doc(db, 'reviewStats', 'global'));
+      if (snap.exists()) {
+        setStats(snap.data() as ReviewStats);
+      }
+    } catch {
+      /* silent fail – UI still works */
+    }
   };
 
-  /* ---------------- FETCH REVIEWS (SERVER PAGINATION) ---------------- */
+  /* ---------------- FETCH REVIEWS (CURSOR PAGINATION) ---------------- */
 
   const fetchReviews = async () => {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const baseRef = collection(db, 'reviews');
+    try {
+      const baseRef = collection(db, 'reviews');
 
-    const constraints: Parameters<typeof query>[1][] = [
-      where('status', '==', 'published'),
-      orderBy('createdAt', 'desc'),
-      limit(PER_PAGE),
-    ];
+      const constraints = [
+        where('status', '==', 'published'),
+        orderBy('createdAt', 'desc'),
+        limit(REVIEWS_PER_PAGE),
+      ];
 
-    if (initialRating) {
-      constraints.unshift(where('rating', '==', initialRating));
+      if (initialRating) {
+        constraints.unshift(where('rating', '==', initialRating));
+      }
+
+      if (initialPage > 1 && lastDoc) {
+        constraints.push(startAfter(lastDoc));
+      }
+
+      const q = query(baseRef, ...constraints);
+      const snap = await getDocs(q);
+
+      const items: Review[] = snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Review, 'id'>),
+      }));
+
+      setReviews(items);
+      setLastDoc(snap.docs.at(-1) ?? null);
+    } catch {
+      toast.error('Failed to load reviews');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (initialPage > 1 && lastDoc) {
-      constraints.push(startAfter(lastDoc));
-    }
-
-    const q = query(baseRef, ...constraints);
-    const snap = await getDocs(q);
-
-    setReviews(
-  snap.docs.map((d) => ({
-    id: d.id,
-    ...(d.data() as Omit<Review, 'id'>),
-  }))
-);
-
-    setLastDoc(snap.docs.at(-1) ?? null);
-  } catch {
-    toast.error('Failed to load reviews');
-  } finally {
-    setLoading(false);
-  }
-};
+  /* ---------------- FETCH MY REVIEW ---------------- */
 
   const fetchMyReview = async () => {
     if (!user) return;
-    const snap = await getDoc(doc(db, 'reviews', user.uid));
-    if (snap.exists()) setMyReview({ id: snap.id, ...(snap.data() as any) });
+
+    try {
+      const snap = await getDoc(doc(db, 'reviews', user.uid));
+      if (snap.exists()) {
+        setMyReview({
+          id: snap.id,
+          ...(snap.data() as Omit<Review, 'id'>),
+        });
+      } else {
+        setMyReview(null);
+      }
+    } catch {
+      setMyReview(null);
+    }
   };
 
   useEffect(() => {
     fetchStats();
     fetchReviews();
     fetchMyReview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPage, initialRating]);
 
-  /* ---------------- NAVIGATION ---------------- */
+  /* ---------------- PAGINATION ---------------- */
 
-  const goToPage = (p: number) => {
+  const goToPage = (page: number) => {
     const params = new URLSearchParams();
     if (initialRating) params.set('rating', String(initialRating));
-    if (p > 1) params.set('page', String(p));
-    router.push(`/ratings?${params.toString()}`);
+    if (page > 1) params.set('page', String(page));
+    router.push(`/ratings${params.toString() ? `?${params}` : ''}`);
   };
 
   /* ---------------- UI ---------------- */
@@ -131,7 +160,7 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
   return (
     <main className="min-h-screen bg-gray-50/60 pb-24 px-safe">
 
-      {/* SCHEMA ONLY ON PAGE 1 */}
+      {/* SEO SCHEMA – PAGE 1 ONLY */}
       {stats && initialPage === 1 && (
         <>
           <AggregateRatingSchema
@@ -160,21 +189,26 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
         <aside className="lg:col-span-4">
           <div className="bg-white rounded-3xl border p-8 sticky top-6">
             {stats && (
-              <>
-                <div className="text-center mb-6">
-                  <div className="text-6xl font-black">
-                    {stats.averageRating}
-                  </div>
-                  <div className="flex justify-center gap-1 my-2">
-                    {[1,2,3,4,5].map(i=>(
-                      <FaStar key={i} className={i<=Math.round(stats.averageRating)?'text-yellow-400':'text-gray-200'} />
-                    ))}
-                  </div>
-                  <p className="text-gray-500">
-                    {stats.totalReviews} reviews
-                  </p>
+              <div className="text-center mb-6">
+                <div className="text-6xl font-black">
+                  {stats.averageRating}
                 </div>
-              </>
+                <div className="flex justify-center gap-1 my-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <FaStar
+                      key={i}
+                      className={
+                        i <= Math.round(stats.averageRating)
+                          ? 'text-yellow-400'
+                          : 'text-gray-200'
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-500">
+                  {stats.totalReviews} reviews
+                </p>
+              </div>
             )}
 
             <PublicReviewGate
@@ -184,7 +218,7 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
           </div>
         </aside>
 
-        {/* RIGHT – LIST */}
+        {/* RIGHT – REVIEWS */}
         <section className="lg:col-span-8 space-y-6">
 
           {loading ? (
@@ -195,7 +229,10 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
             <>
               <div className="grid gap-6">
                 {reviews.map((r) => (
-                  <article key={r.id} className="bg-white rounded-3xl border p-6">
+                  <article
+                    key={r.id}
+                    className="bg-white rounded-3xl border p-6"
+                  >
                     <div className="flex justify-between">
                       <h4 className="font-bold">
                         {r.userName || 'Verified Customer'}
@@ -207,18 +244,28 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
                         ).toLocaleDateString()}
                       </span>
                     </div>
+
                     <div className="flex gap-1 my-2">
-                      {[1,2,3,4,5].map(i=>(
-                        <FaStar key={i} size={14} className={i<=r.rating?'text-yellow-400':'text-gray-200'} />
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <FaStar
+                          key={i}
+                          size={14}
+                          className={
+                            i <= r.rating
+                              ? 'text-yellow-400'
+                              : 'text-gray-200'
+                          }
+                        />
                       ))}
                     </div>
+
                     <p className="text-gray-700">{r.comment}</p>
                   </article>
                 ))}
               </div>
 
               {/* PAGINATION */}
-              <div className="flex justify-center gap-2 pt-10">
+              <div className="flex justify-center gap-3 pt-10">
                 {initialPage > 1 && (
                   <button
                     onClick={() => goToPage(initialPage - 1)}
@@ -242,8 +289,13 @@ export default function ReviewsClient({ initialPage, initialRating }: Props) {
             </>
           ) : (
             <div className="bg-white p-16 rounded-3xl border text-center">
-              <MdMessage size={48} className="mx-auto text-gray-300 mb-4" />
-              <h3 className="font-bold text-xl">No reviews found</h3>
+              <MdMessage
+                size={48}
+                className="mx-auto text-gray-300 mb-4"
+              />
+              <h3 className="font-bold text-xl">
+                No reviews found
+              </h3>
             </div>
           )}
         </section>
