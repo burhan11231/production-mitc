@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import Link from 'next/link'; // Added for the profile link
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   collection,
@@ -19,12 +19,16 @@ import {
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
-import { FaStar, FaPen } from 'react-icons/fa'; // Added FaPen
+import { FaStar, FaPen } from 'react-icons/fa';
 import { MdMessage, MdClose } from 'react-icons/md';
 
 import PublicReviewGate from '@/components/PublicReviewGate';
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
+
+// 1️⃣ Import the new StarRating component
+// Adjust path if you placed it elsewhere, e.g. '@/components/StarRating'
+import StarRating from '@/components/StarRating'; 
 
 /* ---------------- TYPES ---------------- */
 
@@ -268,15 +272,12 @@ export default function ReviewsClient({
                   <div className="text-5xl md:text-6xl font-black text-gray-900">
                     {stats.averageRating?.toFixed(1) || '0.0'}
                   </div>
-                  <div className="flex justify-center gap-1 my-3 text-yellow-400">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <FaStar
-                        key={i}
-                        className={i <= Math.round(stats.averageRating || 0) ? 'text-yellow-400' : 'text-gray-200'}
-                        size={20}
-                      />
-                    ))}
+                  
+                  {/* 2️⃣ REPLACED: Fractional Star Rendering for Header */}
+                  <div className="flex justify-center my-3">
+                    <StarRating rating={stats.averageRating || 0} size={20} />
                   </div>
+                  
                   <p className="text-gray-400 text-sm font-medium">
                     Based on {stats.totalReviews} reviews
                   </p>
@@ -319,14 +320,10 @@ export default function ReviewsClient({
               </div>
             )}
 
-            {/* 
-               Goal 1 & 2: Hide "Write a Review" if user already has a review. 
-               Only show PublicReviewGate if myReview is NULL.
-            */}
             {!myReview && (
               <PublicReviewGate myReview={null} onWrite={() => {}} />
             )}
-            
+
           </div>
         </aside>
 
@@ -373,11 +370,9 @@ export default function ReviewsClient({
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-bold text-gray-900">
-                              {/* Goal 3: Label duplicate check */}
                               {isMyReview ? 'Your Review' : (r.userName || 'Verified Customer')}
                             </h4>
-                            
-                            {/* Status badge for my review */}
+
                             {isMyReview && r.status === 'pending' && (
                               <span className="text-[10px] uppercase font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
                                 Pending Approval
@@ -393,21 +388,15 @@ export default function ReviewsClient({
                         </span>
                       </div>
 
-                      <div className="flex gap-1 mb-3">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <FaStar
-                            key={i}
-                            size={14}
-                            className={i <= r.rating ? 'text-yellow-400' : 'text-gray-200'}
-                          />
-                        ))}
+                      {/* 3️⃣ REPLACED: Fractional Star Rendering for Review Items */}
+                      <div className="mb-3">
+                         <StarRating rating={r.rating} size={14} />
                       </div>
 
                       <p className="text-gray-600 leading-relaxed text-sm md:text-base whitespace-pre-line">
                         {r.comment}
                       </p>
 
-                      {/* Goal 3: Edit on Profile Link */}
                       {isMyReview && (
                         <div className="mt-4 pt-4 border-t border-blue-100">
                           <Link 
