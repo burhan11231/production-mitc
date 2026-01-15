@@ -390,7 +390,7 @@ export default function ReviewsClient({
 
                       {/* 3️⃣ REPLACED: Fractional Star Rendering for Review Items */}
                       <div className="mb-3">
-                         <StarRating rating={r.rating} size={14} />
+                         <StarRatings rating={r.rating} size={14} />
                       </div>
 
                       <p className="text-gray-600 leading-relaxed text-sm md:text-base whitespace-pre-line">
