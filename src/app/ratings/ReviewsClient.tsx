@@ -275,7 +275,7 @@ export default function ReviewsClient({
                   
                   {/* 2️⃣ REPLACED: Fractional Star Rendering for Header */}
                   <div className="flex justify-center my-3">
-                    <StarRating rating={stats.averageRating || 0} size={20} />
+                    <StarRatings rating={stats.averageRating || 0} size={20} />
                   </div>
                   
                   <p className="text-gray-400 text-sm font-medium">
