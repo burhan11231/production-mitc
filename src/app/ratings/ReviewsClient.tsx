@@ -28,7 +28,7 @@ import ReviewSchema from './ReviewSchema';
 
 // 1️⃣ Import the new StarRating component
 // Adjust path if you placed it elsewhere, e.g. '@/components/StarRating'
-import StarRating from '@/components/StarRating'; 
+import StarRatings from '@/components/StarRatings'; 
 
 /* ---------------- TYPES ---------------- */
 
