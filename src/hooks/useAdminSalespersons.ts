@@ -1,183 +1,139 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  FirestoreError,
-} from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, set as rtdbSet, get } from 'firebase/database';
+
 import { db } from '@/lib/firebase';
-import { Salesperson } from '@/lib/firestore-models';
-import toast from 'react-hot-toast';
-import { useFirestoreIndexError } from './useFirestoreIndexError';
+import { rtdb } from '@/lib/firebase-rtdb';
+import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 
-interface UseAdminSalespersonsReturn {
-  salespersons: Salesperson[];
-  isLoading: boolean;
-  error: FirestoreError | null;
-  indexError: any;
-  addSalesperson: (
-    data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>
-  ) => Promise<void>;
-  updateSalesperson: (
-    id: string,
-    updates: Partial<Omit<Salesperson, 'id' | 'createdAt'>>
-  ) => Promise<void>;
-  deleteSalesperson: (id: string) => Promise<void>;
-  reorderSalespersons: (salespersons: Salesperson[]) => Promise<void>;
+/* ------------------------------------
+   TYPES
+------------------------------------ */
+
+interface UseAdminSettingsReturn {
+  settings: SiteSettings;
+  loading: boolean;
+  updateSettings: (data: Partial<SiteSettings>) => Promise<void>;
+  activeSeason: 'summer' | 'winter';
+  updateActiveSeason: (season: 'summer' | 'winter') => Promise<void>;
 }
 
-/* --------------------------------------------------
-   GLOBAL ERROR THROTTLING (GOOD PRACTICE)
--------------------------------------------------- */
-let globalErrorShown = false;
-let globalErrorTimeout: NodeJS.Timeout;
+/* ------------------------------------
+   MODULE CACHE (ADMIN SCOPE)
+------------------------------------ */
 
-export function useAdminSalespersons(): UseAdminSalespersonsReturn {
-  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<FirestoreError | null>(null);
-  const [indexError, setIndexError] = useState<any>(null);
+let cachedSettings: SiteSettings | null = null;
+let cachedSeason: 'summer' | 'winter' = 'summer';
 
-  const unsubscribeRef = useRef<(() => void) | null>(null);
-  const hasLoadedOnceRef = useRef(false);
+/* ------------------------------------
+   HOOK
+------------------------------------ */
 
-  const { parseIndexError } = useFirestoreIndexError();
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
+export function useAdminSettings(): UseAdminSettingsReturn {
+  const [settings, setSettings] = useState<SiteSettings>(
+    cachedSettings || DEFAULT_SETTINGS
+  );
+  const [activeSeason, setActiveSeason] =
+    useState<'summer' | 'winter'>(cachedSeason);
+  const [loading, setLoading] = useState(!cachedSettings);
 
-  /* --------------------------------------------------
-     REALTIME SUBSCRIPTION (ADMIN ONLY)
-  -------------------------------------------------- */
+  const unsubRef = useRef<(() => void) | null>(null);
+
+  /* ------------------------------------
+     FIRESTORE SETTINGS (REALTIME)
+     Admin always sees latest
+  ------------------------------------ */
+
   useEffect(() => {
-    if (unsubscribeRef.current) return;
+    if (unsubRef.current) return;
 
-    if (!hasLoadedOnceRef.current) setIsLoading(true);
-    setError(null);
+    const refDoc = doc(db, 'siteSettings', 'global');
 
-    const q = query(
-      collection(db, 'salespersons'),
-      orderBy('order', 'asc'),
-      orderBy('createdAt', 'desc')
-    );
+    unsubRef.current = onSnapshot(refDoc, (snap) => {
+      const data = snap.exists()
+        ? ({ ...DEFAULT_SETTINGS, ...snap.data() } as SiteSettings)
+        : DEFAULT_SETTINGS;
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map(
-          (d) => ({ id: d.id, ...d.data() }) as Salesperson
-        );
-
-        setSalespersons(data);
-        setIsLoading(false);
-        setError(null);
-        setIndexError(null);
-        hasLoadedOnceRef.current = true;
-
-        globalErrorShown = false;
-        clearTimeout(globalErrorTimeout);
-      },
-      (err: FirestoreError) => {
-        hasLoadedOnceRef.current = true;
-        setIsLoading(false);
-        setError(err);
-
-        const info = parseIndexError(err, projectId);
-
-const permissionDenied = err.code === 'permission-denied';
-
-if (info.isIndexError || info.isPermissionError || permissionDenied) {
-  setIndexError(err);
-}
-
-if (!globalErrorShown) {
-  toast.error(
-    permissionDenied
-      ? 'Permission denied (Firestore rules).'
-      : info.isIndexError
-      ? 'Composite index required for salespersons.'
-      : 'Failed to load salespersons',
-    { duration: 8000 }
-  );
-
-  globalErrorShown = true;
-  clearTimeout(globalErrorTimeout);
-  globalErrorTimeout = setTimeout(
-    () => (globalErrorShown = false),
-    10000
-  );
-}
-      }
-    );
-
-    unsubscribeRef.current = unsubscribe;
+      cachedSettings = data;
+      setSettings(data);
+      setLoading(false);
+    });
 
     return () => {
-      unsubscribeRef.current?.();
-      unsubscribeRef.current = null;
+      unsubRef.current?.();
+      unsubRef.current = null;
     };
-  }, [parseIndexError, projectId]);
+  }, []);
 
-  /* --------------------------------------------------
-     MUTATIONS
-  -------------------------------------------------- */
+  /* ------------------------------------
+     RTDB ACTIVE SEASON (ONE READ)
+  ------------------------------------ */
 
-  const addSalesperson = useCallback(
-    async (data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>) => {
-      await addDoc(collection(db, 'salespersons'), {
-        ...data,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      toast.success('Salesperson added');
-    },
-    []
-  );
+  useEffect(() => {
+    let mounted = true;
 
-  const updateSalesperson = useCallback(
-    async (id: string, updates: Partial<Omit<Salesperson, 'id' | 'createdAt'>>) => {
-      await updateDoc(doc(db, 'salespersons', id), {
+    get(ref(rtdb, 'settings/activeSeason')).then((snap) => {
+      if (!mounted) return;
+
+      const season =
+        snap.exists() && snap.val() === 'winter' ? 'winter' : 'summer';
+
+      cachedSeason = season;
+      setActiveSeason(season);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /* ------------------------------------
+     UPDATE FIRESTORE SETTINGS (PARTIAL)
+     ✅ FIXED: supports logo-only updates
+  ------------------------------------ */
+
+  const updateSettings = useCallback(
+    async (updates: Partial<SiteSettings>) => {
+      await updateDoc(doc(db, 'siteSettings', 'global'), {
         ...updates,
         updatedAt: serverTimestamp(),
       });
-      toast.success('Salesperson updated');
+
+      cachedSettings = {
+        ...(cachedSettings || DEFAULT_SETTINGS),
+        ...updates,
+      };
+
+      setSettings(cachedSettings);
     },
     []
   );
 
-  const deleteSalesperson = useCallback(async (id: string) => {
-    await deleteDoc(doc(db, 'salespersons', id));
-    toast.success('Salesperson deleted');
-  }, []);
+  /* ------------------------------------
+     UPDATE ACTIVE SEASON (RTDB)
+  ------------------------------------ */
 
-  const reorderSalespersons = useCallback(async (items: Salesperson[]) => {
-  const updates = items
-    .filter((p): p is Salesperson & { id: string } => !!p.id)
-    .map((p, index) =>
-      updateDoc(doc(db, 'salespersons', p.id), {
-        order: index,
-        updatedAt: serverTimestamp(),
-      })
-    );
+  const updateActiveSeason = useCallback(
+    async (season: 'summer' | 'winter') => {
+      await rtdbSet(ref(rtdb, 'settings/activeSeason'), season);
 
-  await Promise.all(updates);
-  toast.success('Salespersons reordered');
-}, []);
+      cachedSeason = season;
+      setActiveSeason(season);
+    },
+    []
+  );
+
+  /* ------------------------------------
+     RETURN
+  ------------------------------------ */
 
   return {
-    salespersons,
-    isLoading,
-    error,
-    indexError,
-    addSalesperson,
-    updateSalesperson,
-    deleteSalesperson,
-    reorderSalespersons,
+    settings,
+    loading,
+    updateSettings,
+    activeSeason,
+    updateActiveSeason,
   };
 }
