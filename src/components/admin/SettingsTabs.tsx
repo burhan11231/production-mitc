@@ -1,5 +1,4 @@
-// src/components/admin/SettingsTabs.tsx - FIXED VERSION
-// Admin Settings UI with all tabs - TypeScript properly typed
+// src/components/admin/SettingsTabs.tsx
 
 'use client';
 
@@ -8,29 +7,25 @@ import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import SalespersonManager from './SalespersonManager';
-import PasswordChangeModal from '@/components/PasswordChangeModal';
 import Image from 'next/image';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
 import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 
-type SettingsTab = 'seo' | 'business' | 'branding' | 'hours' | 'founder' | 'salespersons' | 'password';
-
+// UPDATED: Removed 'seo', 'founder', 'salespersons', 'password'
+type SettingsTab = 'branding' | 'business' | 'hours';
 
 const WEEK_DAYS: Array<
   'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
 > = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-
 export default function SettingsTabs() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const { settings, updateSettings, activeSeason, updateActiveSeason } =
-  useAdminSettings();
+  const { settings, updateSettings, activeSeason, updateActiveSeason } = useAdminSettings();
+  
   const [activeTab, setActiveTab] = useState<SettingsTab>('branding');
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<SiteSettings>(DEFAULT_SETTINGS);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     if (!isLoading && user?.role !== 'admin') {
@@ -57,28 +52,25 @@ export default function SettingsTabs() {
     }
   };
 
+  const handleSeasonToggle = async (season: 'summer' | 'winter') => {
+    if (season === activeSeason) {
+      toast('This season is already active');
+      return;
+    }
 
-const handleSeasonToggle = async (season: 'summer' | 'winter') => {
-  if (season === activeSeason) {
-    toast('This season is already active');
-    return;
-  }
+    const confirmed = window.confirm(
+      `Confirm season change?\n\nThis will immediately update business hours across the app.`
+    );
 
-  const confirmed = window.confirm(
-    `Confirm season change?\n\nThis will immediately update business hours across the app.`
-  );
+    if (!confirmed) return;
 
-  if (!confirmed) return;
-
-  try {
-    await updateActiveSeason(season);
-    toast.success(`Season switched to ${season}`);
-  } catch {
-    toast.error('Failed to update season');
-  }
-};
-
-
+    try {
+      await updateActiveSeason(season);
+      toast.success(`Season switched to ${season}`);
+    } catch {
+      toast.error('Failed to update season');
+    }
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof SiteSettings) => {
     const file = e.target.files?.[0];
@@ -109,12 +101,8 @@ const handleSeasonToggle = async (season: 'summer' | 'winter') => {
       <div className="flex gap-2 mb-8 border-b border-gray-200 overflow-x-auto">
         {[
           { id: 'branding', label: '🎨 Branding' },
-          { id: 'seo', label: '🔍 SEO' },
           { id: 'business', label: '📱 Business' },
           { id: 'hours', label: '⏰ Hours' },
-          { id: 'founder', label: '👤 Founder' },
-          { id: 'salespersons', label: '👥 Team' },
-          { id: 'password', label: '🔐 Password' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -130,12 +118,12 @@ const handleSeasonToggle = async (season: 'summer' | 'winter') => {
         ))}
       </div>
 
-      {/* BRANDING TAB */}
+      {/* BRANDING TAB (Removed Featured Image) */}
       {activeTab === 'branding' && (
         <div className="space-y-8">
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Branding & Logo</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -182,25 +170,6 @@ const handleSeasonToggle = async (season: 'summer' | 'winter') => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Featured Image
-                </label>
-                <div className="flex gap-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, 'featuredImageUrl')}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                  {formData.featuredImageUrl && (
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border">
-                      <Image src={formData.featuredImageUrl} alt="Featured" fill className="object-cover" unoptimized />
-                    </div>
-                  )}
-                </div>
-              </div>
-
               <button
                 onClick={() => handleSave('Branding')}
                 disabled={isSaving}
@@ -213,87 +182,12 @@ const handleSeasonToggle = async (season: 'summer' | 'winter') => {
         </div>
       )}
 
-      {/* SEO TAB */}
-      {activeTab === 'seo' && (
-        <div className="space-y-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">SEO Settings</h2>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Site Title</label>
-                <input
-                  type="text"
-                  value={formData.siteTitle || ''}
-                  onChange={(e) => setFormData({ ...formData, siteTitle: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Meta Description (≤160 chars)
-                </label>
-                <textarea
-                  value={formData.metaDescription || ''}
-                  onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                  rows={3}
-                  maxLength={160}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {(formData.metaDescription || '').length}/160
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">OG Title</label>
-                <input
-                  type="text"
-                  value={formData.ogTitle || ''}
-                  onChange={(e) => setFormData({ ...formData, ogTitle: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">OG Description</label>
-                <textarea
-                  value={formData.ogDescription || ''}
-                  onChange={(e) => setFormData({ ...formData, ogDescription: e.target.value })}
-                  rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">OG Image URL</label>
-                <input
-                  type="url"
-                  value={formData.ogImageUrl || ''}
-                  onChange={(e) => setFormData({ ...formData, ogImageUrl: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <button
-                onClick={() => handleSave('SEO')}
-                disabled={isSaving}
-                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isSaving ? 'Saving...' : 'Save SEO Settings'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* BUSINESS TAB */}
       {activeTab === 'business' && (
         <div className="space-y-8">
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Business Details</h2>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -431,152 +325,152 @@ const handleSeasonToggle = async (season: 'summer' | 'winter') => {
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Working Hours</h2>
 
-<div className="mb-6 flex items-center gap-4">
-  <span className="text-sm font-semibold text-gray-700">
-    Active Season
-  </span>
+            <div className="mb-6 flex items-center gap-4">
+              <span className="text-sm font-semibold text-gray-700">
+                Active Season
+              </span>
 
-  <button
-    onClick={() => handleSeasonToggle('summer')}
-    className={`px-4 py-2 rounded-lg font-semibold ${
-      activeSeason === 'summer'
-        ? 'bg-blue-600 text-white'
-        : 'bg-gray-100 text-gray-700'
-    }`}
-  >
-    Summer
-  </button>
+              <button
+                onClick={() => handleSeasonToggle('summer')}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                  activeSeason === 'summer'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                Summer
+              </button>
 
-  <button
-    onClick={() => handleSeasonToggle('winter')}
-    className={`px-4 py-2 rounded-lg font-semibold ${
-      activeSeason === 'winter'
-        ? 'bg-blue-600 text-white'
-        : 'bg-gray-100 text-gray-700'
-    }`}
-  >
-    Winter
-  </button>
-</div>
-            
+              <button
+                onClick={() => handleSeasonToggle('winter')}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                  activeSeason === 'winter'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                Winter
+              </button>
+            </div>
+
             <div className="space-y-8">
               {/* Summer Hours */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-  <h3 className="font-bold text-blue-900 mb-4">Summer Hours</h3>
+                <h3 className="font-bold text-blue-900 mb-4">Summer Hours</h3>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {WEEK_DAYS.map(day => {
-      const hours = formData.workingHours.summer[day];
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {WEEK_DAYS.map(day => {
+                    const hours = formData.workingHours.summer[day];
 
-      return (
-        <div key={`summer-${day}`}>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {day}
-          </label>
+                    return (
+                      <div key={`summer-${day}`}>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {day}
+                        </label>
 
-          <div className="flex gap-2">
-            <input
-              type="time"
-              value={hours.open}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    summer: {
-                      ...prev.workingHours.summer,
-                      [day]: { ...hours, open: e.target.value },
-                    },
-                  },
-                }))
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            />
+                        <div className="flex gap-2">
+                          <input
+                            type="time"
+                            value={hours.open}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                workingHours: {
+                                  ...prev.workingHours,
+                                  summer: {
+                                    ...prev.workingHours.summer,
+                                    [day]: { ...hours, open: e.target.value },
+                                  },
+                                },
+                              }))
+                            }
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          />
 
-            <span className="pt-2 text-gray-500">to</span>
+                          <span className="pt-2 text-gray-500">to</span>
 
-            <input
-              type="time"
-              value={hours.close}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    summer: {
-                      ...prev.workingHours.summer,
-                      [day]: { ...hours, close: e.target.value },
-                    },
-                  },
-                }))
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            />
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
+                          <input
+                            type="time"
+                            value={hours.close}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                workingHours: {
+                                  ...prev.workingHours,
+                                  summer: {
+                                    ...prev.workingHours.summer,
+                                    [day]: { ...hours, close: e.target.value },
+                                  },
+                                },
+                              }))
+                            }
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Winter Hours */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-  <h3 className="font-bold text-blue-900 mb-4">Winter Hours</h3>
+                <h3 className="font-bold text-blue-900 mb-4">Winter Hours</h3>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {WEEK_DAYS.map(day => {
-      const hours = formData.workingHours.winter[day];
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {WEEK_DAYS.map(day => {
+                    const hours = formData.workingHours.winter[day];
 
-      return (
-        <div key={`winter-${day}`}>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {day}
-          </label>
+                    return (
+                      <div key={`winter-${day}`}>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {day}
+                        </label>
 
-          <div className="flex gap-2">
-            <input
-              type="time"
-              value={hours.open}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    winter: {
-                      ...prev.workingHours.winter,
-                      [day]: { ...hours, open: e.target.value },
-                    },
-                  },
-                }))
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            />
+                        <div className="flex gap-2">
+                          <input
+                            type="time"
+                            value={hours.open}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                workingHours: {
+                                  ...prev.workingHours,
+                                  winter: {
+                                    ...prev.workingHours.winter,
+                                    [day]: { ...hours, open: e.target.value },
+                                  },
+                                },
+                              }))
+                            }
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          />
 
-            <span className="pt-2 text-gray-500">to</span>
+                          <span className="pt-2 text-gray-500">to</span>
 
-            <input
-              type="time"
-              value={hours.close}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    winter: {
-                      ...prev.workingHours.winter,
-                      [day]: { ...hours, close: e.target.value },
-                    },
-                  },
-                }))
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            />
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
+                          <input
+                            type="time"
+                            value={hours.close}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                workingHours: {
+                                  ...prev.workingHours,
+                                  winter: {
+                                    ...prev.workingHours.winter,
+                                    [day]: { ...hours, close: e.target.value },
+                                  },
+                                },
+                              }))
+                            }
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
               <button
                 onClick={() => handleSave('Working Hours')}
@@ -589,93 +483,6 @@ const handleSeasonToggle = async (season: 'summer' | 'winter') => {
           </div>
         </div>
       )}
-
-      {/* FOUNDER TAB */}
-      {activeTab === 'founder' && (
-        <div className="space-y-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Founder Details</h2>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Founder Name</label>
-                <input
-                  type="text"
-                  value={formData.founderName || ''}
-                  onChange={(e) => setFormData({ ...formData, founderName: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Mateen Ahmed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Founder Email</label>
-                <input
-                  type="email"
-                  value={formData.founderEmail || ''}
-                  onChange={(e) => setFormData({ ...formData, founderEmail: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Founder Image</label>
-                <div className="flex gap-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, 'founderImageUrl')}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                  {formData.founderImageUrl && (
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border">
-                      <Image src={formData.founderImageUrl} alt="Founder" fill className="object-cover" unoptimized />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Founder Bio</label>
-                <textarea
-                  value={formData.founderBio || ''}
-                  onChange={(e) => setFormData({ ...formData, founderBio: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                  placeholder="Brief biography..."
-                />
-              </div>
-
-              <button
-                onClick={() => handleSave('Founder Details')}
-                disabled={isSaving}
-                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isSaving ? 'Saving...' : 'Save Founder Details'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SALESPERSONS TAB */}
-      {activeTab === 'salespersons' && <SalespersonManager />}
-
-      {/* PASSWORD TAB */}
-      {activeTab === 'password' && (
-        <div className="bg-white border border-gray-200 rounded-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Change Password</h2>
-          <button
-            onClick={() => setShowPasswordModal(true)}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-          >
-            Update Password
-          </button>
-        </div>
-      )}
-
-      {/* Password Modal */}
-      <PasswordChangeModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
     </div>
   );
 }
