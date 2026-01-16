@@ -90,159 +90,167 @@ export default function ServicesPage() {
 </section>
 
       {/* ================= SERVICE OVERVIEW ================= */}
-      <section className="py-24 lg:py-32 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
+<section className="relative py-28 lg:py-36 bg-white">
+  <div className="max-w-7xl mx-auto px-6">
 
-          <div className="max-w-3xl mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-              What we help you with
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Practical services designed for students, professionals, and businesses.
-            </p>
-          </div>
+    {/* Section header */}
+    <div className="max-w-3xl mb-20">
+      <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">
+        What we actually do
+      </h2>
+      <p className="mt-5 text-lg text-gray-600 leading-relaxed">
+        Practical, in-store services designed around real usage — not upselling.
+      </p>
+    </div>
 
-          <div className="grid lg:grid-cols-4 gap-8">
-            {[
-              {
-                title: 'Laptop Sales',
-                desc: 'Commercial-grade laptops with verified condition and specifications.',
-              },
-              {
-                title: 'Repairs & Diagnostics',
-                desc: 'Honest diagnostics performed transparently, often in front of you.',
-              },
-              {
-                title: 'Upgrades & Performance',
-                desc: 'RAM, SSD, OS, and thermal upgrades to extend device lifespan.',
-              },
-              {
-                title: 'Business IT Support',
-                desc: 'Guidance and maintenance support for offices and professionals.',
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all"
-              >
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
+    {/* Capability grid */}
+    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {[
+        {
+          title: 'Laptop Sales',
+          desc: 'Business-class laptops with verified condition, specs, and upgrade clarity.',
+        },
+        {
+          title: 'Diagnostics & Repair',
+          desc: 'Transparent fault analysis before any repair decision is made.',
+        },
+        {
+          title: 'Upgrades',
+          desc: 'Performance-focused RAM, SSD, OS, and thermal improvements.',
+        },
+        {
+          title: 'IT Support',
+          desc: 'Long-term guidance for professionals and offices.',
+        },
+      ].map((item, i) => (
+        <div
+          key={i}
+          className="relative rounded-2xl border border-gray-200 bg-white p-8 transition-all hover:border-gray-300 hover:shadow-lg"
+        >
+          <div className="h-1 w-12 bg-blue-600 mb-6 rounded-full" />
+
+          <h3 className="text-xl font-bold text-gray-900 mb-3">
+            {item.title}
+          </h3>
+
+          <p className="text-gray-600 leading-relaxed">
+            {item.desc}
+          </p>
         </div>
-      </section>
+      ))}
+    </div>
+
+  </div>
+</section>
 
       {/* ================= LAPTOP SALES ================= */}
-      <section className="py-24 lg:py-32 px-6 bg-sky-50/60">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+<section className="relative py-28 lg:py-36 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-start">
 
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              Laptop sales (in-store)
-            </h2>
+    <div>
+      <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-8">
+        Laptop sales — in store
+      </h2>
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              MITC specializes in commercial-grade laptops suitable for
-              students, professionals, and office environments.
-            </p>
+      <p className="text-lg text-gray-700 leading-relaxed mb-10">
+        We sell laptops the way we’d recommend to ourselves — verified,
+        explainable, and testable before purchase.
+      </p>
 
-            <ul className="space-y-4 text-gray-700">
-              <li>• Refurbished and pre-owned business laptops</li>
-              <li>• Clear specifications and condition disclosure</li>
-              <li>• Upgrade recommendations before purchase</li>
-              <li>• Physical testing before you decide</li>
-            </ul>
+      <ul className="space-y-4 text-gray-700 text-base">
+        <li>• Refurbished & pre-owned business laptops</li>
+        <li>• Condition, battery health, and specs explained clearly</li>
+        <li>• Upgrade advice before you commit</li>
+        <li>• Hands-on testing in-store</li>
+      </ul>
 
-            <p className="mt-6 text-sm text-gray-500">
-              No online checkout. Visit, test, and choose with confidence.
-            </p>
-          </div>
+      <p className="mt-8 text-sm text-gray-500">
+        No online checkout. No pressure. Visit, inspect, and decide.
+      </p>
+    </div>
 
-        </div>
-      </section>
+  </div>
+</section>
 
       {/* ================= REPAIRS & DIAGNOSTICS ================= */}
-      <section className="py-24 lg:py-32 px-6 bg-white">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+<section className="relative py-28 lg:py-36 bg-white">
+  <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-start">
 
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              Repairs & diagnostics
-            </h2>
+    <div>
+      <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-8">
+        Repairs & diagnostics
+      </h2>
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              We believe in diagnosing first, repairing only when it makes sense.
-            </p>
+      <p className="text-lg text-gray-700 leading-relaxed mb-10">
+        We diagnose first. If a repair doesn’t make sense, we say so.
+      </p>
 
-            <ul className="space-y-4 text-gray-700">
-              <li>• Hardware diagnostics</li>
-              <li>• Chip-level repair</li>
-              <li>• Screen and battery replacement</li>
-              <li>• Keyboard, ports, and motherboard fixes</li>
-              <li>• BIOS and firmware issues</li>
-            </ul>
+      <ul className="space-y-4 text-gray-700">
+        <li>• Full hardware diagnostics</li>
+        <li>• Chip-level repair (when viable)</li>
+        <li>• Screen, battery, keyboard replacement</li>
+        <li>• Port, power, and motherboard faults</li>
+        <li>• BIOS & firmware issues</li>
+      </ul>
 
-            <p className="mt-6 text-sm text-gray-500">
-              If repair is not worth it, we tell you upfront.
-            </p>
-          </div>
+      <p className="mt-8 text-sm text-gray-500">
+        No unnecessary work. No vague answers.
+      </p>
+    </div>
 
-        </div>
-      </section>
+  </div>
+</section>
 
       {/* ================= UPGRADES ================= */}
-      <section className="py-24 lg:py-32 px-6 bg-sky-50/60">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+<section className="relative py-28 lg:py-36 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-start">
 
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              Upgrades & performance optimization
-            </h2>
+    <div>
+      <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-8">
+        Upgrades & performance
+      </h2>
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              Often, a smart upgrade delivers better value than replacement.
-            </p>
+      <p className="text-lg text-gray-700 leading-relaxed mb-10">
+        Often, a focused upgrade delivers better results than buying new.
+      </p>
 
-            <ul className="space-y-4 text-gray-700">
-              <li>• RAM upgrades</li>
-              <li>• SSD upgrades</li>
-              <li>• OS installation and optimization</li>
-              <li>• Thermal servicing and cleaning</li>
-            </ul>
-          </div>
+      <ul className="space-y-4 text-gray-700">
+        <li>• RAM expansion</li>
+        <li>• SSD upgrades</li>
+        <li>• OS installation & tuning</li>
+        <li>• Thermal cleaning & servicing</li>
+      </ul>
+    </div>
 
-        </div>
-      </section>
+  </div>
+</section>
 
-      {/* ================= BUSINESS IT ================= */}
-      <section className="py-24 lg:py-32 px-6 bg-white">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
 
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              Business & professional IT support
-            </h2>
+{/* ================= BUSINESS IT ================= */}
+<section className="relative py-28 lg:py-36 bg-white">
+  <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-start">
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              MITC works with offices and professionals who need reliable,
-              long-term IT support.
-            </p>
+    <div>
+      <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-8">
+        Business & professional IT support
+      </h2>
 
-            <ul className="space-y-4 text-gray-700">
-              <li>• Office laptop consultation</li>
-              <li>• Bulk diagnostics and upgrades</li>
-              <li>• Maintenance and support guidance</li>
-              <li>• Requirement-based solutions</li>
-            </ul>
-          </div>
+      <p className="text-lg text-gray-700 leading-relaxed mb-10">
+        We support professionals and offices that need consistency,
+        not one-time fixes.
+      </p>
 
-        </div>
-      </section>
+      <ul className="space-y-4 text-gray-700">
+        <li>• Office laptop consultation</li>
+        <li>• Bulk diagnostics & upgrades</li>
+        <li>• Maintenance planning</li>
+        <li>• Requirement-based solutions</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
 
       {/* ================= CTA ================= */}
       <section className="py-24 lg:py-32 px-6 bg-gray-950 text-white">
