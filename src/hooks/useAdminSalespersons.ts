@@ -89,31 +89,30 @@ export function useAdminSalespersons(): UseAdminSalespersonsReturn {
         setError(err);
 
         const info = parseIndexError(err, projectId);
-        const permissionDenied =
-          err.code === 'permission-denied' ||
-          err.code === 'PERMISSION_DENIED';
 
-        if (info.isIndexError || info.isPermissionError || permissionDenied) {
-          setIndexError(err);
-        }
+const permissionDenied = err.code === 'permission-denied';
 
-        if (!globalErrorShown) {
-          toast.error(
-            info.isPermissionError || permissionDenied
-              ? 'Permission denied (Firestore rules).'
-              : info.isIndexError
-              ? 'Composite index required for salespersons.'
-              : 'Failed to load salespersons',
-            { duration: 8000 }
-          );
+if (info.isIndexError || info.isPermissionError || permissionDenied) {
+  setIndexError(err);
+}
 
-          globalErrorShown = true;
-          clearTimeout(globalErrorTimeout);
-          globalErrorTimeout = setTimeout(
-            () => (globalErrorShown = false),
-            10000
-          );
-        }
+if (!globalErrorShown) {
+  toast.error(
+    permissionDenied
+      ? 'Permission denied (Firestore rules).'
+      : info.isIndexError
+      ? 'Composite index required for salespersons.'
+      : 'Failed to load salespersons',
+    { duration: 8000 }
+  );
+
+  globalErrorShown = true;
+  clearTimeout(globalErrorTimeout);
+  globalErrorTimeout = setTimeout(
+    () => (globalErrorShown = false),
+    10000
+  );
+}
       }
     );
 
