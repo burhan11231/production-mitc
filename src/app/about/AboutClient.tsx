@@ -84,7 +84,7 @@ export default function AboutClient() {
 <section className="relative isolate overflow-hidden text-white">
 
   {/* Background Image */}
-  <div className="absolute inset-0 -z-10 bg-black/70 lg:bg-black/60" />
+  <div className="absolute inset-0 -z-20">
     <Image
       src={HERO_BG_IMAGE}
       alt="MITC laptop showroom background"
@@ -94,10 +94,10 @@ export default function AboutClient() {
     />
   </div>
 
-  {/* Dark overlay for contrast */}
-  <div className="absolute inset-0 -z-10 bg-black/65" />
+  {/* Dark overlay (responsive strength) */}
+  <div className="absolute inset-0 -z-10 bg-black/70 lg:bg-black/60" />
 
-  {/* Accent glow (kept from your design) */}
+  {/* Accent glow */}
   <div className="absolute inset-0 -z-10 bg-[radial-gradient(900px_circle_at_20%_20%,rgba(0,113,227,0.35),transparent_60%)]" />
 
   {/* Content */}
