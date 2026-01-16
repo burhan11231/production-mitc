@@ -69,14 +69,7 @@ export default function TeamManager() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       {/* TEAM MANAGEMENT (PRIMARY) */}
       <section className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8">
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Team Management
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Manage your sales team members shown across the website.
-          </p>
-        </div>
+     
 
         <SalespersonManager />
       </section>
