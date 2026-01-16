@@ -43,12 +43,12 @@ export default function SettingsTabs() {
   const handleSave = async (section: string) => {
     setIsSaving(true);
     try {
-      const cleanSettings = structuredClone(formData);
+      const { logoUrl, ...rest } = formData;
 
-// never overwrite logo unless explicitly set
-if (!cleanSettings.logoUrl) {
-  delete cleanSettings.logoUrl;
-}
+const cleanSettings =
+  logoUrl && logoUrl.trim()
+    ? formData
+    : rest;
 
 await updateSettings(cleanSettings);
       toast.success(`${section} saved successfully!`);
