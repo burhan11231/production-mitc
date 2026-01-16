@@ -20,7 +20,12 @@ let cachedHours:
   | null = null;
 
 let settingsPromise: Promise<SiteSettings> | null = null;
-let hoursPromise: Promise<typeof cachedHours> | null = null;
+type ActiveSeasonState = {
+  activeSeason: 'summer' | 'winter';
+};
+
+let cachedHours: ActiveSeasonState | null = null;
+let hoursPromise: Promise<ActiveSeasonState> | null = null;
 
 /* ------------------------------------
    HOOK
