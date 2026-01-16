@@ -5,7 +5,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { useSalespersons } from '@/hooks/useSalespersons'
-// Removed: useReviewStats hook
 
 import SalespersonModal from '@/components/SalespersonModal'
 
@@ -101,6 +100,24 @@ export default function AboutClient() {
             We help customers understand laptops before buying — through
             real inventory, transparent explanations, and experienced guidance.
           </p>
+
+          {/* MOVED CTA HERE */}
+          <div className="mt-10">
+            <Link
+              href="#team"
+              className="
+                inline-flex items-center justify-center
+                px-8 py-3
+                rounded-full
+                bg-white text-gray-900
+                font-bold
+                hover:bg-blue-50
+                transition
+              "
+            >
+              Meet the Team
+            </Link>
+          </div>
 
         </div>
       </section>
@@ -286,6 +303,17 @@ export default function AboutClient() {
               })}
             </div>
 
+            {/* LINK TO FULL TEAM PAGE */}
+            <div className="mt-12 flex justify-center">
+              <Link
+                href="/team"
+                className="text-lg font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-2 hover:gap-3 transition-all"
+              >
+                Explore all team members
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+
           </div>
         </section>
       )}
@@ -335,24 +363,7 @@ export default function AboutClient() {
         Contact Us
       </Link>
 
-      {/* Meet the Team Button */}
-      <Link
-        href="#team"
-        className="
-          inline-flex items-center justify-center
-          px-10 py-4
-          rounded-full
-          bg-transparent
-          border border-white/30
-          text-white
-          font-bold
-          hover:bg-white/10
-          transition
-          whitespace-nowrap
-        "
-      >
-        Meet the Team
-      </Link>
+      
     </div>
   </div>
 </section>
