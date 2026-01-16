@@ -31,7 +31,7 @@ export default function AboutClient() {
      DATA (CACHED AT HOOK LEVEL)
   ------------------------------------ */
 
-  
+
   const { salespersons } = useSalespersons()
   // Removed: stats / reviewStats
 
@@ -105,13 +105,14 @@ export default function AboutClient() {
         </div>
       </section>
 
-      {/* ================= STORY ================= */}
+      {/* ================= STORY (UPDATED SECTION) ================= */}
       <section className="py-28 lg:py-36 px-6 bg-white">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-start">
 
-          {/* LEFT: HEADING + IMAGE */}
+          {/* LEFT: IMAGE (Heading visible here only on Mobile) */}
           <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-10">
+            {/* MOBILE ONLY HEADING */}
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-10 lg:hidden">
               Built in Srinagar. Trusted across Kashmir.
             </h2>
 
@@ -126,8 +127,13 @@ export default function AboutClient() {
             </div>
           </div>
 
-          {/* RIGHT: DETAILS TEXT */}
-          <div className="lg:pt-16">
+          {/* RIGHT: HEADING (Desktop Only) + DETAILS TEXT */}
+          <div>
+             {/* DESKTOP ONLY HEADING */}
+            <h2 className="hidden lg:block text-3xl lg:text-4xl font-bold text-gray-900 mb-10">
+              Built in Srinagar. Trusted across Kashmir.
+            </h2>
+
             <p className="text-lg text-gray-700 leading-relaxed mb-6">
               MITC started in Maisuma, Srinagar, with one principle:
               customers deserve clarity before spending their money.
