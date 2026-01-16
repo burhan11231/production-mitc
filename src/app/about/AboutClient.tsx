@@ -15,6 +15,9 @@ import { Salesperson } from '@/lib/firestore-models'
 const FALLBACK_IMAGE =
   'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg'
 
+const HERO_BG_IMAGE =
+  'https://res.cloudinary.com/dlesei0kn/image/upload/AQMnry9yB4_29R_DPax5V1H2ceUilGvhceaQmiQctsDphQW7m3QahYtL79BgRsuXVsdthOQUvBi9_00UpP4O32Si_ptttc1.jpg'
+
 /* ------------------------------------
    COMPONENT
 ------------------------------------ */
@@ -78,24 +81,41 @@ export default function AboutClient() {
     <main className="bg-white overflow-x-hidden">
 
       {/* ================= HERO ================= */}
-      <section className="relative isolate overflow-hidden bg-gray-950 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_20%,rgba(0,113,227,0.35),transparent_60%)]" />
+<section className="relative isolate overflow-hidden text-white">
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-32 lg:py-40">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-            A laptop showroom built on trust
-            <span className="block mt-4 text-white/60 text-2xl lg:text-3xl font-medium">
-              Serving Kashmir with clarity and expertise since 2013
-            </span>
-          </h1>
+  {/* Background Image */}
+  <div className="absolute inset-0 -z-10 bg-black/70 lg:bg-black/60" />
+    <Image
+      src={HERO_BG_IMAGE}
+      alt="MITC laptop showroom background"
+      fill
+      priority
+      className="object-cover object-center"
+    />
+  </div>
 
-          <p className="mt-10 text-lg text-white/75 max-w-3xl leading-relaxed">
-            MITC (Mateen IT Corp) is a physical laptop showroom in Srinagar.
-            We help customers understand laptops before buying — through
-            real inventory, transparent explanations, and experienced guidance.
-          </p>
-        </div>
-      </section>
+  {/* Dark overlay for contrast */}
+  <div className="absolute inset-0 -z-10 bg-black/65" />
+
+  {/* Accent glow (kept from your design) */}
+  <div className="absolute inset-0 -z-10 bg-[radial-gradient(900px_circle_at_20%_20%,rgba(0,113,227,0.35),transparent_60%)]" />
+
+  {/* Content */}
+  <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-32 lg:py-40">
+    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+      A laptop showroom built on trust
+      <span className="block mt-4 text-white/70 text-2xl lg:text-3xl font-medium">
+        Serving Kashmir with clarity and expertise since 2013
+      </span>
+    </h1>
+
+    <p className="mt-10 text-lg text-white/80 max-w-3xl leading-relaxed">
+      MITC (Mateen IT Corp) is a physical laptop showroom in Srinagar.
+      We help customers understand laptops before buying — through
+      real inventory, transparent explanations, and experienced guidance.
+    </p>
+  </div>
+</section>
 
       {/* ================= STORY ================= */}
       <section className="py-28 lg:py-36 px-6 bg-white">
