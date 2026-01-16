@@ -81,12 +81,22 @@ export function useAdminSettings(): UseAdminSettingsReturn {
      UPDATE FIRESTORE SETTINGS
   ------------------------------------ */
 
-  const updateSettings = useCallback(async (data: SiteSettings) => {
+  const updateSettings = useCallback(
+  async (data: Partial<SiteSettings>) => {
     await updateDoc(doc(db, 'siteSettings', 'global'), {
       ...data,
       updatedAt: serverTimestamp(),
     });
-  }, []);
+
+    cachedSettings = {
+      ...(cachedSettings || DEFAULT_SETTINGS),
+      ...data,
+    };
+
+    setSettings(cachedSettings);
+  },
+  []
+);
 
   /* ------------------------------------
      UPDATE ACTIVE SEASON (RTDB)
