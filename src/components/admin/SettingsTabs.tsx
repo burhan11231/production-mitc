@@ -43,7 +43,14 @@ export default function SettingsTabs() {
   const handleSave = async (section: string) => {
     setIsSaving(true);
     try {
-      await updateSettings(formData);
+      const cleanSettings = structuredClone(formData);
+
+// never overwrite logo unless explicitly set
+if (!cleanSettings.logoUrl) {
+  delete cleanSettings.logoUrl;
+}
+
+await updateSettings(cleanSettings);
       toast.success(`${section} saved successfully!`);
     } catch (error) {
       toast.error('Failed to save settings');
