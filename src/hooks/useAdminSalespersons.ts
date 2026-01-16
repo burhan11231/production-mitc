@@ -157,16 +157,18 @@ if (!globalErrorShown) {
   }, []);
 
   const reorderSalespersons = useCallback(async (items: Salesperson[]) => {
-    await Promise.all(
-      items.map((p, index) =>
-        updateDoc(doc(db, 'salespersons', p.id), {
-          order: index,
-          updatedAt: serverTimestamp(),
-        })
-      )
+  const updates = items
+    .filter((p): p is Salesperson & { id: string } => !!p.id)
+    .map((p, index) =>
+      updateDoc(doc(db, 'salespersons', p.id), {
+        order: index,
+        updatedAt: serverTimestamp(),
+      })
     );
-    toast.success('Salespersons reordered');
-  }, []);
+
+  await Promise.all(updates);
+  toast.success('Salespersons reordered');
+}, []);
 
   return {
     salespersons,
