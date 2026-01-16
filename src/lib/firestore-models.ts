@@ -31,9 +31,10 @@ export interface SiteSettings {
 
   // Working Hours
   workingHours: {
-    summer: Record<string, { open: string; close: string; closed?: boolean }>
-    winter: Record<string, { open: string; close: string; closed?: boolean }>
-  }
+  summer: Record<string, { open: string; close: string; closed?: boolean }>
+  winter: Record<string, { open: string; close: string; closed?: boolean }>
+  activeSeason?: 'summer' | 'winter'
+}
 
   // Founder Details
   founderName: string
