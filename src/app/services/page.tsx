@@ -28,25 +28,39 @@ export default function ServicesPage() {
     <main className="overflow-x-hidden bg-white">
 
       {/* ================= HERO ================= */}
-      <section className="relative bg-gray-950 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_20%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
+<section className="relative overflow-hidden bg-gray-950 text-white">
+  {/* BACKGROUND IMAGE */}
+  <div
+    className="absolute inset-0 bg-center bg-cover bg-no-repeat"
+    style={{
+      backgroundImage:
+        "url('https://res.cloudinary.com/dlesei0kn/image/upload/v1768541023/file_00000000fa887209b3d7cd4ca3059587_dxbu8m.png')",
+    }}
+  />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-28 lg:py-36">
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold tracking-widest uppercase">
-            Services in Srinagar
-          </span>
+  {/* DARK OVERLAY (READABILITY) */}
+  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
 
-          <h1 className="mt-8 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-            Laptop sales, repairs & IT services
-          </h1>
+  {/* ACCENT GLOW */}
+  <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_15%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
 
-          <p className="mt-8 text-lg text-white/70 max-w-3xl leading-relaxed">
-            MITC provides transparent laptop sales, professional diagnostics,
-            upgrades, and IT services from our physical showroom in Srinagar.
-            No blind purchases. No unnecessary repairs.
-          </p>
-        </div>
-      </section>
+  {/* CONTENT */}
+  <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-28 lg:py-36">
+    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold tracking-widest uppercase">
+      Services in Srinagar
+    </span>
+
+    <h1 className="mt-8 max-w-4xl text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+      Laptop sales, repairs & IT services
+    </h1>
+
+    <p className="mt-8 max-w-3xl text-lg text-white/75 leading-relaxed">
+      MITC provides transparent laptop sales, professional diagnostics,
+      upgrades, and IT services from our physical showroom in Srinagar.
+      No blind purchases. No unnecessary repairs.
+    </p>
+  </div>
+</section>
 
       {/* ================= SERVICE OVERVIEW ================= */}
       <section className="py-24 lg:py-32 px-6 bg-white">
