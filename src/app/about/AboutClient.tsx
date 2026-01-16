@@ -124,14 +124,14 @@ export default function AboutClient() {
           </div>
 
           <div className="relative h-[460px] rounded-3xl overflow-hidden shadow-2xl">
-            <Image
-              src={heroImage}
-              alt="MITC laptop showroom in Srinagar"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+  <Image
+    src="https://res.cloudinary.com/dlesei0kn/image/upload/file_000000002c007206b899c1acafc49775_usxp0l.png"
+    alt="Stylized Srinagar illustration with circuit-board river and streets"
+    fill
+    className="object-cover"
+    priority
+  />
+</div>
 
         </div>
       </section>
