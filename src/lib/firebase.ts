@@ -1,11 +1,9 @@
-// src/lib/firebase.ts
-import { initializeApp, getApps, getApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import {
   initializeFirestore,
   persistentLocalCache,
-} from 'firebase/firestore'
-import { getDatabase } from 'firebase/database'
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -14,20 +12,17 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-}
+};
 
 // Prevent re-initialization (hot reload / build)
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // ✅ Auth
-export const auth = getAuth(app)
+export const auth = getAuth(app);
 
 // ✅ Firestore (persistent cache)
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache(),
-})
+});
 
-// ✅ Realtime Database (REQUIRED)
-export const rtdb = getDatabase(app)
-
-export default app
+export default app;
