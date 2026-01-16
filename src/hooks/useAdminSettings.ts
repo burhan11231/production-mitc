@@ -11,7 +11,7 @@ import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 interface UseAdminSettingsReturn {
   settings: SiteSettings;
   loading: boolean;
-  updateSettings: (data: SiteSettings) => Promise<void>;
+  updateSettings: (data: Partial<SiteSettings>) => Promise<void>;
   activeSeason: 'summer' | 'winter';
   updateActiveSeason: (season: 'summer' | 'winter') => Promise<void>;
 }
