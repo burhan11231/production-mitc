@@ -285,35 +285,71 @@ export default function AboutClient() {
       )}
 
       {/* ================= CTA ================= */}
-      <section className="py-28 lg:py-36 px-6 bg-gray-950 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Visit MITC. Ask questions. Decide with confidence.
-          </h2>
+<section className="py-28 lg:py-36 bg-gray-950 text-white">
+  <div
+    className="
+      max-w-4xl mx-auto
+      px-6
+      [padding-left:calc(1.5rem+env(safe-area-inset-left))]
+      [padding-right:calc(1.5rem+env(safe-area-inset-right))]
+      text-left
+    "
+  >
+    <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+      Visit MITC. Ask questions. Decide with confidence.
+    </h2>
 
-          <p className="text-lg text-white/70 mb-10">
-            Explore laptops or visit our Srinagar showroom — no pressure.
-          </p>
+    <p className="text-lg text-white/70 mb-10 max-w-2xl">
+      Explore laptops or visit our Srinagar showroom — no pressure.
+    </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            {/* 1. Contact Button */}
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-white text-gray-900 font-bold hover:bg-gray-100 transition min-w-[200px]"
-            >
-              Contact Us
-            </Link>
+    <div
+      className="
+        flex flex-nowrap
+        gap-4
+        items-center
+        justify-start
+        overflow-x-auto
+      "
+    >
+      {/* Contact Button */}
+      <Link
+        href="/contact"
+        className="
+          inline-flex items-center justify-center
+          px-10 py-4
+          rounded-full
+          bg-white text-gray-900
+          font-bold
+          hover:bg-gray-100
+          transition
+          whitespace-nowrap
+        "
+      >
+        Contact Us
+      </Link>
 
-            {/* 2. Meet the Team Button (Scrolls to Team section) */}
-            <Link
-              href="#team"
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-transparent border border-white/30 text-white font-bold hover:bg-white/10 transition min-w-[200px]"
-            >
-              Meet the Team
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Meet the Team Button */}
+      <Link
+        href="#team"
+        className="
+          inline-flex items-center justify-center
+          px-10 py-4
+          rounded-full
+          bg-transparent
+          border border-white/30
+          text-white
+          font-bold
+          hover:bg-white/10
+          transition
+          whitespace-nowrap
+        "
+      >
+        Meet the Team
+      </Link>
+    </div>
+  </div>
+</section>
 
       {/* ================= MODAL ================= */}
       <SalespersonModal
