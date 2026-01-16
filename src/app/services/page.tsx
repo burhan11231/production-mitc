@@ -28,68 +28,67 @@ export default function ServicesPage() {
     <main className="overflow-x-hidden bg-white">
 
       {/* ================= HERO ================= */}
-<section className="relative isolate overflow-hidden bg-gray-950 text-white">
+      <section className="relative isolate overflow-hidden bg-gray-950 text-white">
 
-  {/* BACKGROUND IMAGE (RIGHT-FOCUSED) */}
-  <div
-    className="absolute inset-0 bg-right bg-cover bg-no-repeat"
-    style={{
-      backgroundImage:
-        "url('https://res.cloudinary.com/dlesei0kn/image/upload/file_00000000fa887209b3d7cd4ca3059587_dxbu8m.png')",
-    }}
-  />
+        {/* Preload hint for LCP */}
+        <link
+          rel="preload"
+          as="image"
+          href="https://res.cloudinary.com/dlesei0kn/image/upload/file_00000000fa887209b3d7cd4ca3059587_dxbu8m.png"
+        />
 
-  {/* LEFT DEPTH MASK */}
-  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
+        {/* Background image */}
+        <div
+          className="absolute inset-0 bg-right bg-cover bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://res.cloudinary.com/dlesei0kn/image/upload/file_00000000fa887209b3d7cd4ca3059587_dxbu8m.png')",
+          }}
+        />
 
-  {/* TOP / BOTTOM FADE */}
-  <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
+        <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:96px_96px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_18%_35%,rgba(0,113,227,0.35),transparent_65%)]" />
 
-  {/* STRUCTURE GRID (VERY SUBTLE) */}
-  <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:96px_96px]" />
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-36 lg:py-44">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
+              Laptop sales,<br />
+              repairs & IT services
+            </h1>
 
-  {/* ACCENT GLOW */}
-  <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_18%_35%,rgba(0,113,227,0.35),transparent_65%)]" />
+            <p className="mt-8 text-lg text-white/75 leading-relaxed max-w-2xl">
+              Transparent laptop sales, professional diagnostics, upgrades,
+              and long-term IT support — delivered from our physical showroom
+              in Srinagar. We explain first. You decide.
+            </p>
 
-  {/* CONTENT */}
-  <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-36 lg:py-44">
-    <div className="max-w-3xl">
+            <div className="mt-12 flex flex-col sm:flex-row gap-4">
+              <a
+                href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Get directions to MITC Srinagar"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-white text-gray-900 font-bold hover:bg-gray-100 transition shadow-lg"
+              >
+                Get directions →
+              </a>
 
-      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
-        Laptop sales,<br />
-        repairs & IT services
-      </h1>
+              <Link
+                href="/team"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-full border border-white/30 text-white font-bold hover:bg-white/10 transition"
+              >
+                Meet our team
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <p className="mt-8 text-lg text-white/75 leading-relaxed max-w-2xl">
-        Transparent laptop sales, professional diagnostics, upgrades,
-        and long-term IT support — delivered from our physical showroom
-        in Srinagar. We explain first. You decide.
-      </p>
-
-      {/* CTA */}
-      <div className="mt-12 flex flex-col sm:flex-row gap-4">
-        <a
-          href="https://maps.app.goo.gl/bH7r6o1jJvU5TLzL7"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-white text-gray-900 font-bold hover:bg-gray-100 transition shadow-lg"
-        >
-          Get directions →
-        </a>
-
-        <a
-          href="/team"
-          className="inline-flex items-center justify-center px-8 py-4 rounded-full border border-white/30 text-white font-bold hover:bg-white/10 transition"
-        >
-          Meet our team
-        </a>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-      {/* ================= SERVICE OVERVIEW ================= */}
+            {/* ================= SERVICE OVERVIEW ================= */}
 <section className="relative py-28 lg:py-36 bg-white">
   <div className="max-w-7xl mx-auto px-6">
 
@@ -251,11 +250,9 @@ export default function ServicesPage() {
   </div>
 </section>
 
-
       {/* ================= CTA ================= */}
       <section className="py-24 lg:py-32 px-6 bg-gray-950 text-white">
         <div className="max-w-4xl mx-auto text-center">
-
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">
             Need help with a laptop?
           </h2>
@@ -279,7 +276,6 @@ export default function ServicesPage() {
               Learn about MITC
             </Link>
           </div>
-
         </div>
       </section>
 
