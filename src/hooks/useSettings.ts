@@ -1,52 +1,41 @@
-// src/hooks/useSettings.ts
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
+import { useEffect, useState } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { Settings } from '@/lib/firestore-models'
+
+/* ------------------------------------
+   MODULE CACHE (SHARED ACROSS APP)
+------------------------------------ */
+let cachedSettings: Settings | null = null
+let settingsPromise: Promise<Settings | null> | null = null
 
 export function useSettings() {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(cachedSettings)
+  const [loading, setLoading] = useState(!cachedSettings)
 
   useEffect(() => {
-    const ref = doc(db, 'siteSettings', 'global');
+    // ✅ Already cached → no Firestore read
+    if (cachedSettings) {
+      setSettings(cachedSettings)
+      setLoading(false)
+      return
+    }
 
-    const unsubscribe = onSnapshot(
-      ref,
-      (snap) => {
-        if (snap.exists()) {
-          setSettings(snap.data() as SiteSettings);
-        } else {
-          setSettings(DEFAULT_SETTINGS);
-        }
-        setIsLoading(false);
-      },
-      (err) => {
-        console.error('Error fetching settings:', err);
-        setError('Failed to load settings');
-        setSettings(DEFAULT_SETTINGS);
-        setIsLoading(false);
-      }
-    );
+    // ✅ Fetch already in progress → reuse promise
+    if (!settingsPromise) {
+      settingsPromise = (async () => {
+        const snap = await getDoc(doc(db, 'siteSettings', 'global'))
+        cachedSettings = snap.exists() ? (snap.data() as Settings) : null
+        return cachedSettings
+      })()
+    }
 
-    return () => unsubscribe();
-  }, []);
+    settingsPromise
+      .then(data => setSettings(data))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const updateSettings = async (updates: Partial<SiteSettings>) => {
-    const ref = doc(db, 'siteSettings', 'global');
-
-    await setDoc(
-      ref,
-      {
-        ...updates,
-        updatedAt: new Date(),
-      },
-      { merge: true } // 🔑 THIS is the fix
-    );
-  };
-
-  return { settings, isLoading, error, updateSettings };
+  return { settings, loading }
 }
