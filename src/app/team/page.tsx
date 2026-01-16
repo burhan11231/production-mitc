@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSalespersons } from '@/hooks/useSalespersons'
-import FirestoreErrorDialog from '@/components/FirestoreErrorDialog'
 import SalespersonModal from '@/components/SalespersonModal'
 import { Salesperson } from '@/lib/firestore-models'
 
@@ -22,11 +21,10 @@ function toWaLink(phone: string) {
 }
 
 export default function TeamPage() {
-  const { salespersons, isLoading, indexError } = useSalespersons()
+  const { salespersons, isLoading } = useSalespersons()
 
   const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  const [showErrorDialog, setShowErrorDialog] = useState(false)
 
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
@@ -36,9 +34,7 @@ export default function TeamPage() {
 
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
 
-  useEffect(() => {
-    if (indexError) setShowErrorDialog(true)
-  }, [indexError])
+  
 
   const roles = useMemo(() => {
     const set = new Set<string>()
@@ -349,12 +345,7 @@ export default function TeamPage() {
         onClose={() => setModalOpen(false)}
       />
 
-      <FirestoreErrorDialog
-        error={indexError}
-        projectId={projectId}
-        isOpen={showErrorDialog}
-        onDismiss={() => setShowErrorDialog(false)}
-      />
+      
     </main>
   )
 }
