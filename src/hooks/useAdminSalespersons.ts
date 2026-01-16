@@ -86,29 +86,44 @@ export function useAdminSalespersons(): UseAdminSalespersonsReturn {
     };
   }, [parseIndexError, projectId]);
 
-  const addSalesperson = useCallback(async (data) => {
+  const addSalesperson = useCallback(
+  async (
+    data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>
+  ) => {
     await addDoc(collection(db, 'salespersons'), {
       ...data,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
     toast.success('Salesperson added');
-  }, []);
+  },
+  []
+);
 
-  const updateSalesperson = useCallback(async (id, updates) => {
+const updateSalesperson = useCallback(
+  async (
+    id: string,
+    updates: Partial<Omit<Salesperson, 'id' | 'createdAt'>>
+  ) => {
     await updateDoc(doc(db, 'salespersons', id), {
       ...updates,
       updatedAt: serverTimestamp(),
     });
     toast.success('Salesperson updated');
-  }, []);
+  },
+  []
+);
 
-  const deleteSalesperson = useCallback(async (id) => {
+const deleteSalesperson = useCallback(
+  async (id: string) => {
     await deleteDoc(doc(db, 'salespersons', id));
     toast.success('Salesperson deleted');
-  }, []);
+  },
+  []
+);
 
-  const reorderSalespersons = useCallback(async (items) => {
+const reorderSalespersons = useCallback(
+  async (items: Salesperson[]) => {
     await Promise.all(
       items.map((p, index) =>
         updateDoc(doc(db, 'salespersons', p.id!), {
@@ -117,7 +132,9 @@ export function useAdminSalespersons(): UseAdminSalespersonsReturn {
         })
       )
     );
-  }, []);
+  },
+  []
+);
 
   return {
     salespersons,
