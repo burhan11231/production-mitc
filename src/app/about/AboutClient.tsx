@@ -7,6 +7,8 @@ import { useSettings } from '@/hooks/useSettings'
 import { useSalespersons } from '@/hooks/useSalespersons'
 import SalespersonModal from '@/components/SalespersonModal'
 import { Salesperson } from '@/lib/firestore-models'
+import { useReviewStats } from '@/hooks/useReviewStats'
+import StarRating from '@/components/StarRating'
 
 /* ------------------------------------
    CONSTANTS
@@ -72,7 +74,12 @@ export default function AboutClient() {
         .slice(0, 4),
     [salespersons]
   )
+const reviewStatsHook = useReviewStats();
 
+const reviewStats = useMemo(
+  () => reviewStatsHook.stats,
+  [reviewStatsHook.stats]
+)
   /* ------------------------------------
      RENDER
   ------------------------------------ */
@@ -94,7 +101,7 @@ export default function AboutClient() {
     />
   </div>
 
-  {/* Dark overlay (responsive strength) */}
+  {/* Dark overlay */}
   <div className="absolute inset-0 -z-10 bg-black/70 lg:bg-black/60" />
 
   {/* Accent glow */}
@@ -102,6 +109,24 @@ export default function AboutClient() {
 
   {/* Content */}
   <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-32 lg:py-40">
+
+    {/* RATING BADGE */}
+    {reviewStats && (
+      <Link
+        href="/ratings"
+        className="inline-flex items-center gap-3 mb-10
+                   px-5 py-2.5 rounded-full
+                   bg-white/10 backdrop-blur
+                   border border-white/20
+                   hover:bg-white/15 transition"
+      >
+        <StarRating rating={reviewStats.averageRating} size={16} />
+        <span className="text-sm font-semibold text-white">
+          {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews})
+        </span>
+      </Link>
+    )}
+
     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
       A laptop showroom built on trust
       <span className="block mt-4 text-white/70 text-2xl lg:text-3xl font-medium">
@@ -114,20 +139,6 @@ export default function AboutClient() {
       We help customers understand laptops before buying — through
       real inventory, transparent explanations, and experienced guidance.
     </p>
-
-    
-    <div className="mt-12">
-  <Link
-    href="/contact"
-    className="inline-flex items-center justify-center px-8 py-4 rounded-full
-               bg-white text-gray-900 font-bold
-               hover:bg-gray-100 transition
-               shadow-lg"
-  >
-    Contact
-  </Link>
-</div>
-
 
   </div>
 </section>
