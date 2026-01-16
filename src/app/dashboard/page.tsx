@@ -13,7 +13,6 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
-import TeamManager from '@/components/admin/TeamManager';
 
 interface Stats {
   unreadLeads: number;
@@ -163,17 +162,14 @@ export default function DashboardPage() {
             />
 
             <NavCard
-              title="Team & Founder"
-              description="Manage founder profile and team members"
-              href="#team"
-            />
+  title="Team & Founder"
+  description="Manage founder profile and team members"
+  href="/dashboard/team"
+/>
           </div>
         </section>
 
-        {/* TEAM MANAGER */}
-        <section id="team">
-          <TeamManager />
-        </section>
+        
       </main>
     </div>
   );
