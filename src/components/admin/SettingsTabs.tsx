@@ -19,7 +19,8 @@ type SettingsTab = 'seo' | 'business' | 'branding' | 'hours' | 'founder' | 'sale
 export default function SettingsTabs() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const { settings, updateSettings } = useAdminSettings();
+  const { settings, updateSettings, activeSeason, updateActiveSeason } =
+  useAdminSettings();
   const [activeTab, setActiveTab] = useState<SettingsTab>('branding');
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<SiteSettings>(DEFAULT_SETTINGS);
@@ -400,6 +401,34 @@ export default function SettingsTabs() {
         <div className="space-y-8">
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Working Hours</h2>
+
+<div className="mb-6 flex items-center gap-4">
+  <span className="text-sm font-semibold text-gray-700">
+    Active Season
+  </span>
+
+  <button
+    onClick={() => updateActiveSeason('summer')}
+    className={`px-4 py-2 rounded-lg font-semibold ${
+      activeSeason === 'summer'
+        ? 'bg-blue-600 text-white'
+        : 'bg-gray-100 text-gray-700'
+    }`}
+  >
+    Summer
+  </button>
+
+  <button
+    onClick={() => updateActiveSeason('winter')}
+    className={`px-4 py-2 rounded-lg font-semibold ${
+      activeSeason === 'winter'
+        ? 'bg-blue-600 text-white'
+        : 'bg-gray-100 text-gray-700'
+    }`}
+  >
+    Winter
+  </button>
+</div>
             
             <div className="space-y-8">
               {/* Summer Hours */}
