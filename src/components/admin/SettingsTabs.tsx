@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSettings } from '@/hooks/useSettings';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -19,7 +19,7 @@ type SettingsTab = 'seo' | 'business' | 'branding' | 'hours' | 'founder' | 'sale
 export default function SettingsTabs() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings } = useAdminSettings();
   const [activeTab, setActiveTab] = useState<SettingsTab>('branding');
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<SiteSettings>(DEFAULT_SETTINGS);
