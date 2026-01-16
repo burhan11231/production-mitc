@@ -93,14 +93,16 @@ export function useSettings() {
         if (!mounted) return;
 
         const merged: SiteSettings & {
-          workingHours: {
-            activeSeason: 'summer' | 'winter';
-            days: Record<string, any>;
-          };
-        } = {
-          ...base,
-          workingHours: hours,
-        };
+  workingHours: SiteSettings['workingHours'] & {
+    activeSeason: 'summer' | 'winter';
+  };
+} = {
+  ...base,
+  workingHours: {
+    ...base.workingHours,
+    activeSeason: hours.activeSeason,
+  },
+};
 
         cachedSettings = merged;
         setSettings(merged);
