@@ -10,11 +10,9 @@ import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 /* ------------------------------------
    MODULE CACHE (APP-WIDE)
 ------------------------------------ */
-let cachedSettings: SiteSettings | null = null;
 let cachedHours:
   | {
       activeSeason: 'summer' | 'winter';
-      days: Record<string, { open: string; close: string; closed?: boolean }>;
     }
   | null = null;
 
@@ -72,9 +70,9 @@ export function useSettings() {
           data.activeSeason === 'winter' ? 'winter' : 'summer';
 
         return {
-          activeSeason,
-          days: data.workingHours?.[activeSeason] || {},
-        };
+          return {
+  activeSeason,
+};
       })();
     }
 
