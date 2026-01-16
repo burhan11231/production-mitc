@@ -114,6 +114,21 @@ export default function AboutClient() {
       We help customers understand laptops before buying — through
       real inventory, transparent explanations, and experienced guidance.
     </p>
+
+    
+    <div className="mt-12">
+  <Link
+    href="/contact"
+    className="inline-flex items-center justify-center px-8 py-4 rounded-full
+               bg-white text-gray-900 font-bold
+               hover:bg-gray-100 transition
+               shadow-lg"
+  >
+    Contact MITC
+  </Link>
+</div>
+
+
   </div>
 </section>
 
