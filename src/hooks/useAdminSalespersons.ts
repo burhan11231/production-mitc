@@ -1,139 +1,132 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, set as rtdbSet, get } from 'firebase/database';
-
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+  FirestoreError,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { rtdb } from '@/lib/firebase-rtdb';
-import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
+import { Salesperson } from '@/lib/firestore-models';
+import toast from 'react-hot-toast';
+import { useFirestoreIndexError } from './useFirestoreIndexError';
 
-/* ------------------------------------
-   TYPES
------------------------------------- */
-
-interface UseAdminSettingsReturn {
-  settings: SiteSettings;
-  loading: boolean;
-  updateSettings: (data: Partial<SiteSettings>) => Promise<void>;
-  activeSeason: 'summer' | 'winter';
-  updateActiveSeason: (season: 'summer' | 'winter') => Promise<void>;
+interface UseAdminSalespersonsReturn {
+  salespersons: Salesperson[];
+  isLoading: boolean;
+  error: FirestoreError | null;
+  indexError: any;
+  addSalesperson: (
+    data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<void>;
+  updateSalesperson: (
+    id: string,
+    updates: Partial<Omit<Salesperson, 'id' | 'createdAt'>>
+  ) => Promise<void>;
+  deleteSalesperson: (id: string) => Promise<void>;
+  reorderSalespersons: (items: Salesperson[]) => Promise<void>;
 }
 
-/* ------------------------------------
-   MODULE CACHE (ADMIN SCOPE)
------------------------------------- */
-
-let cachedSettings: SiteSettings | null = null;
-let cachedSeason: 'summer' | 'winter' = 'summer';
-
-/* ------------------------------------
-   HOOK
------------------------------------- */
-
-export function useAdminSettings(): UseAdminSettingsReturn {
-  const [settings, setSettings] = useState<SiteSettings>(
-    cachedSettings || DEFAULT_SETTINGS
-  );
-  const [activeSeason, setActiveSeason] =
-    useState<'summer' | 'winter'>(cachedSeason);
-  const [loading, setLoading] = useState(!cachedSettings);
+export function useAdminSalespersons(): UseAdminSalespersonsReturn {
+  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<FirestoreError | null>(null);
+  const [indexError, setIndexError] = useState<any>(null);
 
   const unsubRef = useRef<(() => void) | null>(null);
+  const loadedOnceRef = useRef(false);
 
-  /* ------------------------------------
-     FIRESTORE SETTINGS (REALTIME)
-     Admin always sees latest
-  ------------------------------------ */
+  const { parseIndexError } = useFirestoreIndexError();
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
 
   useEffect(() => {
     if (unsubRef.current) return;
 
-    const refDoc = doc(db, 'siteSettings', 'global');
+    const q = query(
+      collection(db, 'salespersons'),
+      orderBy('order', 'asc'),
+      orderBy('createdAt', 'desc')
+    );
 
-    unsubRef.current = onSnapshot(refDoc, (snap) => {
-      const data = snap.exists()
-        ? ({ ...DEFAULT_SETTINGS, ...snap.data() } as SiteSettings)
-        : DEFAULT_SETTINGS;
-
-      cachedSettings = data;
-      setSettings(data);
-      setLoading(false);
-    });
+    unsubRef.current = onSnapshot(
+      q,
+      snap => {
+        const data = snap.docs.map(
+          d => ({ id: d.id, ...d.data() }) as Salesperson
+        );
+        setSalespersons(data);
+        setIsLoading(false);
+        setError(null);
+        setIndexError(null);
+        loadedOnceRef.current = true;
+      },
+      (err: FirestoreError) => {
+        setIsLoading(false);
+        setError(err);
+        const info = parseIndexError(err, projectId);
+        if (info.isIndexError || err.code === 'permission-denied') {
+          setIndexError(err);
+        }
+        if (!loadedOnceRef.current) {
+          toast.error('Failed to load salespersons');
+        }
+      }
+    );
 
     return () => {
       unsubRef.current?.();
       unsubRef.current = null;
     };
-  }, []);
+  }, [parseIndexError, projectId]);
 
-  /* ------------------------------------
-     RTDB ACTIVE SEASON (ONE READ)
-  ------------------------------------ */
-
-  useEffect(() => {
-    let mounted = true;
-
-    get(ref(rtdb, 'settings/activeSeason')).then((snap) => {
-      if (!mounted) return;
-
-      const season =
-        snap.exists() && snap.val() === 'winter' ? 'winter' : 'summer';
-
-      cachedSeason = season;
-      setActiveSeason(season);
+  const addSalesperson = useCallback(async (data) => {
+    await addDoc(collection(db, 'salespersons'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
-
-    return () => {
-      mounted = false;
-    };
+    toast.success('Salesperson added');
   }, []);
 
-  /* ------------------------------------
-     UPDATE FIRESTORE SETTINGS (PARTIAL)
-     ✅ FIXED: supports logo-only updates
-  ------------------------------------ */
+  const updateSalesperson = useCallback(async (id, updates) => {
+    await updateDoc(doc(db, 'salespersons', id), {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+    toast.success('Salesperson updated');
+  }, []);
 
-  const updateSettings = useCallback(
-    async (updates: Partial<SiteSettings>) => {
-      await updateDoc(doc(db, 'siteSettings', 'global'), {
-        ...updates,
-        updatedAt: serverTimestamp(),
-      });
+  const deleteSalesperson = useCallback(async (id) => {
+    await deleteDoc(doc(db, 'salespersons', id));
+    toast.success('Salesperson deleted');
+  }, []);
 
-      cachedSettings = {
-        ...(cachedSettings || DEFAULT_SETTINGS),
-        ...updates,
-      };
-
-      setSettings(cachedSettings);
-    },
-    []
-  );
-
-  /* ------------------------------------
-     UPDATE ACTIVE SEASON (RTDB)
-  ------------------------------------ */
-
-  const updateActiveSeason = useCallback(
-    async (season: 'summer' | 'winter') => {
-      await rtdbSet(ref(rtdb, 'settings/activeSeason'), season);
-
-      cachedSeason = season;
-      setActiveSeason(season);
-    },
-    []
-  );
-
-  /* ------------------------------------
-     RETURN
-  ------------------------------------ */
+  const reorderSalespersons = useCallback(async (items) => {
+    await Promise.all(
+      items.map((p, index) =>
+        updateDoc(doc(db, 'salespersons', p.id!), {
+          order: index,
+          updatedAt: serverTimestamp(),
+        })
+      )
+    );
+  }, []);
 
   return {
-    settings,
-    loading,
-    updateSettings,
-    activeSeason,
-    updateActiveSeason,
+    salespersons,
+    isLoading,
+    error,
+    indexError,
+    addSalesperson,
+    updateSalesperson,
+    deleteSalesperson,
+    reorderSalespersons,
   };
 }
