@@ -183,57 +183,93 @@ export default function AboutClient() {
       </section>
 
       {/* ================= TEAM ================= */}
-      {visibleTeam.length > 0 && (
-        <section className="py-28 lg:py-36 px-6 bg-white">
-          <div className="max-w-7xl mx-auto">
+{visibleTeam.length > 0 && (
+  <section className="py-28 lg:py-36 px-6 bg-white">
+    <div className="max-w-7xl mx-auto">
 
-            <div className="max-w-3xl mb-20">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-                The people behind MITC
-              </h2>
-              <p className="mt-5 text-lg text-gray-600">
-                Professionals who work directly with customers every day.
-              </p>
-            </div>
+      {/* SECTION HEADER */}
+      <div className="max-w-3xl mb-20">
+        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+          The people behind MITC
+        </h2>
+        <p className="mt-5 text-lg text-gray-600">
+          Professionals who work directly with customers every day.
+        </p>
+      </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
-              {visibleTeam.map(person => {
-                const avatar = person.imageUrl || FALLBACK_IMAGE
+      {/* TEAM GRID */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {visibleTeam.map(person => {
+          const hasImage = !!person.imageUrl
 
-                return (
-                  <button
-                    key={person.id}
-                    onClick={() => setSelected(person)}
-                    className="group text-left"
-                  >
-                    <div className="relative h-72 rounded-2xl overflow-hidden shadow-lg mb-6">
-                      <Image
-                        src={avatar}
-                        alt={`${person.name} – MITC specialist`}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+          const initials = person.name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
+
+          const bioWords = person.bio?.split(' ') || []
+          const shortBio =
+            bioWords.length > 15
+              ? bioWords.slice(0, 15).join(' ') + '…'
+              : person.bio
+
+          return (
+            <div
+              key={person.id}
+              className="group rounded-2xl border border-gray-200 bg-white p-6 hover:shadow-xl transition"
+            >
+              {/* TOP ROW */}
+              <div className="flex items-center gap-4 mb-4">
+                {/* AVATAR */}
+                <div className="relative h-14 w-14 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                  {hasImage ? (
+                    <Image
+                      src={person.imageUrl}
+                      alt={person.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center bg-blue-600 text-white font-bold">
+                      {initials}
                     </div>
+                  )}
+                </div>
 
-                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">
-                      {person.name}
-                    </h3>
+                {/* NAME + ROLE */}
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 leading-tight truncate">
+                    {person.name}
+                  </p>
+                  <p className="text-sm font-semibold text-blue-600 truncate">
+                    {person.role}
+                  </p>
+                </div>
+              </div>
 
-                    <p className="text-sm font-semibold text-gray-600">
-                      {person.role}
-                    </p>
+              {/* BIO */}
+              <p className="text-sm text-gray-600 leading-relaxed mb-4 text-left">
+                {shortBio}
+              </p>
 
-                    <p className="text-xs text-gray-500 mt-2">
-                      Sales • diagnostics • customer guidance
-                    </p>
-                  </button>
-                )
-              })}
+              {/* ACTION */}
+              <button
+                onClick={() => setSelected(person)}
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              >
+                Learn more
+                <span aria-hidden>→</span>
+              </button>
             </div>
+          )
+        })}
+      </div>
 
-          </div>
-        </section>
-      )}
+    </div>
+  </section>
+)}
 
       {/* ================= CTA ================= */}
       <section className="py-28 lg:py-36 px-6 bg-gray-950 text-white">
