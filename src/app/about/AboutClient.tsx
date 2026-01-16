@@ -70,6 +70,7 @@ export default function AboutClient() {
             alt="MITC laptop showroom background"
             fill
             priority
+            /* Updated: ensure object-center is set for correct positioning */
             className="object-cover object-center"
           />
         </div>
@@ -124,7 +125,8 @@ export default function AboutClient() {
 
       {/* ================= STORY (UPDATED SECTION) ================= */}
       <section className="py-28 lg:py-36 px-6 bg-white">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-start">
+        {/* Updated: Added lg:items-center to vertically align text on PC */}
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-start lg:items-center">
 
           {/* LEFT: IMAGE (Heading visible here only on Mobile) */}
           <div>
@@ -363,7 +365,7 @@ export default function AboutClient() {
         Contact Us
       </Link>
 
-      
+
     </div>
   </div>
 </section>
