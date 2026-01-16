@@ -1,5 +1,3 @@
-// src/components/admin/TeamManager.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,102 +11,138 @@ import SalespersonManager from './SalespersonManager';
 export default function TeamManager() {
   const { settings, updateSettings } = useAdminSettings();
   const [isSaving, setIsSaving] = useState(false);
-  // Initialize with empty object to prevent null access, will populate via useEffect
   const [formData, setFormData] = useState<Partial<SiteSettings>>({});
 
-  // Sync global settings to local form state
   useEffect(() => {
     if (settings) {
       setFormData(settings);
     }
   }, [settings]);
 
-  // Handle saving specific sections (Founder data)
-  const handleSave = async () => {
+  const handleSaveFounder = async () => {
     if (!settings) return;
-    
+
     setIsSaving(true);
     try {
-      // Merge current form data with existing settings
       await updateSettings({ ...settings, ...formData } as SiteSettings);
-      toast.success('Founder details saved successfully!');
-    } catch (error) {
-      toast.error('Failed to save settings');
+      toast.success('Founder details updated');
+    } catch {
+      toast.error('Failed to save founder details');
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Handle Image Upload Logic
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof SiteSettings) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: keyof SiteSettings
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      toast.error(validation.error || 'Invalid image file');
+      toast.error(validation.error || 'Invalid image');
       return;
     }
 
     try {
-      toast.loading('Compressing image...');
+      toast.loading('Optimizing image...');
       const compressed = await compressImage(file, 700);
-      setFormData((prev) => ({ ...prev, [field]: compressed }));
+      setFormData(prev => ({ ...prev, [field]: compressed }));
       toast.dismiss();
-      toast.success('Image ready!');
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to compress image');
+      toast.success('Image uploaded');
+    } catch {
+      toast.error('Image upload failed');
     }
   };
 
-  if (!settings) return <div className="p-8 text-center text-gray-500">Loading settings...</div>;
+  if (!settings) {
+    return (
+      <div className="min-h-[40vh] flex items-center justify-center text-gray-500">
+        Loading team settings…
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      
-      {/* SECTION 1: FOUNDER DETAILS */}
-      <div className="bg-white border border-gray-200 rounded-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Founder Details</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      {/* TEAM MANAGEMENT (PRIMARY) */}
+      <section className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8">
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Team Management
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Manage your sales team members shown across the website.
+          </p>
+        </div>
 
-        <div className="space-y-6">
+        <SalespersonManager />
+      </section>
+
+      {/* FOUNDER MANAGEMENT (SECONDARY) */}
+      <section className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8">
+        <div className="mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+            Founder Information
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Public-facing founder details shown on the website.
+          </p>
+        </div>
+
+        <div className="space-y-6 max-w-3xl">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Founder Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Founder Name
+            </label>
             <input
               type="text"
               value={formData.founderName || ''}
-              onChange={(e) => setFormData({ ...formData, founderName: e.target.value })}
+              onChange={e =>
+                setFormData({ ...formData, founderName: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Mateen Ahmed"
+              placeholder="Full name"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Founder Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Founder Email
+            </label>
             <input
               type="email"
               value={formData.founderEmail || ''}
-              onChange={(e) => setFormData({ ...formData, founderEmail: e.target.value })}
+              onChange={e =>
+                setFormData({ ...formData, founderEmail: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Founder Image</label>
-            <div className="flex gap-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Founder Image
+            </label>
+
+            <div className="flex items-center gap-4">
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => handleImageUpload(e, 'founderImageUrl')}
+                onChange={e => handleImageUpload(e, 'founderImageUrl')}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
               />
+
               {formData.founderImageUrl && (
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border">
-                  <Image 
-                    src={formData.founderImageUrl} 
-                    alt="Founder" 
-                    fill 
-                    className="object-cover" 
-                    unoptimized 
+                <div className="relative w-16 h-16 rounded-xl overflow-hidden border">
+                  <Image
+                    src={formData.founderImageUrl}
+                    alt="Founder"
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
                 </div>
               )}
@@ -116,37 +150,31 @@ export default function TeamManager() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Founder Bio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Founder Bio
+            </label>
             <textarea
               value={formData.founderBio || ''}
-              onChange={(e) => setFormData({ ...formData, founderBio: e.target.value })}
+              onChange={e =>
+                setFormData({ ...formData, founderBio: e.target.value })
+              }
               rows={4}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-              placeholder="Brief biography..."
+              placeholder="Short professional biography"
             />
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
-          >
-            {isSaving ? 'Saving...' : 'Save Founder Details'}
-          </button>
+          <div className="pt-4">
+            <button
+              onClick={handleSaveFounder}
+              disabled={isSaving}
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isSaving ? 'Saving…' : 'Save Founder Details'}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* SECTION 2: TEAM / SALESPERSONS MANAGER */}
-      {/* We wrap SalespersonManager in the same style container if SalespersonManager doesn't already have one, 
-          or we just render it directly if it has its own container. 
-          Based on your provided code, SalespersonManager is usually self-contained. 
-          If you want a unified look, we can wrap it: */}
-      
-      <div className="bg-white border border-gray-200 rounded-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Team Members</h2>
-        <SalespersonManager />
-      </div>
-
+      </section>
     </div>
   );
 }
