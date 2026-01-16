@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useSalespersons } from '@/hooks/useSalespersons'
+import { useAdminSalespersons } from '@/hooks/useAdminSalespersons'
 import { Salesperson } from '@/lib/firestore-models'
 import { compressImage, validateImageFile } from '@/lib/image-utils'
 import toast from 'react-hot-toast'
@@ -36,13 +36,13 @@ interface ConfirmDialogState {
 
 export default function AdminTeamManager() {
   const {
-    salespersons: activeSalespersons,
-    isLoading,
-    indexError,
-    addSalesperson,
-    updateSalesperson,
-    deleteSalesperson,
-  } = useSalespersons()
+  salespersons: activeSalespersons,
+  isLoading,
+  indexError,
+  addSalesperson,
+  updateSalesperson,
+  deleteSalesperson,
+} = useAdminSalespersons()
 
   // ALL salespersons (both active and inactive) - need separate hook or query
   const [allSalespersons, setAllSalespersons] = useState<Salesperson[]>([])
