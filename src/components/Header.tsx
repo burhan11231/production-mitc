@@ -17,6 +17,10 @@ const navItems = [
   { href: '/ratings', label: 'Ratings' },  
   { href: '/contact', label: 'Contact' },    
 ]  
+
+
+const FALLBACK_LOGO =
+  'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg'
   
 const IconPhone = () => (  
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">  
@@ -79,27 +83,25 @@ export default function Header() {
             </svg>  
           </button>  
   
-          <Link href="/" className="flex items-center gap-2 lg:gap-3 group">  
-            {settings?.logoUrl && (  
-              <Image  
-                src={settings.logoUrl}  
-                alt={settings.businessName || 'Logo'}  
-                width={40}  
-                height={40}  
-                className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"  
-                unoptimized  
-              />  
-            )}  
-            <div className="leading-tight">  
-              <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">    
-                {settings?.businessName || 'MITC'}    
-              </div>    
-              <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500">    
-                {settings?.tagline || 'Mateen IT Corp'}    
-              </div>    
-  
-            </div>  
-          </Link>  
+          <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
+  <Image
+    src={settings?.logoUrl || FALLBACK_LOGO}
+    alt={settings?.businessName || 'MITC'}
+    width={40}
+    height={40}
+    className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
+    unoptimized
+  />
+
+  <div className="leading-tight">
+    <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
+      {settings?.businessName || 'MITC'}
+    </div>
+    <div className="text-[8px] lg:text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500">
+      {settings?.tagline || 'Mateen IT Corp'}
+    </div>
+  </div>
+</Link>  
         </div>  
   
         {/* CENTER */}  
