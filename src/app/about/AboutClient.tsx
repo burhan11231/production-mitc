@@ -124,7 +124,7 @@ export default function AboutClient() {
                hover:bg-gray-100 transition
                shadow-lg"
   >
-    Contact MITC
+    Contact
   </Link>
 </div>
 
