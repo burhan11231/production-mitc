@@ -29,6 +29,8 @@ const DAYS_ORDER = [
 export default function ContactPage() {
   const { user } = useAuth();
   const { settings } = useSettings();
+const activeSeason = settings?.workingHours?.activeSeason;
+const hours = settings?.workingHours?.[activeSeason ?? 'summer'];
 
   /* ---------------- FORM STATE ---------------- */
 
@@ -62,27 +64,28 @@ export default function ContactPage() {
   /* ---------------- MONTHLY LIMIT ---------------- */
 
   useEffect(() => {
-    if (!user) {
-      setMessagesUsed(null);
-      return;
-    }
+  if (!user) return;
 
-    const loadUsage = async () => {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  let mounted = true;
 
-      const q = query(
-        collection(db, 'leads'),
-        where('userId', '==', user.uid),
-        where('createdAt', '>=', monthStart)
-      );
+  (async () => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const snap = await getCountFromServer(q);
-      setMessagesUsed(snap.data().count);
-    };
+    const q = query(
+      collection(db, 'leads'),
+      where('userId', '==', user.uid),
+      where('createdAt', '>=', monthStart)
+    );
 
-    loadUsage();
-  }, [user]);
+    const snap = await getCountFromServer(q);
+    if (mounted) setMessagesUsed(snap.data().count);
+  })();
+
+  return () => {
+    mounted = false;
+  };
+}, [user?.uid]);
 
   /* ---------------- FORM HANDLERS ---------------- */
 
@@ -105,6 +108,17 @@ export default function ContactPage() {
       toast.error('Message is required');
       return;
     }
+
+if (!settings) {
+  toast.error('Settings not loaded. Please try again.');
+  return;
+}
+
+
+if (!user) {
+  toast.error('Please sign in to send a message');
+  return;
+}
 
     setIsLoading(true);
 
@@ -131,7 +145,8 @@ export default function ContactPage() {
 
   /* ---------------- BUSINESS HOURS ---------------- */
 
-  const [season, setSeason] = useState<'summer' | 'winter'>('summer');
+  
+
 
   const todayName = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -212,11 +227,16 @@ export default function ContactPage() {
               </div>
 
               <button
-                disabled={isLoading || messagesLeft === 0}
-                className="submit-btn h-12"
-              >
+  disabled={!user || isLoading || messagesLeft === 0}
+  className="submit-btn h-12"
+>
                 {isLoading ? 'Sending…' : 'Send Message ↗'}
               </button>
+{messagesLeft === 0 && (
+  <p className="text-xs text-red-600 mt-2">
+    Monthly inquiry limit reached
+  </p>
+)}
             </form>
           </div>
         </div>
@@ -233,60 +253,48 @@ export default function ContactPage() {
               <h3 className="text-xl font-bold">Business Hours</h3>
 
               <div className="flex gap-2">
-                {(['summer', 'winter'] as const).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setSeason(s)}
-                    className={`px-4 py-1 rounded-full text-xs font-bold ${
-                      season === s
-                        ? 'bg-black text-white'
-                        : 'bg-white border'
-                    }`}
-                  >
-                    {s.toUpperCase()}
-                  </button>
-                ))}
+                
               </div>
             </div>
 
             <div className="space-y-2">
-              {DAYS_ORDER.map(day => {
-                const h = settings?.workingHours?.[season]?.[day];
-                const isToday = day === todayName;
+  {DAYS_ORDER.map(day => {
+    const h = hours?.[day];
+    const isToday = day === todayName;
 
-                return (
-                  <div
-                    key={day}
-                    className={`flex justify-between px-4 py-2 rounded-xl border ${
-                      isToday
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'bg-white border-gray-200'
-                    }`}
-                  >
-                    <span className="font-semibold">{day}</span>
-                    {h?.closed ? (
-                      <span className="text-red-500 text-sm font-bold">
-                        Closed
-                      </span>
-                    ) : (
-                      <span className="text-gray-600 text-sm">
-                        {h?.open} – {h?.close}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+    return (
+      <div
+        key={day}
+        className={`flex justify-between px-4 py-2 rounded-xl border ${
+          isToday
+            ? 'bg-blue-50 border-blue-200'
+            : 'bg-white border-gray-200'
+        }`}
+      >
+        <span className="font-semibold">{day}</span>
+
+        {h?.closed ? (
+          <span className="text-red-500 text-sm font-bold">Closed</span>
+        ) : (
+          <span className="text-gray-600 text-sm">
+            {h?.open} – {h?.close}
+          </span>
+        )}
+      </div>
+    );
+  })}
+</div>
           </div>
 
           {/* MAP (STABLE) */}
-          {settings?.mapEmbedUrl && (
-            <div
-              className="rounded-3xl overflow-hidden border min-h-[450px]"
-              dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
-            />
-          )}
-        </div>
+          {settings?.mapEmbedUrl?.startsWith('<iframe') && (
+  <div
+    className="rounded-3xl overflow-hidden border min-h-[450px]"
+    dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
+  />
+)}
+
+</div>
       </section>
 
 
