@@ -16,6 +16,12 @@ import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
 
 type SettingsTab = 'seo' | 'business' | 'branding' | 'hours' | 'founder' | 'salespersons' | 'password';
 
+
+const WEEK_DAYS: Array<
+  'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
+> = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+
 export default function SettingsTabs() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -50,6 +56,29 @@ export default function SettingsTabs() {
       setIsSaving(false);
     }
   };
+
+
+const handleSeasonToggle = async (season: 'summer' | 'winter') => {
+  if (season === activeSeason) {
+    toast('This season is already active');
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Confirm season change?\n\nThis will immediately update business hours across the app.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await updateActiveSeason(season);
+    toast.success(`Season switched to ${season}`);
+  } catch {
+    toast.error('Failed to update season');
+  }
+};
+
+
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof SiteSettings) => {
     const file = e.target.files?.[0];
@@ -408,7 +437,7 @@ export default function SettingsTabs() {
   </span>
 
   <button
-    onClick={() => updateActiveSeason('summer')}
+    onClick={() => handleSeasonToggle('summer')}
     className={`px-4 py-2 rounded-lg font-semibold ${
       activeSeason === 'summer'
         ? 'bg-blue-600 text-white'
@@ -419,7 +448,7 @@ export default function SettingsTabs() {
   </button>
 
   <button
-    onClick={() => updateActiveSeason('winter')}
+    onClick={() => handleSeasonToggle('winter')}
     className={`px-4 py-2 rounded-lg font-semibold ${
       activeSeason === 'winter'
         ? 'bg-blue-600 text-white'
@@ -433,81 +462,121 @@ export default function SettingsTabs() {
             <div className="space-y-8">
               {/* Summer Hours */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="font-bold text-blue-900 mb-4">Summer Hours</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.workingHours?.summer && Object.entries(formData.workingHours.summer).map(([day, hours]: any) => (
-                    <div key={`summer-${day}`}>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{day}</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="time"
-                          value={hours.open || '09:00'}
-                          onChange={(e) => {
-                            const updated = { ...formData };
-                            if (updated.workingHours) {
-                              updated.workingHours.summer[day] = { ...hours, open: e.target.value };
-                            }
-                            setFormData(updated);
-                          }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        />
-                        <span className="text-gray-500 text-sm pt-2">to</span>
-                        <input
-                          type="time"
-                          value={hours.close || '18:00'}
-                          onChange={(e) => {
-                            const updated = { ...formData };
-                            if (updated.workingHours) {
-                              updated.workingHours.summer[day] = { ...hours, close: e.target.value };
-                            }
-                            setFormData(updated);
-                          }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+  <h3 className="font-bold text-blue-900 mb-4">Summer Hours</h3>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {WEEK_DAYS.map(day => {
+      const hours = formData.workingHours.summer[day];
+
+      return (
+        <div key={`summer-${day}`}>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {day}
+          </label>
+
+          <div className="flex gap-2">
+            <input
+              type="time"
+              value={hours.open}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  workingHours: {
+                    ...prev.workingHours,
+                    summer: {
+                      ...prev.workingHours.summer,
+                      [day]: { ...hours, open: e.target.value },
+                    },
+                  },
+                }))
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+
+            <span className="pt-2 text-gray-500">to</span>
+
+            <input
+              type="time"
+              value={hours.close}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  workingHours: {
+                    ...prev.workingHours,
+                    summer: {
+                      ...prev.workingHours.summer,
+                      [day]: { ...hours, close: e.target.value },
+                    },
+                  },
+                }))
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
               {/* Winter Hours */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="font-bold text-blue-900 mb-4">Winter Hours</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.workingHours?.winter && Object.entries(formData.workingHours.winter).map(([day, hours]: any) => (
-                    <div key={`winter-${day}`}>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{day}</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="time"
-                          value={hours.open || '09:00'}
-                          onChange={(e) => {
-                            const updated = { ...formData };
-                            if (updated.workingHours) {
-                              updated.workingHours.winter[day] = { ...hours, open: e.target.value };
-                            }
-                            setFormData(updated);
-                          }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        />
-                        <span className="text-gray-500 text-sm pt-2">to</span>
-                        <input
-                          type="time"
-                          value={hours.close || '17:00'}
-                          onChange={(e) => {
-                            const updated = { ...formData };
-                            if (updated.workingHours) {
-                              updated.workingHours.winter[day] = { ...hours, close: e.target.value };
-                            }
-                            setFormData(updated);
-                          }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+  <h3 className="font-bold text-blue-900 mb-4">Winter Hours</h3>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {WEEK_DAYS.map(day => {
+      const hours = formData.workingHours.winter[day];
+
+      return (
+        <div key={`winter-${day}`}>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {day}
+          </label>
+
+          <div className="flex gap-2">
+            <input
+              type="time"
+              value={hours.open}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  workingHours: {
+                    ...prev.workingHours,
+                    winter: {
+                      ...prev.workingHours.winter,
+                      [day]: { ...hours, open: e.target.value },
+                    },
+                  },
+                }))
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+
+            <span className="pt-2 text-gray-500">to</span>
+
+            <input
+              type="time"
+              value={hours.close}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  workingHours: {
+                    ...prev.workingHours,
+                    winter: {
+                      ...prev.workingHours.winter,
+                      [day]: { ...hours, close: e.target.value },
+                    },
+                  },
+                }))
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
               <button
                 onClick={() => handleSave('Working Hours')}
