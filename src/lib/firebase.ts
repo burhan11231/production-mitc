@@ -5,6 +5,7 @@ import {
   initializeFirestore,
   persistentLocalCache,
 } from 'firebase/firestore'
+import { getDatabase } from 'firebase/database'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -18,12 +19,15 @@ const firebaseConfig = {
 // Prevent re-initialization (hot reload / build)
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 
-// ✅ Auth (unchanged)
+// ✅ Auth
 export const auth = getAuth(app)
 
-// ✅ Firestore with local persistent cache
+// ✅ Firestore (persistent cache)
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache(),
 })
+
+// ✅ Realtime Database (REQUIRED)
+export const rtdb = getDatabase(app)
 
 export default app
