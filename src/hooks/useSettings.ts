@@ -4,28 +4,29 @@ import { useEffect, useState, useCallback } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, get, set as rtdbSet } from 'firebase/database';
 
-import { db, rtdb } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { rtdb } from '@/lib/firebase-rtdb'; // 👈 IMPORTANT (see note below)
 import { SiteSettings, DEFAULT_SETTINGS } from '@/lib/firestore-models';
+
+/* ------------------------------------
+   TYPES
+------------------------------------ */
+
+type ActiveSeasonState = {
+  activeSeason: 'summer' | 'winter';
+};
 
 /* ------------------------------------
    MODULE CACHE (APP-WIDE)
 ------------------------------------ */
 
+// Firestore (static site settings)
 let cachedSettings: SiteSettings | null = null;
-
-let cachedHours:
-  | {
-      activeSeason: 'summer' | 'winter';
-    }
-  | null = null;
-
 let settingsPromise: Promise<SiteSettings> | null = null;
-type ActiveSeasonState = {
-  activeSeason: 'summer' | 'winter';
-};
 
-let cachedHours: ActiveSeasonState | null = null;
-let hoursPromise: Promise<ActiveSeasonState> | null = null;
+// RTDB (active season only)
+let cachedSeason: ActiveSeasonState | null = null;
+let seasonPromise: Promise<ActiveSeasonState> | null = null;
 
 /* ------------------------------------
    HOOK
@@ -36,10 +37,10 @@ export function useSettings() {
   const [loading, setLoading] = useState(!cachedSettings);
 
   /* ------------------------------------
-     READ: FIRESTORE (STATIC SETTINGS)
+     READ: FIRESTORE (ONCE PER APP LOAD)
   ------------------------------------ */
 
-  const loadFirestoreSettings = async () => {
+  const loadFirestoreSettings = async (): Promise<SiteSettings> => {
     if (cachedSettings) return cachedSettings;
 
     if (!settingsPromise) {
@@ -61,11 +62,11 @@ export function useSettings() {
      READ: RTDB (ACTIVE SEASON ONLY)
   ------------------------------------ */
 
-  const loadWorkingHoursSeason = async () => {
-    if (cachedHours) return cachedHours;
+  const loadActiveSeason = async (): Promise<ActiveSeasonState> => {
+    if (cachedSeason) return cachedSeason;
 
-    if (!hoursPromise) {
-      hoursPromise = (async () => {
+    if (!seasonPromise) {
+      seasonPromise = (async () => {
         const snap = await get(ref(rtdb, 'settings/activeSeason'));
 
         const activeSeason: 'summer' | 'winter' =
@@ -75,8 +76,8 @@ export function useSettings() {
       })();
     }
 
-    cachedHours = await hoursPromise;
-    return cachedHours;
+    cachedSeason = await seasonPromise;
+    return cachedSeason;
   };
 
   /* ------------------------------------
@@ -86,7 +87,7 @@ export function useSettings() {
   useEffect(() => {
     let mounted = true;
 
-    Promise.all([loadFirestoreSettings(), loadWorkingHoursSeason()])
+    Promise.all([loadFirestoreSettings(), loadActiveSeason()])
       .then(([base, season]) => {
         if (!mounted) return;
 
@@ -115,8 +116,8 @@ export function useSettings() {
   }, []);
 
   /* ------------------------------------
-     WRITE: FIRESTORE (ADMIN SETTINGS)
-     Branding / SEO / Contacts / Hours
+     WRITE: FIRESTORE (ADMIN)
+     Branding / SEO / Contact / Hours
   ------------------------------------ */
 
   const updateSettings = useCallback(async (updates: Partial<SiteSettings>) => {
@@ -147,7 +148,7 @@ export function useSettings() {
     async (season: 'summer' | 'winter') => {
       await rtdbSet(ref(rtdb, 'settings/activeSeason'), season);
 
-      cachedHours = { activeSeason: season };
+      cachedSeason = { activeSeason: season };
 
       if (cachedSettings) {
         cachedSettings = {
@@ -171,7 +172,7 @@ export function useSettings() {
   return {
     settings,
     loading,
-    updateSettings,      // Firestore (admin)
-    updateActiveSeason,  // RTDB (admin)
+    updateSettings,     // Firestore (admin)
+    updateActiveSeason, // RTDB (admin)
   };
 }
