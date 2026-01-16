@@ -9,7 +9,7 @@ import { useSalespersons } from '@/hooks/useSalespersons'
 import { useReviewStats } from '@/hooks/useReviewStats'
 
 import SalespersonModal from '@/components/SalespersonModal'
-import StarRating from '@/components/StarRating'
+import StarRatings from '@/components/StarRatings'
 
 import { Salesperson } from '@/lib/firestore-models'
 
@@ -88,7 +88,7 @@ export default function AboutClient() {
                          border border-white/20
                          hover:bg-white/15 transition"
             >
-              <StarRating rating={reviewStats.averageRating} size={16} />
+              <StarRatings rating={reviewStats.averageRating} size={16} />
               <span className="text-sm font-semibold text-white">
                 {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews})
               </span>
