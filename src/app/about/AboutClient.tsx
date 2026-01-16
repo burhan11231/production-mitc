@@ -133,43 +133,47 @@ export default function AboutClient() {
 </section>
 
       {/* ================= STORY ================= */}
-      <section className="py-28 lg:py-36 px-6 bg-white">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+<section className="py-28 lg:py-36 px-6 bg-white">
+  <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-start">
 
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-8">
-              Built in Srinagar. Trusted across Kashmir.
-            </h2>
+    {/* LEFT: HEADING + IMAGE */}
+    <div>
+      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-10">
+        Built in Srinagar. Trusted across Kashmir.
+      </h2>
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              MITC started in Maisuma, Srinagar, with one principle:
-              customers deserve clarity before spending their money.
-            </p>
+      <div className="relative h-[460px] rounded-3xl overflow-hidden shadow-2xl">
+        <Image
+          src="https://res.cloudinary.com/dlesei0kn/image/upload/file_000000002c007206b899c1acafc49775_usxp0l.png"
+          alt="Stylized Srinagar illustration with circuit-board river and streets"
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+    </div>
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              Over the years, students, professionals, and offices relied on us
-              not just to buy laptops — but to understand diagnostics, upgrades,
-              repair risks, and long-term decisions.
-            </p>
+    {/* RIGHT: DETAILS TEXT */}
+    <div className="lg:pt-16">
+      <p className="text-lg text-gray-700 leading-relaxed mb-6">
+        MITC started in Maisuma, Srinagar, with one principle:
+        customers deserve clarity before spending their money.
+      </p>
 
-            <p className="text-lg text-gray-700 leading-relaxed">
-              Today, MITC combines a physical showroom with a digital platform
-              so customers can explore confidently before visiting.
-            </p>
-          </div>
+      <p className="text-lg text-gray-700 leading-relaxed mb-6">
+        Over the years, students, professionals, and offices relied on us
+        not just to buy laptops — but to understand diagnostics, upgrades,
+        repair risks, and long-term decisions.
+      </p>
 
-          <div className="relative h-[460px] rounded-3xl overflow-hidden shadow-2xl">
-  <Image
-    src="https://res.cloudinary.com/dlesei0kn/image/upload/file_000000002c007206b899c1acafc49775_usxp0l.png"
-    alt="Stylized Srinagar illustration with circuit-board river and streets"
-    fill
-    className="object-cover"
-    priority
-  />
-</div>
+      <p className="text-lg text-gray-700 leading-relaxed">
+        Today, MITC combines a physical showroom with a digital platform
+        so customers can explore confidently before visiting.
+      </p>
+    </div>
 
-        </div>
-      </section>
+  </div>
+</section>
 
       {/* ================= PRINCIPLES ================= */}
       <section className="py-28 lg:py-36 px-6 bg-sky-50/60">
