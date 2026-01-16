@@ -28,37 +28,49 @@ export default function ServicesPage() {
     <main className="overflow-x-hidden bg-white">
 
       {/* ================= HERO ================= */}
-<section className="relative overflow-hidden bg-gray-950 text-white">
-  {/* BACKGROUND IMAGE */}
+<section className="relative isolate overflow-hidden bg-gray-950 text-white">
+
+  {/* BACKGROUND IMAGE (RIGHT-WEIGHTED) */}
   <div
-    className="absolute inset-0 bg-center bg-cover bg-no-repeat"
+    className="absolute inset-0 bg-right bg-cover bg-no-repeat"
     style={{
       backgroundImage:
-        "url('https://res.cloudinary.com/dlesei0kn/image/upload/v1768541023/file_00000000fa887209b3d7cd4ca3059587_dxbu8m.png')",
+        "url('https://res.cloudinary.com/dlesei0kn/image/upload/v1762037120/IMG_20251101_165748_yfv7rg.jpg')",
     }}
   />
 
-  {/* DARK OVERLAY (READABILITY) */}
-  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
+  {/* LEFT MASK (CONTENT READABILITY) */}
+  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+
+  {/* TOP SOFT FADE */}
+  <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
+
+  {/* SUBTLE STRUCTURE GRID */}
+  <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:80px_80px]" />
 
   {/* ACCENT GLOW */}
-  <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_15%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
+  <div className="absolute inset-0 bg-[radial-gradient(700px_circle_at_20%_35%,rgba(0,113,227,0.28),transparent_65%)]" />
 
   {/* CONTENT */}
-  <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-28 lg:py-36">
-    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold tracking-widest uppercase">
-      Services in Srinagar
-    </span>
+  <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-32 lg:py-40">
+    <div className="max-w-3xl">
 
-    <h1 className="mt-8 max-w-4xl text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-      Laptop sales, repairs & IT services
-    </h1>
+      <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-semibold tracking-widest uppercase">
+        Services in Srinagar
+      </span>
 
-    <p className="mt-8 max-w-3xl text-lg text-white/75 leading-relaxed">
-      MITC provides transparent laptop sales, professional diagnostics,
-      upgrades, and IT services from our physical showroom in Srinagar.
-      No blind purchases. No unnecessary repairs.
-    </p>
+      <h1 className="mt-10 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+        Laptop sales,<br />
+        repairs & IT services
+      </h1>
+
+      <p className="mt-8 text-lg text-white/70 leading-relaxed">
+        MITC delivers transparent laptop sales, professional diagnostics,
+        upgrades, and IT services from our physical showroom in Srinagar.
+        No blind purchases. No unnecessary repairs.
+      </p>
+
+    </div>
   </div>
 </section>
 
