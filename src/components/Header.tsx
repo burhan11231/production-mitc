@@ -85,13 +85,13 @@ export default function Header() {
   
           <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
   <Image
-    src={settings?.logoUrl || FALLBACK_LOGO}
-    alt={settings?.businessName || 'MITC'}
-    width={40}
-    height={40}
-    className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
-    unoptimized
-  />
+  src={`${settings?.logoUrl || FALLBACK_LOGO}?v=${settings?.updatedAt?.seconds ?? Date.now()}`}
+  alt="Logo"
+  width={40}
+  height={40}
+  className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
+  unoptimized
+/>
 
   <div className="leading-tight">
     <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
