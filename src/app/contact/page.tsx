@@ -257,30 +257,31 @@ if (!user) {
 
             <div className="space-y-2">
   {DAYS_ORDER.map(day => {
-    const h = hours?.[day];
-    const isToday = day === todayName;
+  const h = hours?.[day];
+  const isToday = day === todayName;
+  const isClosed = h?.closed === true;
 
-    return (
-      <div
-        key={day}
-        className={`flex justify-between px-4 py-2 rounded-xl border ${
-          isToday
-            ? 'bg-blue-50 border-blue-200'
-            : 'bg-white border-gray-200'
-        }`}
-      >
-        <span className="font-semibold">{day}</span>
+  return (
+    <div
+      key={day}
+      className={`flex justify-between px-4 py-2 rounded-xl border ${
+        isToday
+          ? 'bg-blue-50 border-blue-200'
+          : 'bg-white border-gray-200'
+      }`}
+    >
+      <span className="font-semibold">{day}</span>
 
-        {h?.closed ? (
-  <span className="text-red-500 text-sm font-bold">Closed</span>
-) : (
-  <span className="text-gray-600 text-sm">
-    {h?.open} – {h?.close}
-  </span>
-)}
-      </div>
-    );
-  })}
+      {isClosed ? (
+        <span className="text-red-500 text-sm font-bold">Closed</span>
+      ) : (
+        <span className="text-gray-600 text-sm">
+          {h?.open} – {h?.close}
+        </span>
+      )}
+    </div>
+  );
+})}
 </div>
           </div>
 
