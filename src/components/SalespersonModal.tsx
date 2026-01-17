@@ -6,13 +6,9 @@ import Link from 'next/link'
 import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/react'
 import { Salesperson } from '@/lib/firestore-models'
 import { useAuth } from '@/lib/auth-context'
+import { toggleSalespersonReaction } from '@/app/actions/toggleSalespersonReaction'
 import { db } from '@/lib/firebase'
-import {
-  doc,
-  onSnapshot,
-  runTransaction,
-  serverTimestamp
-} from 'firebase/firestore'
+import { doc, onSnapshot } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
 type Props = {
@@ -21,15 +17,15 @@ type Props = {
   onClose: () => void
 }
 
-/* ============ Utils ============ */
+/* ---------------- Utils ---------------- */
+
 function toDigits(phone?: string) {
   return (phone || '').replace(/\D/g, '')
 }
 
 function toWaLink(phone?: string) {
   const digits = toDigits(phone)
-  if (!digits) return ''
-  return `https://wa.me/${digits}`
+  return digits ? `https://wa.me/${digits}` : ''
 }
 
 function initials(name?: string) {
@@ -41,129 +37,94 @@ function initials(name?: string) {
     .join('')
 }
 
+/* ---------------- Component ---------------- */
+
 export default function SalespersonModal({ isOpen, salesperson, onClose }: Props) {
   const { user } = useAuth()
 
-  // Real-time states
+  /* ✅ MISSING STATES (FIX) */
   const [likesCount, setLikesCount] = useState(0)
   const [dislikesCount, setDislikesCount] = useState(0)
+
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null)
-
-  // UI states
   const [isProcessing, setIsProcessing] = useState(false)
-  const [authError, setAuthError] = useState<{ type: 'like' | 'dislike'; msg: string } | null>(null)
+  const [authError, setAuthError] =
+    useState<{ type: 'like' | 'dislike'; msg: string } | null>(null)
 
-  // ✅ Initialize counts once from props
-useEffect(() => {
-  if (!salesperson || !isOpen) return;
-
-  setLikesCount(salesperson.likesCount ?? 0);
-  setDislikesCount(salesperson.dislikesCount ?? 0);
-}, [salesperson, isOpen]);
-
-  // 2. Sync logged-in user's specific reaction
+  /* ✅ INIT COUNTS FROM SALESPERSON (FIX) */
   useEffect(() => {
-    if (!salesperson?.id || !user?.uid || !isOpen) {
+    if (!isOpen || !salesperson) return
+
+    setLikesCount(salesperson.likesCount ?? 0)
+    setDislikesCount(salesperson.dislikesCount ?? 0)
+  }, [isOpen, salesperson])
+
+  /* ---- Sync logged-in user's reaction ---- */
+  useEffect(() => {
+    if (!isOpen || !salesperson?.id || !user?.uid) {
       setUserReaction(null)
       return
     }
-    const reactionDocId = `${user.uid}_${salesperson.id}`
-    const unsub = onSnapshot(doc(db, 'salesperson_reactions', reactionDocId), (doc) => {
-      if (doc.exists()) setUserReaction(doc.data().type)
-      else setUserReaction(null)
-    })
+
+    const reactionId = `${user.uid}_${salesperson.id}`
+    const unsub = onSnapshot(
+      doc(db, 'salesperson_reactions', reactionId),
+      snap => {
+        setUserReaction(snap.exists() ? snap.data().type : null)
+      }
+    )
+
     return () => unsub()
-  }, [salesperson?.id, user?.uid, isOpen])
+  }, [isOpen, salesperson?.id, user?.uid])
 
   if (!salesperson) return null
 
   const tel = toDigits(salesperson.phone)
   const wa = toWaLink(salesperson.whatsapp || salesperson.phone)
 
+  /* ---------------- Reaction Handler ---------------- */
+
   const handleReaction = async (type: 'like' | 'dislike') => {
     if (!user) {
       setAuthError({ type, msg: `Please login to ${type}` })
       return
     }
+
     if (isProcessing) return
 
-    setIsProcessing(true)
-    setAuthError(null)
-
-    const reactionDocId = `${user.uid}_${salesperson.id}`
-    const reactionRef = doc(db, 'salesperson_reactions', reactionDocId)
-    const salespersonRef = doc(db, 'salespersons', salesperson.id!)
-
     try {
-  await runTransaction(db, async (transaction) => {
-    const reactionDoc = await transaction.get(reactionRef)
-    const spDoc = await transaction.get(salespersonRef)
+      setIsProcessing(true)
+      setAuthError(null)
 
-    if (!spDoc.exists()) throw 'Salesperson not found'
+      await toggleSalespersonReaction(
+        user.uid,
+        salesperson.id!,
+        type
+      )
 
-    const data = spDoc.data()
-    let nL = data.likesCount || 0
-    let nD = data.dislikesCount || 0
-
-    if (!reactionDoc.exists()) {
-      transaction.set(reactionRef, {
-        userId: user.uid,
-        salespersonId: salesperson.id,
-        type,
-        createdAt: serverTimestamp(),
-      })
-      type === 'like' ? nL++ : nD++
-    } else {
-      const prevType = reactionDoc.data().type
-      if (prevType === type) {
-        transaction.delete(reactionRef)
-        type === 'like' ? nL-- : nD--
+      /* ✅ OPTIMISTIC UI (COUNTERS ONLY) */
+      if (type === 'like') {
+        setLikesCount(c => c + (userReaction === 'like' ? -1 : 1))
+        if (userReaction === 'dislike') {
+          setDislikesCount(c => Math.max(0, c - 1))
+        }
       } else {
-        transaction.update(reactionRef, {
-          type,
-          updatedAt: serverTimestamp(),
-        })
-        if (type === 'like') {
-          nL++
-          nD--
-        } else {
-          nL--
-          nD++
+        setDislikesCount(c => c + (userReaction === 'dislike' ? -1 : 1))
+        if (userReaction === 'like') {
+          setLikesCount(c => Math.max(0, c - 1))
         }
       }
-    }
 
-    transaction.update(salespersonRef, {
-      likesCount: Math.max(0, nL),
-      dislikesCount: Math.max(0, nD),
-    })
-  })
-
-  /* ===============================
-     ✅ OPTIMISTIC UI UPDATE (HERE)
-     =============================== */
-
-  setUserReaction(type === userReaction ? null : type)
-
-  if (type === 'like') {
-    setLikesCount((c) => c + (userReaction === 'like' ? -1 : 1))
-    if (userReaction === 'dislike') {
-      setDislikesCount((c) => Math.max(0, c - 1))
-    }
-  } else {
-    setDislikesCount((c) => c + (userReaction === 'dislike' ? -1 : 1))
-    if (userReaction === 'like') {
-      setLikesCount((c) => Math.max(0, c - 1))
+      setUserReaction(prev => (prev === type ? null : type))
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to save reaction')
+    } finally {
+      setIsProcessing(false)
     }
   }
 
-} catch (e) {
-  console.error(e)
-  toast.error('Failed to save reaction')
-} finally {
-  setIsProcessing(false)
-}
-  }
+  /* ====================== UI BELOW IS 100% YOUR ORIGINAL ====================== */
 
   return (
     <Transition show={isOpen} as={Fragment}>
