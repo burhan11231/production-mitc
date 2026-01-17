@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettingsRTDB } from '@/hooks/useSettingsRTDB';
 import { db } from '@/lib/firebase';
 import {
   collection,
@@ -28,9 +28,11 @@ const DAYS_ORDER = [
 
 export default function ContactPage() {
   const { user } = useAuth();
-  const { settings } = useSettings();
-const activeSeason = settings?.workingHours?.activeSeason;
-const hours = settings?.workingHours?.[activeSeason ?? 'summer'];
+  const { settings } = useSettingsRTDB();
+const activeSeason =
+  settings.workingHours.activeSeason === 'winter' ? 'winter' : 'summer';
+
+const hours = settings.workingHours?.[activeSeason] ?? {};
 
   /* ---------------- FORM STATE ---------------- */
 
@@ -109,10 +111,6 @@ const hours = settings?.workingHours?.[activeSeason ?? 'summer'];
       return;
     }
 
-if (!settings) {
-  toast.error('Settings not loaded. Please try again.');
-  return;
-}
 
 
 if (!user) {
@@ -274,12 +272,12 @@ if (!user) {
         <span className="font-semibold">{day}</span>
 
         {h?.closed ? (
-          <span className="text-red-500 text-sm font-bold">Closed</span>
-        ) : (
-          <span className="text-gray-600 text-sm">
-            {h?.open} – {h?.close}
-          </span>
-        )}
+  <span className="text-red-500 text-sm font-bold">Closed</span>
+) : (
+  <span className="text-gray-600 text-sm">
+    {h?.open} – {h?.close}
+  </span>
+)}
       </div>
     );
   })}
@@ -287,11 +285,12 @@ if (!user) {
           </div>
 
           {/* MAP (STABLE) */}
-          {settings?.mapEmbedUrl?.startsWith('<iframe') && (
-  <div
-    className="rounded-3xl overflow-hidden border min-h-[450px]"
-    dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
-  />
+{typeof settings.mapEmbedUrl === 'string' &&
+  settings.mapEmbedUrl.trim().startsWith('<iframe') && (
+    <div
+      className="rounded-3xl overflow-hidden border min-h-[450px]"
+      dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl.trim() }}
+    />
 )}
 
 </div>
