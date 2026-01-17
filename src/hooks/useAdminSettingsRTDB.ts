@@ -36,14 +36,19 @@ export function useAdminSettingsRTDB() {
 }, [])
 
   const updateBusiness = useCallback(async (business: {
-    primaryPhone: string
-    primaryWhatsApp: string
-    primaryEmail: string
-    addressText: string
-    mapEmbedUrl: string
-  }) => {
-    await update(ref(rtdb, 'settings/business'), business)
-  }, [])
+  primaryPhone: string
+  primaryWhatsApp: string
+  primaryEmail: string
+  addressText: string
+  mapEmbedUrl: string
+  instagram: string
+  facebook: string
+  twitter: string
+  linkedin: string
+  youtube: string
+}) => {
+  await update(ref(rtdb, 'settings/business'), business)
+}, [])
 
   const updateHours = useCallback(async (hours: {
     summer: SiteSettings['workingHours']['summer']
