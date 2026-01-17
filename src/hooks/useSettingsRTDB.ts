@@ -28,8 +28,7 @@ export function useSettingsRTDB() {
         businessName: data.branding?.businessName ?? DEFAULT_SETTINGS.businessName,
         tagline: data.branding?.tagline ?? DEFAULT_SETTINGS.tagline,
         logoUrl: data.branding?.logoUrl ?? DEFAULT_SETTINGS.logoUrl,
-        featuredImageUrl:
-          data.branding?.featuredImageUrl ?? DEFAULT_SETTINGS.featuredImageUrl,
+        
 
         // Business
         primaryPhone: data.business?.primaryPhone ?? '',
