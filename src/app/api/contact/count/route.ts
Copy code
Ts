@@ -1,27 +1,34 @@
 import { NextResponse } from 'next/server';
-import admin from '@/firebase-admin';
-
-const db = admin.firestore();
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId');
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
 
-  if (!userId) {
-    return NextResponse.json({ count: 0 });
+    if (!userId) {
+      return NextResponse.json({ count: 0 });
+    }
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // ✅ Single aggregation read
+    const snap = await adminDb
+      .collection('leads')
+      .where('userId', '==', userId)
+      .where('createdAt', '>=', monthStart)
+      .count()
+      .get();
+
+    return NextResponse.json({
+      count: snap.data().count,
+    });
+  } catch (err) {
+    console.error('CONTACT_COUNT_ERROR', err);
+    return NextResponse.json(
+      { count: 0 },
+      { status: 500 }
+    );
   }
-
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const snap = await db
-    .collection('leads')
-    .where('userId', '==', userId)
-    .where('createdAt', '>=', monthStart)
-    .count()
-    .get();
-
-  return NextResponse.json({
-    count: snap.data().count,
-  });
 }
