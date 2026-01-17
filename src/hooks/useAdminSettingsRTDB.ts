@@ -28,13 +28,12 @@ export function useAdminSettingsRTDB() {
   --------------------------- */
 
   const updateBranding = useCallback(async (branding: {
-    businessName: string
-    tagline: string
-    logoUrl: string
-    featuredImageUrl: string
-  }) => {
-    await update(ref(rtdb, 'settings/branding'), branding)
-  }, [])
+  businessName: string
+  tagline: string
+  logoUrl: string
+}) => {
+  await update(ref(rtdb, 'settings/branding'), branding)
+}, [])
 
   const updateBusiness = useCallback(async (business: {
     primaryPhone: string
