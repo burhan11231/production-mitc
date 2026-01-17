@@ -29,7 +29,13 @@ export default function SettingsTabs() {
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('branding');
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState(settings || DEFAULT_SETTINGS);
+  const [formData, setFormData] = useState(DEFAULT_SETTINGS)
+
+useEffect(() => {
+  if (!loading && settings) {
+    setFormData(settings)
+  }
+}, [settings, loading])
 
   useEffect(() => {
     if (!isLoading && user?.role !== 'admin') {
@@ -38,9 +44,7 @@ export default function SettingsTabs() {
     }
   }, [user, isLoading, router]);
 
-  useEffect(() => {
-    if (settings) setFormData(settings);
-  }, [settings]);
+  
 
   /* ---------------- IMAGE UPLOAD ---------------- */
 
