@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Fragment, useEffect, useMemo, useState } from 'react'  
 import { Dialog, DialogBackdrop, DialogPanel, Transition, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'  
 import { useAuth } from '@/lib/auth-context'  
-import { useSettings } from '@/hooks/useSettings'  
+import { useSettingsRTDB } from '@/hooks/useSettingsRTDB'  
 import { useSalespersons } from '@/hooks/useSalespersons'  
 import SalespersonModal from '@/components/SalespersonModal'  
 import TeamModal from '@/components/TeamModal'  
@@ -42,7 +42,7 @@ const IconLogout = () => (
   
 export default function Header() {  
   const { user, isLoading } = useAuth()  
-  const { settings } = useSettings()  
+  const { settings } = useSettingsRTDB()  
   const { salespersons } = useSalespersons()  
   
   const [menuOpen, setMenuOpen] = useState(false)  
@@ -85,7 +85,7 @@ export default function Header() {
   
           <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
   <Image
-  src={`${settings?.logoUrl || FALLBACK_LOGO}?v=${settings?.updatedAt?.seconds ?? Date.now()}`}
+  src={settings.logoUrl || FALLBACK_LOGO}
   alt="Logo"
   width={40}
   height={40}
