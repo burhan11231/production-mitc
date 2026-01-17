@@ -5,36 +5,53 @@ import Image from 'next/image';
 import { useSettings } from '@/hooks/useSettings';
 import { useMemo } from 'react';
 
+const FALLBACK_LOGO =
+  'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg';
+
 export default function Footer() {
   const { settings } = useSettings();
   const currentYear = useMemo(() => new Date().getFullYear(), []);
 
+  // cache-bust logo when admin updates settings
+  const logoSrc = useMemo(() => {
+    const base = settings?.logoUrl || FALLBACK_LOGO;
+    const version =
+      (settings as any)?.updatedAt?.seconds ||
+      (settings as any)?.updatedAt ||
+      Date.now();
+
+    return `${base}?v=${version}`;
+  }, [settings]);
+
+  const socials = [
+    { key: 'facebook', label: 'Facebook' },
+    { key: 'instagram', label: 'Instagram' },
+    { key: 'twitter', label: 'Twitter' },
+    { key: 'linkedin', label: 'LinkedIn' },
+  ] as const;
+
   return (
     <footer className="relative bg-white border-t border-gray-100">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
-
         {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 py-8">
-
           {/* Column 1 */}
           <div>
             <p className="text-base leading-relaxed text-gray-500 max-w-sm">
-              Kashmir's trusted authority for premium commercial laptops and professional IT services since 2013.
+              Kashmir&apos;s trusted authority for premium commercial laptops and
+              professional IT services since 2013.
             </p>
 
-            {/* Logo (admin-controlled, same as header) */}
-            {settings?.logoUrl && (
-  <Link href="/" className="inline-block mt-6">
-    <Image
-      src={settings.logoUrl}
-      alt={settings.businessName || 'Logo'}
-      width={40}
-      height={40}
-      className="rounded-lg object-cover opacity-90"
-      unoptimized
-    />
-  </Link>
-)}
+            <Link href="/" className="inline-block mt-6">
+              <Image
+                src={logoSrc}
+                alt={settings?.businessName || 'Logo'}
+                width={40}
+                height={40}
+                className="rounded-lg object-cover opacity-90"
+                unoptimized
+              />
+            </Link>
           </div>
 
           {/* Column 2 */}
@@ -43,7 +60,7 @@ export default function Footer() {
               Company
             </h4>
             <ul className="space-y-5">
-              {['About', 'Services', 'Ratings', 'Contact'].map((item) => (
+              {['About', 'Services', 'Ratings', 'Contact'].map(item => (
                 <li key={item}>
                   <Link
                     href={`/${item.toLowerCase()}`}
@@ -61,40 +78,54 @@ export default function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">
               Connect
             </h4>
+
             <div className="flex gap-4 justify-start">
-              {['Facebook', 'Instagram', 'Twitter', 'LinkedIn'].map((social) => (
-                <a
-                  key={social}
-                  href={(settings?.[social.toLowerCase() as keyof typeof settings] as string) || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-300"
-                >
-                  <span className="sr-only">{social}</span>
-                  <span className="text-sm font-bold">{social[0]}</span>
-                </a>
-              ))}
+              {socials.map(({ key, label }) => {
+                const url = (settings as any)?.[key];
+                if (!url) return null;
+
+                return (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-300"
+                  >
+                    <span className="sr-only">{label}</span>
+                    <span className="text-sm font-bold">
+                      {label[0]}
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           </div>
-
         </div>
 
         {/* Bottom Legal */}
         <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
           <p className="text-sm font-medium text-gray-400">
-            © {currentYear} Mateen IT Corp. All rights reserved.
+            © {currentYear}{' '}
+            {settings?.businessName || 'Mateen IT Corp'}. All rights
+            reserved.
           </p>
 
           <div className="flex gap-10">
-            <Link href="#" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition">
+            <Link
+              href="#"
+              className="text-sm font-bold text-gray-400 hover:text-gray-900 transition"
+            >
               Privacy Policy
             </Link>
-            <Link href="#" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition">
+            <Link
+              href="#"
+              className="text-sm font-bold text-gray-400 hover:text-gray-900 transition"
+            >
               Terms of Service
             </Link>
           </div>
         </div>
-
       </div>
     </footer>
   );
