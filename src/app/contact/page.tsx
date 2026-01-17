@@ -259,7 +259,11 @@ if (!user) {
   {DAYS_ORDER.map(day => {
   const h = hours?.[day];
   const isToday = day === todayName;
-  const isClosed = h?.closed === true;
+
+  const isClosed =
+    h?.closed === true ||
+    !h?.open ||
+    !h?.close;
 
   return (
     <div
@@ -276,7 +280,7 @@ if (!user) {
         <span className="text-red-500 text-sm font-bold">Closed</span>
       ) : (
         <span className="text-gray-600 text-sm">
-          {h?.open} – {h?.close}
+          {h.open} – {h.close}
         </span>
       )}
     </div>
@@ -287,10 +291,10 @@ if (!user) {
 
           {/* MAP (STABLE) */}
 {typeof settings.mapEmbedUrl === 'string' &&
-  settings.mapEmbedUrl.trim().startsWith('<iframe') && (
+  settings.mapEmbedUrl.includes('<iframe') && (
     <div
       className="rounded-3xl overflow-hidden border min-h-[450px]"
-      dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl.trim() }}
+      dangerouslySetInnerHTML={{ __html: settings.mapEmbedUrl }}
     />
 )}
 
