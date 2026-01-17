@@ -1,7 +1,5 @@
 'use server';
 
-export const runtime = 'nodejs';
-
 import admin from '@/lib/firebase-admin';
 
 type ReactionType = 'like' | 'dislike';
@@ -29,7 +27,6 @@ export async function toggleSalespersonReaction(
     let dislikes = salespersonSnap.data()?.dislikesCount ?? 0;
 
     if (!reactionSnap.exists) {
-      // NEW reaction
       tx.set(reactionRef, {
         userId,
         salespersonId,
@@ -42,11 +39,9 @@ export async function toggleSalespersonReaction(
       const prevType = reactionSnap.data()?.type as ReactionType;
 
       if (prevType === type) {
-        // TOGGLE OFF
         tx.delete(reactionRef);
         type === 'like' ? likes-- : dislikes--;
       } else {
-        // SWITCH
         tx.update(reactionRef, {
           type,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
