@@ -31,18 +31,23 @@ export default function SettingsTabs() {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(DEFAULT_SETTINGS)
 
-useEffect(() => {
-  if (!loading && settings) {
-    setFormData(settings)
-  }
-}, [settings, loading])
+const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && user?.role !== 'admin') {
-      toast.error('Admin access required');
-      router.push('/');
-    }
-  }, [user, isLoading, router]);
+useEffect(() => {
+  if (!loading && settings && !hydrated) {
+    setFormData(settings);
+    setHydrated(true);
+  }
+}, [settings, loading, hydrated]);
+
+  const ADMIN_EMAIL = 'burhan.ah.shkh@gmail.com';
+
+useEffect(() => {
+  if (!isLoading && user?.email !== ADMIN_EMAIL) {
+    toast.error('Admin access required');
+    router.push('/');
+  }
+}, [user, isLoading, router]);
 
   
 
@@ -134,7 +139,7 @@ useEffect(() => {
   return <div className="p-8 text-gray-500 text-sm">Loading settings…</div>;
 }
 
-if (user?.role !== 'admin') {
+if (user?.email !== ADMIN_EMAIL) {
   return null;
 }
 
@@ -216,6 +221,44 @@ if (user?.role !== 'admin') {
             className="textarea"
           />
 
+
+<input
+  value={formData.instagram}
+  onChange={e => setFormData({ ...formData, instagram: e.target.value })}
+  placeholder="Instagram URL"
+  className="input"
+/>
+
+<input
+  value={formData.facebook}
+  onChange={e => setFormData({ ...formData, facebook: e.target.value })}
+  placeholder="Facebook URL"
+  className="input"
+/>
+
+<input
+  value={formData.twitter}
+  onChange={e => setFormData({ ...formData, twitter: e.target.value })}
+  placeholder="Twitter / X URL"
+  className="input"
+/>
+
+<input
+  value={formData.linkedin}
+  onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+  placeholder="LinkedIn URL"
+  className="input"
+/>
+
+<input
+  value={formData.youtube}
+  onChange={e => setFormData({ ...formData, youtube: e.target.value })}
+  placeholder="YouTube URL"
+  className="input"
+/>
+
+
+
           <button onClick={saveBusiness} disabled={isSaving} className="btn-primary">
             Save Business
           </button>
@@ -224,12 +267,69 @@ if (user?.role !== 'admin') {
 
       {/* HOURS */}
       {activeTab === 'hours' && (
-        <div className="bg-white border rounded-lg p-8 space-y-6">
-          <button onClick={saveHours} disabled={isSaving} className="btn-primary">
-            Save Hours
-          </button>
+  <div className="bg-white border rounded-lg p-8 space-y-8">
+
+    {(['summer', 'winter'] as const).map(season => (
+      <div key={season}>
+        <h3 className="font-semibold capitalize mb-4">{season} hours</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {WEEK_DAYS.map(day => (
+            <div key={`${season}-${day}`} className="flex gap-2 items-center">
+              <span className="w-24 text-sm">{day}</span>
+
+              <input
+                type="time"
+                value={formData.workingHours[season][day]?.open || ''}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    workingHours: {
+                      ...prev.workingHours,
+                      [season]: {
+                        ...prev.workingHours[season],
+                        [day]: {
+                          ...prev.workingHours[season][day],
+                          open: e.target.value,
+                        },
+                      },
+                    },
+                  }))
+                }
+                className="input"
+              />
+
+              <input
+                type="time"
+                value={formData.workingHours[season][day]?.close || ''}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    workingHours: {
+                      ...prev.workingHours,
+                      [season]: {
+                        ...prev.workingHours[season],
+                        [day]: {
+                          ...prev.workingHours[season][day],
+                          close: e.target.value,
+                        },
+                      },
+                    },
+                  }))
+                }
+                className="input"
+              />
+            </div>
+          ))}
         </div>
-      )}
+      </div>
+    ))}
+
+    <button onClick={saveHours} className="btn-primary">
+      Save Hours
+    </button>
+  </div>
+)}
     </div>
   );
 }
