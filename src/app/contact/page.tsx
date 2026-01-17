@@ -3,15 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useSettingsRTDB } from '@/hooks/useSettingsRTDB';
-import { db } from '@/lib/firebase';
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  query,
-  where,
-  getCountFromServer,
-} from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 const MAX_MESSAGES_PER_MONTH = 30;
@@ -70,19 +61,11 @@ const hours = settings.workingHours?.[activeSeason] ?? {};
 
   let mounted = true;
 
-  (async () => {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const q = query(
-      collection(db, 'leads'),
-      where('userId', '==', user.uid),
-      where('createdAt', '>=', monthStart)
-    );
-
-    const snap = await getCountFromServer(q);
-    if (mounted) setMessagesUsed(snap.data().count);
-  })();
+  fetch(`/api/contact/count?userId=${user.uid}`)
+    .then(res => res.json())
+    .then(data => {
+      if (mounted) setMessagesUsed(data.count);
+    });
 
   return () => {
     mounted = false;
@@ -99,47 +82,47 @@ const hours = settings.workingHours?.[activeSeason] ?? {};
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (messagesLeft !== null && messagesLeft <= 0) {
-      toast.error('Monthly inquiry limit reached.');
+  if (!user) {
+    toast.error('Please sign in to send a message');
+    return;
+  }
+
+  if (!formData.message.trim()) {
+    toast.error('Message is required');
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user.uid,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.error || 'Failed to send message');
       return;
     }
 
-    if (!formData.message.trim()) {
-      toast.error('Message is required');
-      return;
-    }
-
-
-
-if (!user) {
-  toast.error('Please sign in to send a message');
-  return;
-}
-
-    setIsLoading(true);
-
-    try {
-      await addDoc(collection(db, 'leads'), {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim() || null,
-        message: formData.message.trim(),
-        userId: user?.uid || null,
-        read: false,
-        createdAt: serverTimestamp(),
-      });
-
-      toast.success('Message sent successfully');
-      setFormData(prev => ({ ...prev, message: '' }));
-      setMessagesUsed(prev => (prev === null ? null : prev + 1));
-    } catch {
-      toast.error('Failed to send message');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    toast.success('Message sent successfully');
+    setFormData(prev => ({ ...prev, message: '' }));
+    setMessagesUsed(prev => (prev === null ? null : prev + 1));
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   /* ---------------- BUSINESS HOURS ---------------- */
 
