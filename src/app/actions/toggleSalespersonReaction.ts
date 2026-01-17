@@ -1,5 +1,7 @@
 'use server';
 
+export const runtime = 'nodejs';
+
 import admin from '@/lib/firebase-admin';
 
 type ReactionType = 'like' | 'dislike';
