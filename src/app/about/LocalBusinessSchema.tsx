@@ -1,33 +1,41 @@
-import { DEFAULT_SETTINGS } from '@/lib/firestore-models'
+// src/app/about/LocalBusinessSchema.tsx
 
 export default function LocalBusinessSchema() {
-  const s = DEFAULT_SETTINGS
-
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: s.businessName,
-    image: s.featuredImageUrl,
-    logo: s.logoUrl,
-    description: s.metaDescription,
-    url: s.canonicalUrl,
-    telephone: s.primaryPhone,
-    email: s.primaryEmail,
+
+    name: 'MITC – Mateen IT Corp',
+    url: 'https://mitck.netlify.app',
+
+    logo:
+      'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+
+    image:
+      'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+
+    description:
+      "MITC (Mateen IT Corp) is a trusted laptop showroom in Srinagar, Kashmir, offering transparent laptop sales, diagnostics, and upgrades since 2013.",
+
+    telephone: '+91 98765 43210',
+    email: 'info@mitc.com',
+
     address: {
       '@type': 'PostalAddress',
-      streetAddress: s.addressText,
+      streetAddress: 'Gaw Kadal, Maisuma, Srinagar, J&K - 190001',
       addressLocality: 'Srinagar',
       addressRegion: 'Jammu and Kashmir',
       addressCountry: 'IN',
     },
+
     sameAs: [
-      s.instagram,
-      s.facebook,
-      s.twitter,
-      s.linkedin,
-      s.youtube,
-    ].filter(Boolean),
-  }
+      'https://instagram.com',
+      'https://facebook.com',
+      'https://twitter.com',
+      'https://linkedin.com',
+      'https://youtube.com',
+    ],
+  };
 
   return (
     <script
@@ -36,5 +44,5 @@ export default function LocalBusinessSchema() {
         __html: JSON.stringify(schema),
       }}
     />
-  )
+  );
 }
