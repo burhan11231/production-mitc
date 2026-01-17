@@ -66,9 +66,10 @@ export default function SettingsTabs() {
 
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
+  toast.error(validation.error ?? 'Invalid image file');
+  return;
+}
+    
 
     try {
       toast.loading('Optimizing logo…');
