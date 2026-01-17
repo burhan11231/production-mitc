@@ -25,9 +25,9 @@ export function useAdminSettingsRTDB() {
         ...DEFAULT_SETTINGS,
 
         // Branding
-        businessName: data.branding?.businessName ?? DEFAULT_SETTINGS.businessName,
-        tagline: data.branding?.tagline ?? DEFAULT_SETTINGS.tagline,
-        logoUrl: data.branding?.logoUrl ?? DEFAULT_SETTINGS.logoUrl,
+        businessName: data.branding?.businessName ?? '',
+        tagline: data.branding?.tagline ?? '',
+        logoUrl: data.branding?.logoUrl ?? '',
 
         // Business
         primaryPhone: data.business?.primaryPhone ?? '',
@@ -41,7 +41,7 @@ export function useAdminSettingsRTDB() {
         linkedin: data.business?.linkedin ?? '',
         youtube: data.business?.youtube ?? '',
 
-        // Working hours
+        // Hours
         workingHours: {
           summer: data.hours?.summer ?? DEFAULT_SETTINGS.workingHours.summer,
           winter: data.hours?.winter ?? DEFAULT_SETTINGS.workingHours.winter,
@@ -62,39 +62,22 @@ export function useAdminSettingsRTDB() {
     return () => unsubscribe()
   }, [])
 
-  /* ---------------------------
-     UPDATE SECTIONS
-  --------------------------- */
+  /* ---------- UPDATERS ---------- */
 
-  const updateBranding = useCallback(async (branding: {
-    businessName: string
-    tagline: string
-    logoUrl: string
-  }) => {
+  const updateBranding = useCallback(async (branding) => {
     await update(ref(rtdb, 'settings/branding'), branding)
   }, [])
 
-  const updateBusiness = useCallback(async (business: {
-    primaryPhone: string
-    primaryWhatsApp: string
-    primaryEmail: string
-    addressText: string
-    mapEmbedUrl: string
-    instagram: string
-    facebook: string
-    twitter: string
-    linkedin: string
-    youtube: string
-  }) => {
+  const updateBusiness = useCallback(async (business) => {
     await update(ref(rtdb, 'settings/business'), business)
   }, [])
 
-  const updateHours = useCallback(async (hours: {
-    summer: SiteSettings['workingHours']['summer']
-    winter: SiteSettings['workingHours']['winter']
-    activeSeason: 'summer' | 'winter'
-  }) => {
+  const updateHours = useCallback(async (hours) => {
     await update(ref(rtdb, 'settings/hours'), hours)
+  }, [])
+
+  const updateFounder = useCallback(async (founder) => {
+    await update(ref(rtdb, 'settings/founder'), founder)
   }, [])
 
   return {
@@ -103,5 +86,6 @@ export function useAdminSettingsRTDB() {
     updateBranding,
     updateBusiness,
     updateHours,
+    updateFounder,
   }
 }
