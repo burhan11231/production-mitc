@@ -91,16 +91,17 @@ export default function SettingsTabs() {
     setIsSaving(true);
     try {
       await updateBusiness({
-        primaryPhone: formData.primaryPhone,
-        primaryEmail: formData.primaryEmail,
-        addressText: formData.addressText,
-        mapEmbedUrl: formData.mapEmbedUrl,
-        instagram: formData.instagram,
-        facebook: formData.facebook,
-        twitter: formData.twitter,
-        linkedin: formData.linkedin,
-        youtube: formData.youtube,
-      });
+  primaryPhone: formData.primaryPhone,
+  primaryWhatsApp: formData.primaryWhatsApp || '',
+  primaryEmail: formData.primaryEmail,
+  addressText: formData.addressText,
+  mapEmbedUrl: formData.mapEmbedUrl,
+  instagram: formData.instagram,
+  facebook: formData.facebook,
+  twitter: formData.twitter,
+  linkedin: formData.linkedin,
+  youtube: formData.youtube,
+})
       toast.success('Business details saved');
     } catch {
       toast.error('Failed to save business details');
