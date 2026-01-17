@@ -1,0 +1,27 @@
+import { NextResponse } from 'next/server';
+import admin from '@/firebase-admin';
+
+const db = admin.firestore();
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get('userId');
+
+  if (!userId) {
+    return NextResponse.json({ count: 0 });
+  }
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const snap = await db
+    .collection('leads')
+    .where('userId', '==', userId)
+    .where('createdAt', '>=', monthStart)
+    .count()
+    .get();
+
+  return NextResponse.json({
+    count: snap.data().count,
+  });
+}
