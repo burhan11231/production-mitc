@@ -53,18 +53,13 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
   const [isProcessing, setIsProcessing] = useState(false)
   const [authError, setAuthError] = useState<{ type: 'like' | 'dislike'; msg: string } | null>(null)
 
-  // 1. Sync counts from Salesperson doc
-  useEffect(() => {
-    if (!salesperson?.id || !isOpen) return
-    const unsub = onSnapshot(doc(db, 'salespersons', salesperson.id), (doc) => {
-      if (doc.exists()) {
-        const data = doc.data()
-        setLikesCount(data.likesCount || 0)
-        setDislikesCount(data.dislikesCount || 0)
-      }
-    })
-    return () => unsub()
-  }, [salesperson?.id, isOpen])
+  // ✅ Initialize counts once from props
+useEffect(() => {
+  if (!salesperson || !isOpen) return;
+
+  setLikesCount(salesperson.likesCount ?? 0);
+  setDislikesCount(salesperson.dislikesCount ?? 0);
+}, [salesperson, isOpen]);
 
   // 2. Sync logged-in user's specific reaction
   useEffect(() => {
@@ -100,55 +95,74 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
     const salespersonRef = doc(db, 'salespersons', salesperson.id!)
 
     try {
-      await runTransaction(db, async (transaction) => {
-        const reactionDoc = await transaction.get(reactionRef)
-        const spDoc = await transaction.get(salespersonRef)
+  await runTransaction(db, async (transaction) => {
+    const reactionDoc = await transaction.get(reactionRef)
+    const spDoc = await transaction.get(salespersonRef)
 
-        if (!spDoc.exists()) throw 'Salesperson not found'
+    if (!spDoc.exists()) throw 'Salesperson not found'
 
-        const data = spDoc.data()
-        let nL = data.likesCount || 0
-        let nD = data.dislikesCount || 0
+    const data = spDoc.data()
+    let nL = data.likesCount || 0
+    let nD = data.dislikesCount || 0
 
-        if (!reactionDoc.exists()) {
-          // New Reaction
-          transaction.set(reactionRef, {
-            userId: user.uid,
-            salespersonId: salesperson.id,
-            type,
-            createdAt: serverTimestamp()
-          })
-          type === 'like' ? nL++ : nD++
-        } else {
-          const prevType = reactionDoc.data().type
-          if (prevType === type) {
-            // Toggle off
-            transaction.delete(reactionRef)
-            type === 'like' ? nL-- : nD--
-          } else {
-            // Switch type
-            transaction.update(reactionRef, { type, updatedAt: serverTimestamp() })
-            if (type === 'like') {
-              nL++
-              nD--
-            } else {
-              nL--
-              nD++
-            }
-          }
-        }
-
-        transaction.update(salespersonRef, {
-          likesCount: Math.max(0, nL),
-          dislikesCount: Math.max(0, nD)
-        })
+    if (!reactionDoc.exists()) {
+      transaction.set(reactionRef, {
+        userId: user.uid,
+        salespersonId: salesperson.id,
+        type,
+        createdAt: serverTimestamp(),
       })
-    } catch (e) {
-      console.error(e)
-      toast.error('Failed to save reaction')
-    } finally {
-      setIsProcessing(false)
+      type === 'like' ? nL++ : nD++
+    } else {
+      const prevType = reactionDoc.data().type
+      if (prevType === type) {
+        transaction.delete(reactionRef)
+        type === 'like' ? nL-- : nD--
+      } else {
+        transaction.update(reactionRef, {
+          type,
+          updatedAt: serverTimestamp(),
+        })
+        if (type === 'like') {
+          nL++
+          nD--
+        } else {
+          nL--
+          nD++
+        }
+      }
     }
+
+    transaction.update(salespersonRef, {
+      likesCount: Math.max(0, nL),
+      dislikesCount: Math.max(0, nD),
+    })
+  })
+
+  /* ===============================
+     ✅ OPTIMISTIC UI UPDATE (HERE)
+     =============================== */
+
+  setUserReaction(type === userReaction ? null : type)
+
+  if (type === 'like') {
+    setLikesCount((c) => c + (userReaction === 'like' ? -1 : 1))
+    if (userReaction === 'dislike') {
+      setDislikesCount((c) => Math.max(0, c - 1))
+    }
+  } else {
+    setDislikesCount((c) => c + (userReaction === 'dislike' ? -1 : 1))
+    if (userReaction === 'like') {
+      setLikesCount((c) => Math.max(0, c - 1))
+    }
+  }
+
+} catch (e) {
+  console.error(e)
+  toast.error('Failed to save reaction')
+} finally {
+  setIsProcessing(false)
+}
   }
 
   return (
