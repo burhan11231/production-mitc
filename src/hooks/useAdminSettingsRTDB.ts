@@ -62,23 +62,59 @@ export function useAdminSettingsRTDB() {
     return () => unsubscribe()
   }, [])
 
-  /* ---------- UPDATERS ---------- */
+  /* ---------- UPDATERS (TYPED) ---------- */
 
-  const updateBranding = useCallback(async (branding) => {
-    await update(ref(rtdb, 'settings/branding'), branding)
-  }, [])
+  const updateBranding = useCallback(
+    async (branding: {
+      businessName: string
+      tagline: string
+      logoUrl: string
+    }) => {
+      await update(ref(rtdb, 'settings/branding'), branding)
+    },
+    []
+  )
 
-  const updateBusiness = useCallback(async (business) => {
-    await update(ref(rtdb, 'settings/business'), business)
-  }, [])
+  const updateBusiness = useCallback(
+    async (business: {
+      primaryPhone: string
+      primaryWhatsApp: string
+      primaryEmail: string
+      addressText: string
+      mapEmbedUrl: string
+      instagram: string
+      facebook: string
+      twitter: string
+      linkedin: string
+      youtube: string
+    }) => {
+      await update(ref(rtdb, 'settings/business'), business)
+    },
+    []
+  )
 
-  const updateHours = useCallback(async (hours) => {
-    await update(ref(rtdb, 'settings/hours'), hours)
-  }, [])
+  const updateHours = useCallback(
+    async (hours: {
+      summer: SiteSettings['workingHours']['summer']
+      winter: SiteSettings['workingHours']['winter']
+      activeSeason: 'summer' | 'winter'
+    }) => {
+      await update(ref(rtdb, 'settings/hours'), hours)
+    },
+    []
+  )
 
-  const updateFounder = useCallback(async (founder) => {
-    await update(ref(rtdb, 'settings/founder'), founder)
-  }, [])
+  const updateFounder = useCallback(
+    async (founder: {
+      founderName: string
+      founderImageUrl: string
+      founderEmail: string
+      founderBio: string
+    }) => {
+      await update(ref(rtdb, 'settings/founder'), founder)
+    },
+    []
+  )
 
   return {
     settings,
