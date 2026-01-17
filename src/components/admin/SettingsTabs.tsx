@@ -126,7 +126,13 @@ export default function SettingsTabs() {
     }
   };
 
-  if (loading || user?.role !== 'admin') return null;
+  if (loading) {
+  return <div className="p-8 text-gray-500 text-sm">Loading settings…</div>;
+}
+
+if (user?.role !== 'admin') {
+  return null;
+}
 
   return (
     <div>
