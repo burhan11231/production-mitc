@@ -1,23 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAdminSettingsRTDB } from '@/hooks/useAdminSettingsRTDB';
-import { useAuth } from '@/lib/auth-context';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import Image from 'next/image';
-import { compressImage, validateImageFile } from '@/lib/image-utils';
+
+import { useAdminSettingsRTDB } from '@/hooks/useAdminSettingsRTDB';
+import { useAuth } from '@/lib/auth-context';
 import { DEFAULT_SETTINGS } from '@/lib/firestore-models';
+import { compressImage, validateImageFile } from '@/lib/image-utils';
 
 type SettingsTab = 'branding' | 'business' | 'hours';
 
-const WEEK_DAYS: Array<
-  'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
-> = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WEEK_DAYS = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+] as const;
+
+const ADMIN_EMAIL = 'burhan.ah.shkh@gmail.com';
 
 export default function SettingsTabs() {
-  const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { user, isLoading } = useAuth();
 
   const {
     settings,
@@ -28,139 +36,144 @@ export default function SettingsTabs() {
   } = useAdminSettingsRTDB();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('branding');
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState(DEFAULT_SETTINGS)
+  const [formData, setFormData] = useState(DEFAULT_SETTINGS);
+  const [hydrated, setHydrated] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-const [hydrated, setHydrated] = useState(false);
+  /* ---------------- AUTH ---------------- */
 
-useEffect(() => {
-  if (!loading && settings && !hydrated) {
-    setFormData(settings);
-    setHydrated(true);
-  }
-}, [settings, loading, hydrated]);
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user || user.email !== ADMIN_EMAIL) {
+      toast.error('Admin access required');
+      router.push('/');
+    }
+  }, [user, isLoading, router]);
 
-  const ADMIN_EMAIL = 'burhan.ah.shkh@gmail.com';
+  /* ---------------- HYDRATE ---------------- */
 
+  useEffect(() => {
+    if (!loading && settings && !hydrated) {
+      setFormData(settings);
+      setHydrated(true);
+    }
+  }, [settings, loading, hydrated]);
 
-useEffect(() => {
-  if (isLoading) return;
-  if (!user || user.email !== ADMIN_EMAIL) {
-    toast.error('Admin access required');
-    router.push('/');
-  }
-}, [user, isLoading, router]);
+  /* ---------------- IMAGE ---------------- */
 
-  
-
-  /* ---------------- IMAGE UPLOAD ---------------- */
-
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: 'logoUrl'
-  ) => {
-    const file = e.target.files?.[0];
+  const handleLogoUpload = async (file?: File) => {
     if (!file) return;
 
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      toast.error(validation.error || 'Invalid image');
+      toast.error(validation.error);
       return;
     }
 
     try {
-      toast.loading('Compressing image...');
+      toast.loading('Optimizing logo…');
       const compressed = await compressImage(file, 700);
-      setFormData(prev => ({ ...prev, [field]: compressed }));
+      setFormData(prev => ({ ...prev, logoUrl: compressed }));
       toast.dismiss();
-      toast.success('Image ready');
+      toast.success('Logo ready');
     } catch {
       toast.dismiss();
-      toast.error('Image compression failed');
+      toast.error('Image processing failed');
     }
   };
 
-  /* ---------------- SAVE HANDLERS ---------------- */
+  /* ---------------- SAVE ---------------- */
 
   const saveBranding = async () => {
-    setIsSaving(true);
+    setSaving(true);
     try {
       await updateBranding({
         businessName: formData.businessName,
         tagline: formData.tagline,
         logoUrl: formData.logoUrl,
       });
-      toast.success('Branding saved');
+      toast.success('Branding updated');
     } catch {
-      toast.error('Failed to save branding');
+      toast.error('Save failed');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
   const saveBusiness = async () => {
-    setIsSaving(true);
+    setSaving(true);
     try {
       await updateBusiness({
-  primaryPhone: formData.primaryPhone,
-  primaryWhatsApp: formData.primaryWhatsApp || '',
-  primaryEmail: formData.primaryEmail,
-  addressText: formData.addressText,
-  mapEmbedUrl: formData.mapEmbedUrl,
-  instagram: formData.instagram,
-  facebook: formData.facebook,
-  twitter: formData.twitter,
-  linkedin: formData.linkedin,
-  youtube: formData.youtube,
-})
-      toast.success('Business details saved');
+        primaryPhone: formData.primaryPhone,
+        primaryWhatsApp: formData.primaryWhatsApp,
+        primaryEmail: formData.primaryEmail,
+        addressText: formData.addressText,
+        mapEmbedUrl: formData.mapEmbedUrl,
+        instagram: formData.instagram,
+        facebook: formData.facebook,
+        twitter: formData.twitter,
+        linkedin: formData.linkedin,
+        youtube: formData.youtube,
+      });
+      toast.success('Business info updated');
     } catch {
-      toast.error('Failed to save business details');
+      toast.error('Save failed');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
   const saveHours = async () => {
-    setIsSaving(true);
+    setSaving(true);
     try {
       await updateHours({
         summer: formData.workingHours.summer,
         winter: formData.workingHours.winter,
         activeSeason: formData.workingHours.activeSeason || 'summer',
       });
-      toast.success('Working hours saved');
+      toast.success('Hours updated');
     } catch {
-      toast.error('Failed to save working hours');
+      toast.error('Save failed');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
-  if (loading) {
-  return <div className="p-8 text-gray-500 text-sm">Loading settings…</div>;
-}
+  if (loading || !hydrated) {
+    return <div className="p-10 text-sm text-gray-500">Loading settings…</div>;
+  }
 
-if (user?.email !== ADMIN_EMAIL) {
-  return null;
-}
+  /* ======================================================
+     UI
+  ====================================================== */
 
   return (
-    <div>
-      {/* TABS */}
-      <div className="flex gap-2 mb-8 border-b border-gray-200 overflow-x-auto">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-8 pb-[env(safe-area-inset-bottom)]">
+
+      {/* ---------- HEADER ---------- */}
+      <div className="mb-10">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Site Settings
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Manage branding, business info, and working hours
+        </p>
+      </div>
+
+      {/* ---------- TABS ---------- */}
+      <div className="flex gap-2 border-b mb-10 overflow-x-auto">
         {[
-          { id: 'branding', label: '🎨 Branding' },
-          { id: 'business', label: '📱 Business' },
-          { id: 'hours', label: '⏰ Hours' },
+          { id: 'branding', label: 'Branding' },
+          { id: 'business', label: 'Business' },
+          { id: 'hours', label: 'Hours' },
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as SettingsTab)}
-            className={`px-6 py-3 font-medium border-b-2 ${
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition ${
               activeTab === tab.id
                 ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             {tab.label}
@@ -168,170 +181,240 @@ if (user?.email !== ADMIN_EMAIL) {
         ))}
       </div>
 
-      {/* BRANDING */}
+      {/* ======================================================
+         BRANDING
+      ====================================================== */}
       {activeTab === 'branding' && (
-        <div className="bg-white border rounded-lg p-8 space-y-6">
-          <input
-            value={formData.businessName}
-            onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-            placeholder="Business Name"
-            className="input"
-          />
+        <Section
+          title="Brand Identity"
+          actionLabel="Save Branding"
+          onSave={saveBranding}
+          saving={saving}
+        >
+          <Field label="Business Name">
+            <input
+              className="input"
+              value={formData.businessName}
+              onChange={e =>
+                setFormData({ ...formData, businessName: e.target.value })
+              }
+            />
+          </Field>
 
-          <input
-            value={formData.tagline}
-            onChange={e => setFormData({ ...formData, tagline: e.target.value })}
-            placeholder="Tagline"
-            className="input"
-          />
+          <Field label="Tagline">
+            <input
+              className="input"
+              value={formData.tagline}
+              onChange={e =>
+                setFormData({ ...formData, tagline: e.target.value })
+              }
+            />
+          </Field>
 
-          <input type="file" accept="image/*" onChange={e => handleImageUpload(e, 'logoUrl')} />
-
-          {formData.logoUrl && (
-            <div className="w-16 h-16 relative">
-              <Image src={formData.logoUrl} alt="Logo" fill unoptimized />
+          <Field label="Logo">
+            <div className="flex items-center gap-6">
+              {formData.logoUrl && (
+                <Image
+                  src={formData.logoUrl}
+                  alt="Logo"
+                  width={64}
+                  height={64}
+                  className="rounded-lg border"
+                  unoptimized
+                />
+              )}
+              <label className="btn-secondary cursor-pointer">
+                Upload Logo
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={e => handleLogoUpload(e.target.files?.[0])}
+                />
+              </label>
             </div>
-          )}
-
-          <button onClick={saveBranding} disabled={isSaving} className="btn-primary">
-            Save Branding
-          </button>
-        </div>
+          </Field>
+        </Section>
       )}
 
-      {/* BUSINESS */}
+      {/* ======================================================
+         BUSINESS
+      ====================================================== */}
       {activeTab === 'business' && (
-        <div className="bg-white border rounded-lg p-8 space-y-6">
-          <input
-            value={formData.primaryPhone}
-            onChange={e => setFormData({ ...formData, primaryPhone: e.target.value })}
-            placeholder="Phone"
-            className="input"
-          />
+        <Section
+          title="Business Information"
+          actionLabel="Save Business"
+          onSave={saveBusiness}
+          saving={saving}
+        >
+          <Grid>
+            <Field label="Phone">
+              <input
+                className="input"
+                value={formData.primaryPhone}
+                onChange={e =>
+                  setFormData({ ...formData, primaryPhone: e.target.value })
+                }
+              />
+            </Field>
 
-          <input
-            value={formData.primaryEmail}
-            onChange={e => setFormData({ ...formData, primaryEmail: e.target.value })}
-            placeholder="Email"
-            className="input"
-          />
+            <Field label="Email">
+              <input
+                className="input"
+                value={formData.primaryEmail}
+                onChange={e =>
+                  setFormData({ ...formData, primaryEmail: e.target.value })
+                }
+              />
+            </Field>
+          </Grid>
 
-          <textarea
-            value={formData.addressText}
-            onChange={e => setFormData({ ...formData, addressText: e.target.value })}
-            placeholder="Address"
-            className="textarea"
-          />
+          <Field label="Address">
+            <textarea
+              className="textarea"
+              value={formData.addressText}
+              onChange={e =>
+                setFormData({ ...formData, addressText: e.target.value })
+              }
+            />
+          </Field>
 
+          <Divider label="Social Links" />
 
-<input
-  value={formData.instagram}
-  onChange={e => setFormData({ ...formData, instagram: e.target.value })}
-  placeholder="Instagram URL"
-  className="input"
-/>
-
-<input
-  value={formData.facebook}
-  onChange={e => setFormData({ ...formData, facebook: e.target.value })}
-  placeholder="Facebook URL"
-  className="input"
-/>
-
-<input
-  value={formData.twitter}
-  onChange={e => setFormData({ ...formData, twitter: e.target.value })}
-  placeholder="Twitter / X URL"
-  className="input"
-/>
-
-<input
-  value={formData.linkedin}
-  onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
-  placeholder="LinkedIn URL"
-  className="input"
-/>
-
-<input
-  value={formData.youtube}
-  onChange={e => setFormData({ ...formData, youtube: e.target.value })}
-  placeholder="YouTube URL"
-  className="input"
-/>
-
-
-
-          <button onClick={saveBusiness} disabled={isSaving} className="btn-primary">
-            Save Business
-          </button>
-        </div>
+          <Grid>
+            {['instagram', 'facebook', 'twitter', 'linkedin', 'youtube'].map(
+              key => (
+                <Field key={key} label={key}>
+                  <input
+                    className="input"
+                    value={(formData as any)[key]}
+                    onChange={e =>
+                      setFormData({ ...formData, [key]: e.target.value })
+                    }
+                  />
+                </Field>
+              )
+            )}
+          </Grid>
+        </Section>
       )}
 
-      {/* HOURS */}
+      {/* ======================================================
+         HOURS
+      ====================================================== */}
       {activeTab === 'hours' && (
-  <div className="bg-white border rounded-lg p-8 space-y-8">
+        <Section
+          title="Working Hours"
+          actionLabel="Save Hours"
+          onSave={saveHours}
+          saving={saving}
+        >
+          {(['summer', 'winter'] as const).map(season => (
+            <div key={season} className="mb-10">
+              <h3 className="font-semibold mb-4 capitalize">{season}</h3>
 
-    {(['summer', 'winter'] as const).map(season => (
-      <div key={season}>
-        <h3 className="font-semibold capitalize mb-4">{season} hours</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {WEEK_DAYS.map(day => (
-            <div key={`${season}-${day}`} className="flex gap-2 items-center">
-              <span className="w-24 text-sm">{day}</span>
-
-              <input
-                type="time"
-                value={formData.workingHours[season][day]?.open || ''}
-                onChange={e =>
-                  setFormData(prev => ({
-                    ...prev,
-                    workingHours: {
-                      ...prev.workingHours,
-                      [season]: {
-                        ...prev.workingHours[season],
-                        [day]: {
-                          ...prev.workingHours[season][day],
-                          open: e.target.value,
-                        },
-                      },
-                    },
-                  }))
-                }
-                className="input"
-              />
-
-              <input
-                type="time"
-                value={formData.workingHours[season][day]?.close || ''}
-                onChange={e =>
-                  setFormData(prev => ({
-                    ...prev,
-                    workingHours: {
-                      ...prev.workingHours,
-                      [season]: {
-                        ...prev.workingHours[season],
-                        [day]: {
-                          ...prev.workingHours[season][day],
-                          close: e.target.value,
-                        },
-                      },
-                    },
-                  }))
-                }
-                className="input"
-              />
+              <div className="grid md:grid-cols-2 gap-4">
+                {WEEK_DAYS.map(day => (
+                  <div key={day} className="flex items-center gap-3">
+                    <span className="w-24 text-sm">{day}</span>
+                    <input
+                      type="time"
+                      className="input"
+                      value={formData.workingHours[season][day]?.open || ''}
+                      onChange={e =>
+                        setFormData(prev => ({
+                          ...prev,
+                          workingHours: {
+                            ...prev.workingHours,
+                            [season]: {
+                              ...prev.workingHours[season],
+                              [day]: {
+                                ...prev.workingHours[season][day],
+                                open: e.target.value,
+                              },
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <input
+                      type="time"
+                      className="input"
+                      value={formData.workingHours[season][day]?.close || ''}
+                      onChange={e =>
+                        setFormData(prev => ({
+                          ...prev,
+                          workingHours: {
+                            ...prev.workingHours,
+                            [season]: {
+                              ...prev.workingHours[season],
+                              [day]: {
+                                ...prev.workingHours[season][day],
+                                close: e.target.value,
+                              },
+                            },
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
-        </div>
-      </div>
-    ))}
+        </Section>
+      )}
+    </div>
+  );
+}
 
-    <button onClick={saveHours} className="btn-primary">
-      Save Hours
-    </button>
-  </div>
-)}
+/* ======================================================
+   UI HELPERS
+====================================================== */
+
+function Section({
+  title,
+  children,
+  actionLabel,
+  onSave,
+  saving,
+}: any) {
+  return (
+    <div className="bg-white border rounded-xl shadow-sm p-6 md:p-8 space-y-8">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      {children}
+      <div className="sticky bottom-0 bg-white pt-6 border-t">
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="btn-primary"
+        >
+          {saving ? 'Saving…' : actionLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: any) {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-medium text-gray-600">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function Grid({ children }: any) {
+  return <div className="grid md:grid-cols-2 gap-6">{children}</div>;
+}
+
+function Divider({ label }: any) {
+  return (
+    <div className="pt-4 border-t">
+      <span className="text-xs uppercase tracking-wider text-gray-400">
+        {label}
+      </span>
     </div>
   );
 }
