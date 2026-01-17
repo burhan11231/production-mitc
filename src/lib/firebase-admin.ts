@@ -10,4 +10,9 @@ if (!admin.apps.length) {
   });
 }
 
+// 🔹 Explicit exports (important)
+export const adminApp = admin;
+export const adminDb = admin.firestore();
+export const adminAuth = admin.auth();
+
 export default admin;
