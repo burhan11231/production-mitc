@@ -42,8 +42,10 @@ useEffect(() => {
 
   const ADMIN_EMAIL = 'burhan.ah.shkh@gmail.com';
 
+
 useEffect(() => {
-  if (!isLoading && user?.email !== ADMIN_EMAIL) {
+  if (isLoading) return;
+  if (!user || user.email !== ADMIN_EMAIL) {
     toast.error('Admin access required');
     router.push('/');
   }
