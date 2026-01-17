@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import admin from '@/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
+import admin from 'firebase-admin';
 
-const db = admin.firestore();
 const MAX_MESSAGES_PER_MONTH = 30;
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { userId, name, email, phone, message } = body;
+    const { userId, name, email, phone, message } = await req.json();
 
     if (!userId || !message?.trim()) {
       return NextResponse.json(
@@ -16,12 +15,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Month range
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // 🔒 Count messages server-side
-    const countSnap = await db
+    // ✅ Count leads for this month (1 read)
+    const countSnap = await adminDb
       .collection('leads')
       .where('userId', '==', userId)
       .where('createdAt', '>=', monthStart)
@@ -32,13 +30,13 @@ export async function POST(req: Request) {
 
     if (used >= MAX_MESSAGES_PER_MONTH) {
       return NextResponse.json(
-        { error: 'Monthly limit reached' },
+        { error: 'Monthly inquiry limit reached' },
         { status: 429 }
       );
     }
 
-    // Create lead
-    await db.collection('leads').add({
+    // ✅ Create lead (1 write)
+    await adminDb.collection('leads').add({
       name: name.trim(),
       email: email.trim(),
       phone: phone?.trim() || null,
@@ -53,9 +51,9 @@ export async function POST(req: Request) {
       remaining: MAX_MESSAGES_PER_MONTH - (used + 1),
     });
   } catch (err) {
-    console.error(err);
+    console.error('CONTACT_POST_ERROR', err);
     return NextResponse.json(
-      { error: 'Internal error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
