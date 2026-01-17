@@ -91,10 +91,12 @@ export function useAdminSalespersons(): UseAdminSalespersonsReturn {
     data: Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
     await addDoc(collection(db, 'salespersons'), {
-      ...data,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
+  ...data,
+  likesCount: 0,
+  dislikesCount: 0,
+  createdAt: serverTimestamp(),
+  updatedAt: serverTimestamp(),
+});
     toast.success('Salesperson added');
   },
   []
