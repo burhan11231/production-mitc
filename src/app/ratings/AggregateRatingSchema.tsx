@@ -1,9 +1,12 @@
-import { DEFAULT_SETTINGS } from '@/lib/firestore-models';
+// src/app/ratings/AggregateRatingSchema.tsx
 
 interface Props {
   avg: number;
   total: number;
 }
+
+const BUSINESS_NAME = 'MITC – Mateen IT Corp';
+const BUSINESS_URL = 'https://mitck.netlify.app/ratings';
 
 export default function AggregateRatingSchema({ avg, total }: Props) {
   if (!total) return null;
@@ -11,14 +14,14 @@ export default function AggregateRatingSchema({ avg, total }: Props) {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: DEFAULT_SETTINGS.businessName,
-    url: DEFAULT_SETTINGS.canonicalUrl,
+    name: BUSINESS_NAME,
+    url: BUSINESS_URL,
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: avg.toFixed(1),
-      reviewCount: total.toString(),
-      bestRating: '5',
-      worstRating: '1',
+      reviewCount: total,
+      bestRating: 5,
+      worstRating: 1,
     },
   };
 
