@@ -287,6 +287,22 @@ const handleFormUpdate = (newData: SiteSettings) => {
                     onChange={(value) => handleFormUpdate({ ...formData, addressText: value })}
                   />
 
+
+<InputField
+  label="Google Maps Embed (iframe)"
+  helper="Paste the full iframe code copied from Google Maps"
+  value={formData.mapEmbedUrl}
+  multiline
+  onChange={(value) =>
+    handleFormUpdate({
+      ...formData,
+      mapEmbedUrl: value,
+    })
+  }
+/>
+
+
+
                   <SocialLinksSection 
                     formData={formData} 
                     onChange={handleFormUpdate} 
