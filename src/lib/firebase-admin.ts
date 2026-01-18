@@ -19,9 +19,21 @@ export function initAdmin() {
 }
 
 /* ------------------------------------
-   CONVENIENCE EXPORTS
+   LAZY ACCESSORS (CRITICAL)
 ------------------------------------ */
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
+export function getAdminDb() {
+  initAdmin();
+  return admin.firestore();
+}
+
+export function getAdminAuth() {
+  initAdmin();
+  return admin.auth();
+}
+
+export function getAdminRtdb() {
+  initAdmin();
+  return admin.database();
+}
 
 export default admin;
