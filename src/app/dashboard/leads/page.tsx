@@ -201,26 +201,7 @@ useEffect(() => {
 )}
 
 
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-3">Leads Management</h1>
-              <p className="text-lg text-gray-600">Manage and respond to customer inquiries</p>
-            </div>
             
-            <div className="flex items-center gap-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold bg-gradient-to-br from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  {leads.length}
-                </div>
-                <p className="text-sm text-gray-600 font-medium mt-1">Total Leads</p>
-              </div>
-              {unreadCount > 0 && (
-                <div className="text-center">
-                  <div className="text-4xl font-bold bg-gradient-to-br from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                    {unreadCount}
-                  </div>
-                  <p className="text-sm text-blue-600 font-medium mt-1">Unread</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -246,7 +227,7 @@ useEffect(() => {
 
             {/* Filter Buttons */}
             <div className="flex gap-2 bg-gray-100 rounded-2xl p-1.5">
-              {(['all', 'unread', 'read'] as const).map((status) => (
+              {(['Inquiry Log', 'Pending Inquiries', 'Reviewed Inquiries'] as const).map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status)}
