@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getAuth } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { db } from '@/lib/firebase';
@@ -113,7 +114,13 @@ useEffect(() => {
   try {
     await deleteDoc(doc(db, 'leads', leadId));
 
-    const token = await user?.getIdToken();
+    const auth = getAuth();
+    const token = await auth.currentUser?.getIdToken();
+
+    if (!token) {
+      toast.error('Authentication expired. Please log in again.');
+      return;
+    }
 
     await fetch('/api/contact/decrement', {
       method: 'POST',
