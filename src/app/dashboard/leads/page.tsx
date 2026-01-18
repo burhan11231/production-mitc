@@ -179,7 +179,7 @@ export default function LeadsPage() {
 
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
             {storage && (
-              <div className="mb-8 rounded-2xl border p-5 bg-white">
+              <div className="mb-8 w-full rounded-2xl border p-5 bg-white">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-gray-900">Leads Storage</h3>
                   <span className="text-sm text-gray-600">
