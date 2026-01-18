@@ -1,7 +1,8 @@
+// src/app/actions/toggleSalespersonReaction.ts
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
-import admin from 'firebase-admin'; // ✅ REQUIRED for FieldValue
+import admin from 'firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 
 type ReactionType = 'like' | 'dislike';
 
@@ -10,11 +11,13 @@ export async function toggleSalespersonReaction(
   salespersonId: string,
   type: ReactionType
 ) {
+  const adminDb = getAdminDb(); // ✅ INIT INSIDE FUNCTION
+
   const reactionId = `${userId}_${salespersonId}`;
   const reactionRef = adminDb.doc(`salesperson_reactions/${reactionId}`);
   const salespersonRef = adminDb.doc(`salespersons/${salespersonId}`);
 
-  await adminDb.runTransaction(async (tx) => {
+  await adminDb.runTransaction(async tx => {
     const reactionSnap = await tx.get(reactionRef);
     const salespersonSnap = await tx.get(salespersonRef);
 
