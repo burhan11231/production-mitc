@@ -8,7 +8,7 @@ import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/rea
 import { Salesperson } from '@/lib/firestore-models'
 import { useAuth } from '@/lib/auth-context'
 import { toggleSalespersonReaction } from '@/app/actions/toggleSalespersonReaction'
-import { getUserSalespersonReaction } from '@/app/actions/getUserSalespersonReaction';
+import { reactionCache } from '@/hooks/useSalespersons';
 
 import toast from 'react-hot-toast'    
     
@@ -53,28 +53,17 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
     useState<{ type: 'like' | 'dislike'; msg: string } | null>(null)    
     
   /* ✅ INIT COUNTS FROM SALESPERSON (FIX) */    
-  useEffect(() => {    
-    if (!isOpen || !salesperson) return    
-    
-    setLikesCount(salesperson.likesCount ?? 0)    
-    setDislikesCount(salesperson.dislikesCount ?? 0)    
-  }, [isOpen, salesperson])   
+  useEffect(() => {
+  if (!isOpen || !salesperson) return;
 
+  setLikesCount(salesperson.likesCount ?? 0);
+  setDislikesCount(salesperson.dislikesCount ?? 0);
 
-
-useEffect(() => {
-  if (!isOpen || !user || !salesperson?.id) return;
-
-  let mounted = true;
-
-  getUserSalespersonReaction(user.uid, salesperson.id).then((reaction) => {
-    if (mounted) setUserReaction(reaction);
-  });
-
-  return () => {
-    mounted = false;
-  };
-}, [isOpen, user?.uid, salesperson?.id]); 
+  setUserReaction(
+    reactionCache.get(salesperson.id!) ?? null
+  );
+}, [isOpen, salesperson]);   
+ 
     
   /* ---- Sync logged-in user's reaction ---- */    
       
@@ -97,36 +86,26 @@ useEffect(() => {
   setIsProcessing(true);
 
   const prev = userReaction;
-  let next: 'like' | 'dislike' | null = null;
-
-  // Determine next state
-  if (prev === type) next = null;
-  else next = type;
+  const next = prev === type ? null : type;
 
   // ---- INSTANT UI UPDATE ----
   setUserReaction(next);
+  reactionCache.set(salesperson!.id!, next);
 
-  setLikesCount((c) =>
-    prev === 'like'
-      ? c - 1
-      : next === 'like'
-      ? c + 1
-      : c
+  setLikesCount(c =>
+    prev === 'like' ? c - 1 : next === 'like' ? c + 1 : c
   );
 
-  setDislikesCount((c) =>
-    prev === 'dislike'
-      ? c - 1
-      : next === 'dislike'
-      ? c + 1
-      : c
+  setDislikesCount(c =>
+    prev === 'dislike' ? c - 1 : next === 'dislike' ? c + 1 : c
   );
 
   // ---- SERVER CALL ----
   toggleSalespersonReaction(user.uid, salesperson!.id!, type)
     .catch(() => {
-      // 🔁 Rollback safely
+      // 🔁 ROLLBACK (rare)
       setUserReaction(prev);
+      reactionCache.set(salesperson!.id!, prev);
       setLikesCount(salesperson!.likesCount ?? 0);
       setDislikesCount(salesperson!.dislikesCount ?? 0);
       toast.error('Failed to save reaction');
@@ -134,7 +113,7 @@ useEffect(() => {
     .finally(() => {
       setIsProcessing(false);
     });
-};    
+};
     
   /* ====================== UI BELOW IS 100% YOUR ORIGINAL ====================== */    
     
