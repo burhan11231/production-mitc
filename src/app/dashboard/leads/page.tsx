@@ -29,20 +29,18 @@ export default function LeadsPage() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'unread' | 'read'>('all');
 
+  const [storage, setStorage] = useState<{
+    total: number;
+    percent: number;
+    blocked: boolean;
+  } | null>(null);
 
-const [storage, setStorage] = useState<{
-  total: number;
-  percent: number;
-  blocked: boolean;
-} | null>(null);
-
-
-useEffect(() => {
-  fetch('/api/contact/status', { cache: 'no-store' })
-    .then(res => res.json())
-    .then(setStorage)
-    .catch(() => setStorage(null));
-}, []);
+  useEffect(() => {
+    fetch('/api/contact/status', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(setStorage)
+      .catch(() => setStorage(null));
+  }, []);
 
   useEffect(() => {
     if (!isLoading && user?.role !== 'admin') {
@@ -62,7 +60,7 @@ useEffect(() => {
       (lead) =>
         lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+        String(lead.phone || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (filterStatus !== 'all') {
@@ -109,35 +107,35 @@ useEffect(() => {
   };
 
   const deleteLead = async (leadId: string) => {
-  if (!confirm('Are you sure you want to delete this lead?')) return;
+    if (!confirm('Are you sure you want to delete this lead?')) return;
 
-  try {
-    await deleteDoc(doc(db, 'leads', leadId));
+    try {
+      await deleteDoc(doc(db, 'leads', leadId));
 
-    const auth = getAuth();
-    const token = await auth.currentUser?.getIdToken();
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
 
-    if (!token) {
-      toast.error('Authentication expired. Please log in again.');
-      return;
+      if (!token) {
+        toast.error('Authentication expired. Please log in again.');
+        return;
+      }
+
+      await fetch('/api/contact/decrement', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setLeads(prev => prev.filter(l => l.id !== leadId));
+      if (selectedLead?.id === leadId) setSelectedLead(null);
+
+      toast.success('Lead deleted successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete lead');
     }
-
-    await fetch('/api/contact/decrement', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setLeads(prev => prev.filter(l => l.id !== leadId));
-    if (selectedLead?.id === leadId) setSelectedLead(null);
-
-    toast.success('Lead deleted successfully');
-  } catch (err) {
-    console.error(err);
-    toast.error('Failed to delete lead');
-  }
-};
+  };
 
   const unreadCount = leads.filter(l => !l.read).length;
 
@@ -156,6 +154,13 @@ useEffect(() => {
     return null;
   }
 
+  // Filter configuration to map UI labels to state values
+  const filterOptions = [
+    { label: 'Inquiry Log', value: 'all' },
+    { label: 'Pending Inquiries', value: 'unread' },
+    { label: 'Reviewed Inquiries', value: 'read' },
+  ] as const;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#faf9f7] via-[#fefefe] to-[#f5f3f0]">
       {/* Header */}
@@ -171,40 +176,35 @@ useEffect(() => {
             </svg>
             Back to Dashboard
           </Link>
-          
+
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+            {storage && (
+              <div className="mb-8 rounded-2xl border p-5 bg-white">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-semibold text-gray-900">Leads Storage</h3>
+                  <span className="text-sm text-gray-600">
+                    {storage.total.toLocaleString()} / 50,000
+                  </span>
+                </div>
 
-{storage && (
-  <div className="mb-8 rounded-2xl border p-5 bg-white">
-    <div className="flex justify-between items-center mb-2">
-      <h3 className="font-semibold text-gray-900">Leads Storage</h3>
-      <span className="text-sm text-gray-600">
-        {storage.total.toLocaleString()} / 50,000
-      </span>
-    </div>
+                <div className="h-3 rounded-full bg-gray-200 overflow-hidden">
+                  <div
+                    className={`h-full ${
+                      storage.percent >= 90 ? 'bg-red-500' : 'bg-blue-600'
+                    }`}
+                    style={{ width: `${storage.percent}%` }}
+                  />
+                </div>
 
-    <div className="h-3 rounded-full bg-gray-200 overflow-hidden">
-      <div
-        className={`h-full ${
-          storage.percent >= 90 ? 'bg-red-500' : 'bg-blue-600'
-        }`}
-        style={{ width: `${storage.percent}%` }}
-      />
-    </div>
-
-    {storage.percent >= 90 && (
-      <p className="mt-3 text-sm text-red-600 font-medium">
-        Storage almost full. Delete old leads or upgrade Firebase.
-      </p>
-    )}
-  </div>
-)}
-
-
-            
-            </div>
-         
-       
+                {storage.percent >= 90 && (
+                  <p className="mt-3 text-sm text-red-600 font-medium">
+                    Storage almost full. Delete old leads or upgrade Firebase.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Filters & Search */}
@@ -227,18 +227,18 @@ useEffect(() => {
 
             {/* Filter Buttons */}
             <div className="flex gap-2 bg-gray-100 rounded-2xl p-1.5">
-              {(['Inquiry Log', 'Pending Inquiries', 'Reviewed Inquiries'] as const).map((status) => (
+              {filterOptions.map((option) => (
                 <button
-                  key={status}
-                  onClick={() => setFilterStatus(status)}
+                  key={option.value}
+                  onClick={() => setFilterStatus(option.value)}
                   className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 capitalize ${
-                    filterStatus === status
+                    filterStatus === option.value
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  {status}
-                  {status === 'unread' && unreadCount > 0 && (
+                  {option.label}
+                  {option.value === 'unread' && unreadCount > 0 && (
                     <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
                       {unreadCount}
                     </span>
@@ -272,7 +272,7 @@ useEffect(() => {
                     {!selectedLead.read && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">
                         <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
-                        UNREAD
+                        NEW
                       </span>
                     )}
                     <span className="text-sm text-gray-500">
@@ -324,7 +324,7 @@ useEffect(() => {
                     <span className="text-sm font-semibold text-gray-600">Status</span>
                   </div>
                   <p className={`font-semibold ${selectedLead.read ? 'text-gray-600' : 'text-blue-600'}`}>
-                    {selectedLead.read ? 'Read' : 'Unread'}
+                    {selectedLead.read ? 'Reviewed' : 'Pending'}
                   </p>
                 </div>
               </div>
@@ -395,7 +395,7 @@ useEffect(() => {
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Mark as Read
+                    Mark as Reviewed
                   </button>
                 )}
                 <button
