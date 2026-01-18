@@ -1,11 +1,14 @@
+// src/app/api/admin/salespersons/route.ts
 import { NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { getAdminDb } from '@/lib/firebase-admin'
 import { FieldValue } from 'firebase-admin/firestore'
 
 /* =======================
    GET – Load all members
 ======================= */
 export async function GET() {
+  const adminDb = getAdminDb() // ✅ INIT INSIDE HANDLER
+
   const snap = await adminDb
     .collection('salespersons')
     .orderBy('order', 'asc')
@@ -25,6 +28,8 @@ export async function GET() {
    POST – Add member
 ======================= */
 export async function POST(req: Request) {
+  const adminDb = getAdminDb()
+
   const body = await req.json()
 
   await adminDb.collection('salespersons').add({
@@ -42,6 +47,8 @@ export async function POST(req: Request) {
    PATCH – Update member
 ======================= */
 export async function PATCH(req: Request) {
+  const adminDb = getAdminDb()
+
   const { id, updates } = await req.json()
 
   await adminDb.doc(`salespersons/${id}`).update({
@@ -56,6 +63,8 @@ export async function PATCH(req: Request) {
    DELETE – Remove member
 ======================= */
 export async function DELETE(req: Request) {
+  const adminDb = getAdminDb()
+
   const { id } = await req.json()
 
   await adminDb.doc(`salespersons/${id}`).delete()
