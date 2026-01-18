@@ -4,19 +4,13 @@ import { useEffect, useState } from 'react';
 import { Salesperson } from '@/lib/firestore-models';
 import toast from 'react-hot-toast';
 
-/* --------------------------------------------------
-   MODULE CACHE (SESSION)
--------------------------------------------------- */
 let cachedSalespersons: Salesperson[] | null = null;
 let fetchPromise: Promise<Salesperson[]> | null = null;
 
-interface UseSalespersonsReturn {
-  salespersons: Salesperson[];
-  isLoading: boolean;
-  error: Error | null;
-}
+// ✅ Reaction cache per session
+export const reactionCache = new Map<string, 'like' | 'dislike' | null>();
 
-export function useSalespersons(): UseSalespersonsReturn {
+export function useSalespersons() {
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -24,22 +18,26 @@ export function useSalespersons(): UseSalespersonsReturn {
   useEffect(() => {
     let mounted = true;
 
-    // 1️⃣ Use memory cache
     if (cachedSalespersons) {
       setSalespersons(cachedSalespersons);
       setIsLoading(false);
       return;
     }
 
-    // 2️⃣ Deduplicate concurrent fetches
     if (!fetchPromise) {
       fetchPromise = fetch('/api/salespersons')
         .then(res => {
-          if (!res.ok) throw new Error('Failed to fetch salespersons');
+          if (!res.ok) throw new Error('Failed to fetch');
           return res.json();
         })
         .then((data: Salesperson[]) => {
           cachedSalespersons = data;
+
+          // ✅ Fill session cache
+          data.forEach(sp => {
+            reactionCache.set(sp.id!, sp.userReaction ?? null);
+          });
+
           return data;
         });
     }
