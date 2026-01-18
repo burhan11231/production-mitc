@@ -37,9 +37,10 @@ const [storage, setStorage] = useState<{
 
 
 useEffect(() => {
-  fetch('/api/contact/status')
+  fetch('/api/contact/status', { cache: 'no-store' })
     .then(res => res.json())
-    .then(setStorage);
+    .then(setStorage)
+    .catch(() => setStorage(null));
 }, []);
 
   useEffect(() => {
@@ -107,24 +108,29 @@ useEffect(() => {
   };
 
   const deleteLead = async (leadId: string) => {
-    if (!confirm('Are you sure you want to delete this lead? This action cannot be undone.')) return;
+  if (!confirm('Are you sure you want to delete this lead?')) return;
 
-    try {
-      await deleteDoc(doc(db, 'leads', leadId));
+  try {
+    await deleteDoc(doc(db, 'leads', leadId));
 
-await fetch('/api/contact/decrement', {
-  method: 'POST',
-});
-      setLeads((prev) => prev.filter((lead) => lead.id !== leadId));
-      if (selectedLead?.id === leadId) {
-        setSelectedLead(null);
-      }
-      toast.success('Lead deleted successfully');
-    } catch (error) {
-      console.error('Error deleting lead:', error);
-      toast.error('Failed to delete lead');
-    }
-  };
+    const token = await user?.getIdToken();
+
+    await fetch('/api/contact/decrement', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setLeads(prev => prev.filter(l => l.id !== leadId));
+    if (selectedLead?.id === leadId) setSelectedLead(null);
+
+    toast.success('Lead deleted successfully');
+  } catch (err) {
+    console.error(err);
+    toast.error('Failed to delete lead');
+  }
+};
 
   const unreadCount = leads.filter(l => !l.read).length;
 
