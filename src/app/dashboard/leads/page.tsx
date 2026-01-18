@@ -28,6 +28,20 @@ export default function LeadsPage() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'unread' | 'read'>('all');
 
+
+const [storage, setStorage] = useState<{
+  total: number;
+  percent: number;
+  blocked: boolean;
+} | null>(null);
+
+
+useEffect(() => {
+  fetch('/api/contact/status')
+    .then(res => res.json())
+    .then(setStorage);
+}, []);
+
   useEffect(() => {
     if (!isLoading && user?.role !== 'admin') {
       toast.error('Admin access required');
@@ -97,6 +111,10 @@ export default function LeadsPage() {
 
     try {
       await deleteDoc(doc(db, 'leads', leadId));
+
+await fetch('/api/contact/decrement', {
+  method: 'POST',
+});
       setLeads((prev) => prev.filter((lead) => lead.id !== leadId));
       if (selectedLead?.id === leadId) {
         setSelectedLead(null);
@@ -142,6 +160,34 @@ export default function LeadsPage() {
           </Link>
           
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+
+{storage && (
+  <div className="mb-8 rounded-2xl border p-5 bg-white">
+    <div className="flex justify-between items-center mb-2">
+      <h3 className="font-semibold text-gray-900">Leads Storage</h3>
+      <span className="text-sm text-gray-600">
+        {storage.total.toLocaleString()} / 50,000
+      </span>
+    </div>
+
+    <div className="h-3 rounded-full bg-gray-200 overflow-hidden">
+      <div
+        className={`h-full ${
+          storage.percent >= 90 ? 'bg-red-500' : 'bg-blue-600'
+        }`}
+        style={{ width: `${storage.percent}%` }}
+      />
+    </div>
+
+    {storage.percent >= 90 && (
+      <p className="mt-3 text-sm text-red-600 font-medium">
+        Storage almost full. Delete old leads or upgrade Firebase.
+      </p>
+    )}
+  </div>
+)}
+
+
             <div>
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-3">Leads Management</h1>
               <p className="text-lg text-gray-600">Manage and respond to customer inquiries</p>
