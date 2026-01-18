@@ -6,7 +6,7 @@ import { useAdminSalespersons } from '@/hooks/useAdminSalespersons'
 import { Salesperson } from '@/lib/firestore-models'
 import { compressImage, validateImageFile } from '@/lib/image-utils'
 import toast from 'react-hot-toast'
-import FirestoreErrorDialog from '@/components/FirestoreErrorDialog'
+
 
 interface FormData extends Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'> {}
 
@@ -38,7 +38,6 @@ export default function AdminTeamManager() {
   const {
   salespersons: activeSalespersons,
   isLoading,
-  indexError,
   addSalesperson,
   updateSalesperson,
   deleteSalesperson,
@@ -52,7 +51,7 @@ export default function AdminTeamManager() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [showErrorDialog, setShowErrorDialog] = useState(false)
+  
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
   // Filters & Search
@@ -81,12 +80,10 @@ export default function AdminTeamManager() {
     order: 0,
   })
 
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
+  
 
   // Fetch all salespersons (active + inactive)
-  useEffect(() => {
-    if (indexError) setShowErrorDialog(true)
-  }, [indexError])
+  
 
   // Simulate fetching all salespersons - in real app, use separate hook
   useEffect(() => {
@@ -833,12 +830,7 @@ export default function AdminTeamManager() {
         </div>
       )}
 
-      <FirestoreErrorDialog
-        error={indexError}
-        projectId={projectId}
-        isOpen={showErrorDialog}
-        onDismiss={() => setShowErrorDialog(false)}
-      />
+      
     </>
   )
 }
