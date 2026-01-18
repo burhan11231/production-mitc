@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import admin from 'firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 
 export async function GET(req: Request) {
   try {
+    const adminDb = getAdminDb();
     const userId = req.headers.get('x-user-id');
 
-    // 1️⃣ Load salespersons
     const snap = await adminDb
       .collection('salespersons')
       .where('isActive', '==', true)
@@ -18,7 +17,6 @@ export async function GET(req: Request) {
       ...doc.data(),
     })) as any[];
 
-    // 2️⃣ If user logged in → batch-load reactions
     if (userId) {
       const reactionRefs = salespersons.map(sp =>
         adminDb.doc(`salesperson_reactions/${userId}_${sp.id}`)
