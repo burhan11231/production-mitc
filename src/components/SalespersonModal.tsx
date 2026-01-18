@@ -8,6 +8,7 @@ import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/rea
 import { Salesperson } from '@/lib/firestore-models'
 import { useAuth } from '@/lib/auth-context'
 import { toggleSalespersonReaction } from '@/app/actions/toggleSalespersonReaction'
+import { getUserSalespersonReaction } from '@/app/actions/getUserSalespersonReaction';
 
 import toast from 'react-hot-toast'    
     
@@ -57,7 +58,23 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
     
     setLikesCount(salesperson.likesCount ?? 0)    
     setDislikesCount(salesperson.dislikesCount ?? 0)    
-  }, [isOpen, salesperson])    
+  }, [isOpen, salesperson])   
+
+
+
+useEffect(() => {
+  if (!isOpen || !user || !salesperson?.id) return;
+
+  let mounted = true;
+
+  getUserSalespersonReaction(user.uid, salesperson.id).then((reaction) => {
+    if (mounted) setUserReaction(reaction);
+  });
+
+  return () => {
+    mounted = false;
+  };
+}, [isOpen, user?.uid, salesperson?.id]); 
     
   /* ---- Sync logged-in user's reaction ---- */    
       
@@ -69,47 +86,55 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
     
   /* ---------------- Reaction Handler ---------------- */    
     
-  const handleReaction = async (type: 'like' | 'dislike') => {    
-  if (!user) {    
-    setAuthError({ type, msg: `Please login to ${type}` })    
-    return    
-  }    
-    
-    
-  // ---- OPTIMISTIC UPDATE (INSTANT) ----    
-  setIsProcessing(true)    
-    
-  const prev = userReaction    
-    
-  setUserReaction(prev === type ? null : type)    
-    
-  if (type === 'like') {    
-    setLikesCount(c => c + (prev === 'like' ? -1 : 1))    
-    if (prev === 'dislike') {    
-      setDislikesCount(c => Math.max(0, c - 1))    
-    }    
-  } else {    
-    setDislikesCount(c => c + (prev === 'dislike' ? -1 : 1))    
-    if (prev === 'like') {    
-      setLikesCount(c => Math.max(0, c - 1))    
-    }    
-  }    
-    
-  // ---- FIRE & FORGET SERVER CALL ----    
-  toggleSalespersonReaction(user.uid, salesperson.id!, type)    
-    .catch(err => {    
-      console.error(err)    
-      toast.error('Failed to save reaction')    
-    
-      // 🔁 rollback (rare case)    
-      setUserReaction(prev)    
-      setLikesCount(salesperson.likesCount ?? 0)    
-      setDislikesCount(salesperson.dislikesCount ?? 0)    
-    })    
-    .finally(() => {    
-      setIsProcessing(false)    
-    })    
-}    
+  const handleReaction = (type: 'like' | 'dislike') => {
+  if (!user) {
+    setAuthError({ type, msg: `Please login to ${type}` });
+    return;
+  }
+
+  if (isProcessing) return;
+
+  setIsProcessing(true);
+
+  const prev = userReaction;
+  let next: 'like' | 'dislike' | null = null;
+
+  // Determine next state
+  if (prev === type) next = null;
+  else next = type;
+
+  // ---- INSTANT UI UPDATE ----
+  setUserReaction(next);
+
+  setLikesCount((c) =>
+    prev === 'like'
+      ? c - 1
+      : next === 'like'
+      ? c + 1
+      : c
+  );
+
+  setDislikesCount((c) =>
+    prev === 'dislike'
+      ? c - 1
+      : next === 'dislike'
+      ? c + 1
+      : c
+  );
+
+  // ---- SERVER CALL ----
+  toggleSalespersonReaction(user.uid, salesperson!.id!, type)
+    .catch(() => {
+      // 🔁 Rollback safely
+      setUserReaction(prev);
+      setLikesCount(salesperson!.likesCount ?? 0);
+      setDislikesCount(salesperson!.dislikesCount ?? 0);
+      toast.error('Failed to save reaction');
+    })
+    .finally(() => {
+      setIsProcessing(false);
+    });
+};    
     
   /* ====================== UI BELOW IS 100% YOUR ORIGINAL ====================== */    
     
