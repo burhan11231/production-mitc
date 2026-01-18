@@ -1,87 +1,76 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {    
-  FaTools,    
-  FaMicrochip,    
-  FaDesktop,    
-  FaBatteryHalf,    
-  FaWindows,    
-  FaServer,    
-  FaMemory,    
-  FaShieldAlt,    
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+
+import {
+  FaTools,
+  FaMicrochip,
+  FaDesktop,
+  FaBatteryHalf,
+  FaWindows,
+  FaServer,
+  FaMemory,
+  FaShieldAlt,
 } from 'react-icons/fa';
 import { MdStorage } from 'react-icons/md';
 import { HiOutlineCurrencyRupee, HiOutlineSparkles } from 'react-icons/hi2';
 import { RiEyeLine } from 'react-icons/ri';
 import { TbArrowsUpRight, TbChecks } from 'react-icons/tb';
-import Link from 'next/link';
-
-import { useAuth } from '@/lib/auth-context';
-import { db } from '@/lib/firebase';
-import {    
-  collection,    
-  addDoc,    
-  serverTimestamp,    
-  query,    
-  where,    
-  getCountFromServer,    
-} from 'firebase/firestore';
-import toast from 'react-hot-toast';
 
 import TopFooter from '@/components/topFooter';
+import { useAuth } from '@/lib/auth-context';
 
 /* ---------------- CONSTANTS ---------------- */
 
 const heroWords = ['Students', 'Businesses', 'Creators', 'Developers', 'Offices'];
 
-const capabilities = [    
-  { label: 'Diagnostics', icon: FaTools },    
-  { label: 'Chip-Level Repair', icon: FaMicrochip },    
-  { label: 'Screen Replacement', icon: FaDesktop },    
-  { label: 'Battery Replacement', icon: FaBatteryHalf },    
-  { label: 'OS Installation', icon: FaWindows },    
-  { label: 'BIOS Update', icon: FaServer },    
-  { label: 'RAM Upgrade', icon: FaMemory },    
-  { label: 'SSD Upgrade', icon: MdStorage },    
+const capabilities = [
+  { label: 'Diagnostics', icon: FaTools },
+  { label: 'Chip-Level Repair', icon: FaMicrochip },
+  { label: 'Screen Replacement', icon: FaDesktop },
+  { label: 'Battery Replacement', icon: FaBatteryHalf },
+  { label: 'OS Installation', icon: FaWindows },
+  { label: 'BIOS Update', icon: FaServer },
+  { label: 'RAM Upgrade', icon: FaMemory },
+  { label: 'SSD Upgrade', icon: MdStorage },
 ];
 
 const WHY_ACCENT = 'from-[#0071e3]/20 via-white/0 to-emerald-400/20';
 
-const whyChooseUs = [    
-  {    
-    title: '15-Day Replacement Warranty',    
-    desc: 'Added peace of mind with a straightforward replacement policy on eligible devices.',    
-    icon: FaShieldAlt,    
-    accent: WHY_ACCENT,    
-  },    
-  {    
-    title: 'Fair, Market-Aligned Pricing',    
-    desc: 'Prices reflect real market value—no inflated tags, no artificial discounts.',    
-    icon: HiOutlineCurrencyRupee,    
-    accent: WHY_ACCENT,    
-  },    
-  {    
-    title: 'Diagnostics Done in Front of You',    
-    desc: 'Basic checks and demonstrations are performed openly before delivery.',    
-    icon: RiEyeLine,    
-    accent: WHY_ACCENT,    
-  },    
-  {    
-    title: 'Upgrade-First Mindset',    
-    desc: 'We recommend RAM, SSD, or OS upgrades when it makes more sense than replacement.',    
-    icon: TbArrowsUpRight,    
-    accent: WHY_ACCENT,    
-  },    
-  {    
-    title: 'Transparent Buying Process',    
-    desc: 'Specifications, condition, and limitations are clearly explained—no surprises after purchase.',    
-    icon: TbChecks,    
-    accent: WHY_ACCENT,    
-  },    
+const whyChooseUs = [
+  {
+    title: '15-Day Replacement Warranty',
+    desc: 'Added peace of mind with a straightforward replacement policy on eligible devices.',
+    icon: FaShieldAlt,
+    accent: WHY_ACCENT,
+  },
+  {
+    title: 'Fair, Market-Aligned Pricing',
+    desc: 'Prices reflect real market value—no inflated tags, no artificial discounts.',
+    icon: HiOutlineCurrencyRupee,
+    accent: WHY_ACCENT,
+  },
+  {
+    title: 'Diagnostics Done in Front of You',
+    desc: 'Basic checks and demonstrations are performed openly before delivery.',
+    icon: RiEyeLine,
+    accent: WHY_ACCENT,
+  },
+  {
+    title: 'Upgrade-First Mindset',
+    desc: 'We recommend RAM, SSD, or OS upgrades when it makes more sense than replacement.',
+    icon: TbArrowsUpRight,
+    accent: WHY_ACCENT,
+  },
+  {
+    title: 'Transparent Buying Process',
+    desc: 'Specifications, condition, and limitations are clearly explained—no surprises after purchase.',
+    icon: TbChecks,
+    accent: WHY_ACCENT,
+  },
 ];
-
-const MAX_MESSAGES_PER_MONTH = 30;
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -97,25 +86,21 @@ export default function HomeClient() {
     return () => clearInterval(interval);
   }, []);
 
-  /* -------- AUTH & FORM STATE -------- */
+  /* -------- AUTH -------- */
   const { user } = useAuth();
+
+  /* -------- CONTACT FORM STATE -------- */
   const [isLoading, setIsLoading] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
+    name: '',
+    email: '',
     phone: '',
     message: '',
   });
 
-  /* -------- MESSAGE LIMIT STATE -------- */
-  const [messagesUsed, setMessagesUsed] = useState<number | null>(null);
-  const messagesLeft =
-    messagesUsed !== null
-      ? Math.max(0, MAX_MESSAGES_PER_MONTH - messagesUsed)
-      : null;
-
-  /* -------- AUTO-FILL USER DATA -------- */
+  /* -------- PREFILL USER DATA -------- */
   useEffect(() => {
     if (!user) return;
 
@@ -127,33 +112,13 @@ export default function HomeClient() {
     }));
   }, [user]);
 
-  /* -------- LOAD MONTHLY MESSAGE COUNT -------- */
+  /* -------- GLOBAL CONTACT STATUS -------- */
   useEffect(() => {
-    if (!user) {
-      setMessagesUsed(null);
-      return;
-    }
-
-    const loadMessageUsage = async () => {
-      try {
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        const q = query(
-          collection(db, 'leads'),
-          where('userId', '==', user.uid),
-          where('createdAt', '>=', monthStart)
-        );
-
-        const snap = await getCountFromServer(q);
-        setMessagesUsed(snap.data().count);
-      } catch {
-        setMessagesUsed(null);
-      }
-    };
-
-    loadMessageUsage();
-  }, [user]);
+    fetch('/api/contact/status', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => setIsBlocked(Boolean(data?.blocked)))
+      .catch(() => setIsBlocked(false)); // fail-open
+  }, []);
 
   /* -------- FORM HANDLERS -------- */
   const handleChange = (
@@ -166,10 +131,8 @@ export default function HomeClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (messagesLeft !== null && messagesLeft <= 0) {
-      toast.error(
-        'You have reached your monthly message limit. Please try again next month.'
-      );
+    if (isBlocked) {
+      toast.error('Messages are temporarily unavailable.');
       return;
     }
 
@@ -181,23 +144,29 @@ export default function HomeClient() {
     setIsLoading(true);
 
     try {
-      await addDoc(collection(db, 'leads'), {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim() || null,
-        message: formData.message.trim(),
-        userId: user?.uid || null,
-        read: false,
-        createdAt: serverTimestamp(),
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          message: formData.message.trim(),
+        }),
       });
 
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {}
+
+      if (!res.ok) {
+        toast.error(data?.error || 'Failed to send message');
+        return;
+      }
+
       toast.success('Message sent successfully');
-      setFormData(prev => ({
-        ...prev,
-        phone: user?.phone || '',
-        message: '',
-      }));
-      setMessagesUsed(prev => prev === null ? null : prev + 1);
+      setFormData(prev => ({ ...prev, message: '' }));
     } catch {
       toast.error('Failed to send message');
     } finally {
@@ -473,155 +442,147 @@ export default function HomeClient() {
       </section>
 
       {/* 5. CONFIDENCE & CONTACT SECTION */}
-      <section className="relative py-24 bg-gradient-to-br from-gray-950 via-black to-gray-900 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(1000px_circle_at_20%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(1000px_circle_at_80%_80%,rgba(16,185,129,0.15),transparent_60%)]" />
+<section className="relative py-24 bg-gradient-to-br from-gray-950 via-black to-gray-900 overflow-hidden">
+  <div className="absolute inset-0 bg-[radial-gradient(1000px_circle_at_20%_20%,rgba(0,113,227,0.25),transparent_60%)]" />
+  <div className="absolute inset-0 bg-[radial-gradient(1000px_circle_at_80%_80%,rgba(16,185,129,0.15),transparent_60%)]" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+  <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-            <div className="space-y-8">
-              <div>
-                <div className="inline-flex items-center gap-2 mb-4">
-                  <div className="h-[2px] w-8 bg-[#0071e3]" />
-                  <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
-                    Built for confidence
-                  </p>
-                </div>
-                <h3 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                  Evaluated in person.
-                  <span className="block text-white/50 mt-2">Trusted by choice.</span>
-                </h3>
-                <p className="mt-6 text-lg text-white/70 leading-relaxed max-w-xl">
-                  Walk in. Test the device. Watch diagnostics live. Understand every detail before you buy.
-                  No pressure. No surprises. Just clarity at our Srinagar showroom.
-                </p>
-              </div>
-
-              <div className="py-6">
-                <TopFooter />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 lg:p-10">
-              <h4 className="text-2xl font-bold text-gray-900 mb-1">
-                Send an Inquiry
-              </h4>
-              <p className="text-sm text-gray-500 mb-6">
-                Tell us what you need. Our team responds within working hours.
-              </p>
-
-              {messagesLeft !== null && (
-                <div
-                  className={`mb-6 rounded-xl px-4 py-3 text-sm font-semibold flex items-center justify-between ${
-                    messagesLeft > 5
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : messagesLeft > 0
-                      ? 'bg-amber-50 text-amber-700'
-                      : 'bg-red-50 text-red-700'
-                  }`}
-                >
-                  <span>Monthly message quota</span>
-                  <span>
-                    {messagesLeft} / {MAX_MESSAGES_PER_MONTH}
-                  </span>
-                </div>
-              )}
-
-              {messagesLeft === 0 && (
-                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 leading-relaxed">
-                  You've reached your monthly inquiry limit.
-                  <br />
-                  Please try again next month or visit us in store for immediate assistance.
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="field-label mb-1.5 block">
-                    Full Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Your name"
-                    className="input h-12"
-                    disabled={isLoading || messagesLeft === 0}
-                  />
-                </div>
-
-                <div>
-                  <label className="field-label mb-1.5 block">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    placeholder="you@example.com"
-                    className="input h-12"
-                    disabled={isLoading || messagesLeft === 0}
-                  />
-                </div>
-
-                <div>
-                  <label className="field-label mb-1.5 block">
-                    Phone <span className="text-gray-400">(optional)</span>
-                  </label>
-                  <input
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+91 7006 XXX XXX"
-                    className="input h-12"
-                    disabled={isLoading || messagesLeft === 0}
-                  />
-                  <p className="mt-1 text-xs text-gray-400">
-                    Used only for this inquiry. Not saved to your profile.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="field-label mb-1.5 block">
-                    How can we help? <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
-                    rows={4}
-                    placeholder="Laptop model, specifications, or any questions you have..."
-                    className="input py-4 resize-none"
-                    disabled={isLoading || messagesLeft === 0}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading || messagesLeft === 0}
-                  className="submit-btn h-12 text-sm mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <span className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
-                      Sending…
-                    </div>
-                  ) : messagesLeft === 0 ? (
-                    'Monthly Limit Reached'
-                  ) : (
-                    'Send Message ↗'
-                  )}
-                </button>
-              </form>
-            </div>
+      {/* LEFT CONTENT */}
+      <div className="space-y-8">
+        <div>
+          <div className="inline-flex items-center gap-2 mb-4">
+            <div className="h-[2px] w-8 bg-[#0071e3]" />
+            <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
+              Built for confidence
+            </p>
           </div>
+
+          <h3 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+            Evaluated in person.
+            <span className="block text-white/50 mt-2">
+              Trusted by choice.
+            </span>
+          </h3>
+
+          <p className="mt-6 text-lg text-white/70 leading-relaxed max-w-xl">
+            Walk in. Test the device. Watch diagnostics live. Understand every
+            detail before you buy. No pressure. No surprises. Just clarity at
+            our Srinagar showroom.
+          </p>
         </div>
-      </section>
+
+        <div className="py-6">
+          <TopFooter />
+        </div>
+      </div>
+
+      {/* CONTACT FORM */}
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 lg:p-10">
+        <h4 className="text-2xl font-bold text-gray-900 mb-1">
+          Send an Inquiry
+        </h4>
+        <p className="text-sm text-gray-500 mb-6">
+          Tell us what you need. Our team responds within working hours.
+        </p>
+
+{isBlocked && (
+  <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+    We are temporarily pausing new inquiries due to system capacity.
+    Please try again later or visit our showroom.
+  </div>
+)}
+
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          <div>
+            <label className="field-label mb-1.5 block">
+              Full Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Your name"
+              className="input h-12"
+              disabled={isLoading || isBlocked}
+            />
+          </div>
+
+          <div>
+            <label className="field-label mb-1.5 block">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+              className="input h-12"
+              disabled={isLoading || isBlocked}
+            />
+          </div>
+
+          <div>
+            <label className="field-label mb-1.5 block">
+              Phone <span className="text-gray-400">(optional)</span>
+            </label>
+            <input
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+91 7006 XXX XXX"
+              className="input h-12"
+              disabled={isLoading || isBlocked}
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Used only for this inquiry.
+            </p>
+          </div>
+
+          <div>
+            <label className="field-label mb-1.5 block">
+              How can we help? <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              required
+              rows={4}
+              placeholder="Laptop model, specifications, or any questions you have..."
+              className="input py-4 resize-none"
+              disabled={isLoading || isBlocked}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading || isBlocked}
+            className="submit-btn h-12 text-sm mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isBlocked
+              ? 'Messages temporarily unavailable'
+              : isLoading
+              ? 'Sending…'
+              : 'Send Message ↗'}
+          </button>
+
+          {isBlocked && (
+            <p className="mt-3 text-xs text-red-600 text-center">
+              Messages are temporarily disabled due to system capacity.
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
 
       <style jsx>{`
         .cap-marquee { display: flex; width: max-content; gap: 1.5rem; animation: cap-scroll 25s linear infinite; will-change: transform; }
