@@ -269,12 +269,7 @@ export default function LeadsPage() {
                 <div>
                   <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">{selectedLead.name}</h2>
                   <div className="flex items-center gap-3">
-                    {!selectedLead.read && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">
-                        <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
-                        NEW
-                      </span>
-                    )}
+                    
                     <span className="text-sm text-gray-500">
                       {new Date(selectedLead.createdAt?.toDate?.() || selectedLead.createdAt).toLocaleString('en-US', {
                         month: 'long',
@@ -387,17 +382,7 @@ export default function LeadsPage() {
                   </svg>
                   Send Email
                 </a>
-                {!selectedLead.read && (
-                  <button
-                    onClick={() => markAsRead(selectedLead.id)}
-                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-2xl transition-all duration-200 border border-gray-200 shadow-sm hover:shadow-md"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Mark as Reviewed
-                  </button>
-                )}
+                
                 <button
                   onClick={() => deleteLead(selectedLead.id)}
                   className="inline-flex items-center gap-2 px-6 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-2xl transition-all duration-200 border border-red-200"
