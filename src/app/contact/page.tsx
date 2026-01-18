@@ -41,26 +41,26 @@ export default function ContactPage() {
   ------------------------------------ */
 
   useEffect(() => {
-    let mounted = true;
+  let mounted = true;
 
-    fetch('/api/contact/status')
-      .then(res => res.json())
-      .then(data => {
-        if (!mounted) return;
-        setIsBlocked(Boolean(data.blocked));
-        setUsagePercent(
-          typeof data.percent === 'number' ? data.percent : null
-        );
-      })
-      .catch(() => {
-        // Fail-open: do NOT block messages if status check fails
-        setIsBlocked(false);
-      });
+  fetch('/api/contact/status', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      if (!mounted) return;
+      setIsBlocked(Boolean(data.blocked));
+      setUsagePercent(
+        typeof data.percent === 'number' ? data.percent : null
+      );
+    })
+    .catch(() => {
+      // Fail-open: do not block on error
+      setIsBlocked(false);
+    });
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  return () => {
+    mounted = false;
+  };
+}, []);
 
   /* ------------------------------------
      FORM HANDLERS
