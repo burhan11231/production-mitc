@@ -11,7 +11,7 @@ type ViewMode = 'grid' | 'list'
 type SortMode = 'recommended' | 'name-asc'
 
 function toDigits(phone: string) {
-  return (phone || '').replace(/D/g, '')
+  return (phone || '').replace(/\D/g, '')
 }
 
 function toWaLink(phone: string) {
@@ -31,8 +31,6 @@ export default function TeamPage() {
   const [activeOnly, setActiveOnly] = useState(true)
   const [sortMode, setSortMode] = useState<SortMode>('recommended')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
 
   
 
