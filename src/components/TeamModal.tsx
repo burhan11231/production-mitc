@@ -1,10 +1,11 @@
 'use client'
 
-import { Fragment, useMemo } from 'react'
+import { Fragment, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/react'
 import { Salesperson } from '@/lib/firestore-models'
+import { reactionCache } from '@/hooks/useSalespersons'
 
 type Props = {
   isOpen: boolean
@@ -17,6 +18,7 @@ type Props = {
   onSelectPerson?: (p: Salesperson) => void
   viewAllHref?: string
 }
+
 
 function toDigits(phone: string) {
   return (phone || '').replace(/\D/g, '')
@@ -44,6 +46,21 @@ export default function TeamModal({
   onSelectPerson,
   viewAllHref = '/team',
 }: Props) {
+
+
+useEffect(() => {
+  if (!isOpen || !salespersons?.length) return
+
+  salespersons.forEach(p => {
+    if (!p.id) return
+
+    // Only seed if cache is empty for this salesperson
+    if (!reactionCache.has(p.id)) {
+      reactionCache.set(p.id, p.userReaction ?? null)
+    }
+  })
+}, [isOpen, salespersons])
+
 
   const list = useMemo(() => {
     const sorted = [...(salespersons || [])].sort(
