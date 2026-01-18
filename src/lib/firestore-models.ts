@@ -120,6 +120,9 @@ export interface Salesperson {
   specializations?: string[]
   likesCount?: number
   dislikesCount?: number
+
+  // ✅ ADD
+  userReaction?: 'like' | 'dislike' | null
 }
 
 export interface SalespersonReaction {
