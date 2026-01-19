@@ -3,22 +3,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-  startAfter,
-  QueryDocumentSnapshot,
-  QueryConstraint,
-  doc,
-  getDoc,
-} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
-import toast from 'react-hot-toast';
+
 import { FaStar, FaPen } from 'react-icons/fa';
 import { MdMessage, MdClose } from 'react-icons/md';
 
@@ -69,7 +56,7 @@ export default function ReviewsClient({
 
   // State
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+  
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
 
@@ -80,68 +67,7 @@ export default function ReviewsClient({
   // Pagination State
   const [hasNextPage, setHasNextPage] = useState(false);
 
-  /* ---------------- FETCH STATS ---------------- */
-
-  const fetchStats = async () => {
-    try {
-      setLoadingStats(true);
-      const snap = await getDoc(doc(db, 'reviewStats', 'global'));
-      if (snap.exists()) {
-        setStats(snap.data() as ReviewStats);
-      } else {
-        setStats(null);
-      }
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
-  /* ---------------- FETCH REVIEWS ---------------- */
-
-  const fetchReviews = async () => {
-    setLoadingReviews(true);
-
-    try {
-      const constraints: QueryConstraint[] = [
-        where('status', '==', 'published'),
-        orderBy('createdAt', 'desc'),
-        limit(PER_PAGE + 1),
-      ];
-
-      if (initialRating) {
-        constraints.unshift(where('rating', '==', initialRating));
-      }
-
-      if (initialPage > 1 && lastDoc) {
-        constraints.push(startAfter(lastDoc));
-      }
-
-      const q = query(collection(db, 'reviews'), ...constraints);
-      const snap = await getDocs(q);
-      const docs = snap.docs;
-
-      const hasMore = docs.length > PER_PAGE;
-      setHasNextPage(hasMore);
-
-      const pageItems = hasMore ? docs.slice(0, PER_PAGE) : docs;
-
-      setReviews(
-        pageItems.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Review, 'id'>),
-        }))
-      );
-
-      setLastDoc(pageItems[pageItems.length - 1] || null);
-    } catch (error) {
-      console.error("Query Error:", error);
-      if (reviews.length > 0) toast.error('Failed to load reviews');
-    } finally {
-      setLoadingReviews(false);
-    }
-  };
+  
 
   /* ---------------- FETCH MY REVIEW ---------------- */
 
@@ -163,16 +89,13 @@ export default function ReviewsClient({
   /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
-    fetchStats();
-    fetchMyReview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  fetch('/api/reviews/stats', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(setStats)
+    .finally(() => setLoadingStats(false));
 
-  useEffect(() => {
-    if (initialPage === 1) setLastDoc(null);
-    fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialPage, initialRating]);
+  fetchMyReview();
+}, []);
 
 
   /* ---------------- ACTIONS ---------------- */
