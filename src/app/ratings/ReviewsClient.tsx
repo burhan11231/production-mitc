@@ -132,6 +132,28 @@ export default function ReviewsClient({
 
   /* ---------------- HANDLERS ---------------- */
 
+
+
+const handleSoftDelete = async () => {
+  if (!user || !myReview) return;
+  if (!confirm('Delete your review?')) return;
+
+  try {
+    const ref = doc(db, 'reviews', user.uid);
+    await updateDoc(ref, {
+      status: 'deleted',
+      updatedAt: serverTimestamp(),
+    });
+
+    toast.success('Review deleted');
+    setMyReview(null);
+    fetchReviews();
+    fetchStats();
+  } catch {
+    toast.error('Delete failed');
+  }
+};
+
   const changeRatingFilter = (rating: number | null) => {
     setPage(1);
     setRatingFilter(rating);
