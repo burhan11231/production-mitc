@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 import StarRating from '@/components/StarRatings';
-import PublicReviewGate from '@/components/PublicReviewformGate';
+import PublicReviewGate from '@/components/PublicReviewGate';
 import ReviewForm from '@/components/ReviewForm';
 
 import AggregateRatingSchema from './AggregateRatingSchema';
