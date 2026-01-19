@@ -198,7 +198,7 @@ const handleSoftDelete = async () => {
       </div>
 
       {/* ---------- CONTENT ---------- */}
-      <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[2fr_1fr] gap-10">
+      <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[1fr_2fr] gap-10">
         {/* ---------- REVIEWS ---------- */}
         <div className="space-y-6">
           {/* FILTERS */}
@@ -228,6 +228,43 @@ const handleSoftDelete = async () => {
               </button>
             ))}
           </div>
+
+
+{/* ---------- REVIEW FORM / MY REVIEW ---------- */}
+<div className="space-y-6">
+
+  {/* CASE 1: User has NO review yet */}
+  {!myReview && !showForm && (
+    <PublicReviewGate
+      myReview={null}
+      onWrite={() => setShowForm(true)}
+    />
+  )}
+
+  {/* CASE 2: User has a review AND is NOT editing */}
+  {myReview && !showForm && (
+    <PublicReviewGate
+      myReview={myReview}
+      onWrite={() => {}} // disabled
+    />
+  )}
+
+  {/* CASE 3: Write OR Edit */}
+  {showForm && (
+    <ReviewForm
+      existingReview={myReview}
+      onSuccess={() => {
+        setShowForm(false);
+        fetchMyReview();
+        fetchReviews();
+        fetchStats();
+      }}
+      onCancel={() => setShowForm(false)}
+    />
+  )}
+</div>
+
+
 
           {/* LIST */}
           {loading ? (
@@ -276,39 +313,7 @@ const handleSoftDelete = async () => {
           </div>
         </div>
 
-        {/* ---------- REVIEW FORM / MY REVIEW ---------- */}
-<div className="space-y-6">
-
-  {/* CASE 1: User has NO review yet */}
-  {!myReview && !showForm && (
-    <PublicReviewGate
-      myReview={null}
-      onWrite={() => setShowForm(true)}
-    />
-  )}
-
-  {/* CASE 2: User has a review AND is NOT editing */}
-  {myReview && !showForm && (
-    <PublicReviewGate
-      myReview={myReview}
-      onWrite={() => {}} // disabled
-    />
-  )}
-
-  {/* CASE 3: Write OR Edit */}
-  {showForm && (
-    <ReviewForm
-      existingReview={myReview}
-      onSuccess={() => {
-        setShowForm(false);
-        fetchMyReview();
-        fetchReviews();
-        fetchStats();
-      }}
-      onCancel={() => setShowForm(false)}
-    />
-  )}
-</div>
+        
       </div>
     </div>
   );
