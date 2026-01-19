@@ -11,7 +11,13 @@ export async function POST() {
 
   let totalReviews = 0;
   let sumRating = 0;
-  const starCounts = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+  const starCounts: Record<string, number> = {
+  '1': 0,
+  '2': 0,
+  '3': 0,
+  '4': 0,
+  '5': 0,
+};
 
   snap.docs.forEach(d => {
     const r = d.data();
