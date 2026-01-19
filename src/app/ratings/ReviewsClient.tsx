@@ -12,6 +12,7 @@ import { db } from '@/lib/firebase';
 
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
+import { auth } from '@/lib/firebase';
 
 import { useAuth } from '@/lib/auth-context';
 
@@ -104,13 +105,18 @@ const fetchReviews = async () => {
   /* ---------------- FETCH MY REVIEW ---------------- */
 
 const fetchMyReview = async () => {
-  if (!user) {
+  if (!auth.currentUser) {
     setMyReview(null);
     return;
   }
 
   try {
+    const token = await auth.currentUser.getIdToken();
+
     const res = await fetch('/api/reviews/my', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
       cache: 'no-store',
     });
 
@@ -121,14 +127,15 @@ const fetchMyReview = async () => {
 
     const data = await res.json();
 
-    // Hide soft-deleted reviews
+    // hide soft-deleted reviews
     if (!data || data.status === 'deleted') {
       setMyReview(null);
       return;
     }
 
     setMyReview(data);
-  } catch {
+  } catch (err) {
+    console.error('[FETCH_MY_REVIEW]', err);
     setMyReview(null);
   }
 };
