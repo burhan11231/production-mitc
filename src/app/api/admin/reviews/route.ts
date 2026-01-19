@@ -1,17 +1,11 @@
-import { NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAdminDb } from '@/lib/firebase-admin';
+import { requireAdmin } from '@/lib/requireAdmin';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decoded = await getAdminAuth().verifyIdToken(token);
-
-    if (decoded.role !== 'admin') {
+    const admin = await requireAdmin(req);
+    if (!admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -20,14 +14,14 @@ export async function GET(req: Request) {
       .orderBy('createdAt', 'desc')
       .get();
 
-    const reviews = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data(),
-    }));
-
-    return NextResponse.json(reviews);
+    return NextResponse.json(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
   } catch (err) {
-    console.error(err);
+    console.error('[ADMIN_REVIEWS_GET]', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
