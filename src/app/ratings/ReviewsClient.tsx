@@ -127,7 +127,6 @@ const fetchMyReview = async () => {
 
     const data = await res.json();
 
-    // hide soft-deleted reviews
     if (!data || data.status === 'deleted') {
       setMyReview(null);
       return;
