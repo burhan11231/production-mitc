@@ -1,231 +1,202 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-import { useAuth } from '@/lib/auth-context';
-import { auth } from '@/lib/firebase';
+import AggregateRatingSchema from './AggregateRatingSchema';
+import ReviewSchema from './ReviewSchema';
 
-import RecalculateStats from '@/components/admin/RecalculateStats';
+import StarRating from '@/components/StarRatings';
+import PublicReviewGate from '@/components/PublicReviewformGate';
 
 /* ---------------- TYPES ---------------- */
-
-type FilterMode = 'all' | 'published' | 'pending';
 
 interface Review {
   id: string;
   userName?: string;
   rating: number;
   comment: string;
-  status: 'pending' | 'published';
   createdAt?: any;
+}
+
+interface ReviewStats {
+  totalReviews: number;
+  averageRating: number;
+  starCounts: Record<string, number>;
+}
+
+interface Props {
+  initialPage: number;
+  initialRating: number | null;
 }
 
 /* ---------------- COMPONENT ---------------- */
 
-export default function AdminReviewsPage() {
-  const { user, isLoading } = useAuth();
+export default function ReviewsClient({
+  initialPage,
+  initialRating,
+}: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterMode>('all');
+  const [stats, setStats] = useState<ReviewStats | null>(null);
 
-  /* ---------------- ADMIN GUARD ---------------- */
+  const [page, setPage] = useState(initialPage);
+  const [rating, setRating] = useState<number | null>(initialRating);
+
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  /* ---------------- FETCH STATS ---------------- */
 
   useEffect(() => {
-    if (!isLoading && user?.role !== 'admin') {
-      toast.error('Admin access required');
-      router.push('/');
-    }
-  }, [user, isLoading, router]);
-
-  /* ---------------- TOKEN HELPER ---------------- */
-
-  const getToken = async () => {
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) throw new Error('Not authenticated');
-    return token;
-  };
+    fetch('/api/reviews/stats', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then(setStats)
+      .catch(() => {});
+  }, []);
 
   /* ---------------- FETCH REVIEWS ---------------- */
 
-  const fetchReviews = async () => {
-    if (!user) return;
-
+  useEffect(() => {
     setLoading(true);
-    try {
-      const token = await getToken();
 
-      const res = await fetch('/api/admin/reviews', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: 'no-store',
-      });
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    if (rating) params.set('rating', String(rating));
 
-      if (!res.ok) throw new Error();
-      setReviews(await res.json());
-    } catch {
-      toast.error('Failed to load reviews');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetch(`/api/reviews/public?${params}`, {
+      cache: 'no-store',
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setReviews(data.reviews);
+        setHasNextPage(data.hasNextPage);
+      })
+      .catch(() => {
+        toast.error('Failed to load reviews');
+      })
+      .finally(() => setLoading(false));
+  }, [page, rating]);
+
+  /* ---------------- URL SYNC ---------------- */
 
   useEffect(() => {
-    if (user?.role === 'admin') fetchReviews();
-  }, [user?.role]);
+    const params = new URLSearchParams(searchParams.toString());
 
-  /* ---------------- ACTIONS ---------------- */
+    params.set('page', String(page));
+    rating ? params.set('rating', String(rating)) : params.delete('rating');
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this review?')) return;
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [page, rating]);
 
-    try {
-      const token = await getToken();
+  /* ---------------- FILTERED REVIEWS ---------------- */
 
-      await fetch(`/api/admin/reviews/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setReviews(prev => prev.filter(r => r.id !== id));
-      toast.success('Review deleted');
-    } catch {
-      toast.error('Delete failed');
-    }
-  };
-
-  const handleToggleStatus = async (
-    id: string,
-    nextStatus: 'pending' | 'published'
-  ) => {
-    // optimistic update
-    setReviews(prev =>
-      prev.map(r =>
-        r.id === id ? { ...r, status: nextStatus } : r
-      )
-    );
-
-    try {
-      const token = await getToken();
-
-      await fetch(`/api/admin/reviews/${id}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-
-      toast.success('Status updated');
-    } catch {
-      toast.error('Update failed');
-      fetchReviews(); // revert
-    }
-  };
-
-  /* ---------------- FILTER ---------------- */
-
-  const displayedReviews = useMemo(() => {
-    if (filter === 'published')
-      return reviews.filter(r => r.status === 'published');
-    if (filter === 'pending')
-      return reviews.filter(r => r.status === 'pending');
-    return reviews;
-  }, [reviews, filter]);
-
-  if (isLoading || user?.role !== 'admin') return null;
+  const schemaReviews = useMemo(
+    () =>
+      reviews.map((r) => ({
+        userName: r.userName,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt,
+      })),
+    [reviews]
+  );
 
   /* ---------------- UI ---------------- */
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* HEADER */}
-      <div className="bg-white border-b py-8">
+      {/* ================= SCHEMA (SEO) ================= */}
+      {stats && page === 1 && !rating && (
+        <>
+          <AggregateRatingSchema
+            avg={stats.averageRating}
+            total={stats.totalReviews}
+          />
+          <ReviewSchema reviews={schemaReviews} />
+        </>
+      )}
+
+      {/* ================= HEADER ================= */}
+      <section className="bg-white border-b py-12">
         <div className="max-w-7xl mx-auto px-6">
-          <Link href="/dashboard" className="text-sm text-blue-600">
-            ← Back to Dashboard
-          </Link>
+          <h1 className="text-4xl font-bold mb-3">
+            Customer Reviews
+          </h1>
 
-          <div className="mt-6 flex flex-wrap gap-3 items-center">
-            {(['all', 'published', 'pending'] as FilterMode[]).map(mode => (
-              <button
-                key={mode}
-                onClick={() => setFilter(mode)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  filter === mode
-                    ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white border-gray-200'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
-
-            <button
-              onClick={fetchReviews}
-              className="px-4 py-2 rounded-lg border bg-white text-sm"
-            >
-              Refresh
-            </button>
-
-            <div className="ml-auto">
-              <RecalculateStats />
+          {stats && (
+            <div className="flex items-center gap-4">
+              <StarRating rating={stats.averageRating} size={22} />
+              <span className="text-gray-600">
+                {stats.averageRating.toFixed(1)} · {stats.totalReviews} reviews
+              </span>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      </section>
 
-      {/* LIST */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* ================= FILTER ================= */}
+      <section className="max-w-7xl mx-auto px-6 py-6 flex gap-3 flex-wrap">
+        <button
+          onClick={() => {
+            setRating(null);
+            setPage(1);
+          }}
+          className={`px-4 py-2 rounded-lg border ${
+            rating === null ? 'bg-gray-900 text-white' : 'bg-white'
+          }`}
+        >
+          All
+        </button>
+
+        {[5, 4, 3, 2, 1].map((r) => (
+          <button
+            key={r}
+            onClick={() => {
+              setRating(r);
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-lg border ${
+              rating === r ? 'bg-gray-900 text-white' : 'bg-white'
+            }`}
+          >
+            {r}★
+          </button>
+        ))}
+      </section>
+
+      {/* ================= REVIEW GATE ================= */}
+      <section className="max-w-7xl mx-auto px-6 mb-10">
+        <PublicReviewGate
+          myReview={null /* fetched elsewhere if needed */}
+          onWrite={() => router.push('/profile')}
+        />
+      </section>
+
+      {/* ================= LIST ================= */}
+      <section className="max-w-7xl mx-auto px-6 pb-16">
         {loading ? (
           <p className="text-center">Loading…</p>
-        ) : displayedReviews.length ? (
+        ) : reviews.length ? (
           <div className="space-y-6">
-            {displayedReviews.map(r => (
+            {reviews.map((r) => (
               <div
                 key={r.id}
                 className="bg-white p-6 rounded-xl border"
               >
-                <h3 className="font-bold">
-                  {r.userName || 'Anonymous'}
-                </h3>
+                <div className="flex justify-between mb-2">
+                  <p className="font-semibold">
+                    {r.userName || 'Verified Customer'}
+                  </p>
+                  <StarRating rating={r.rating} />
+                </div>
 
-                <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">
+                <p className="text-gray-700 whitespace-pre-line">
                   {r.comment}
                 </p>
-
-                <div className="mt-4 flex gap-3 flex-wrap">
-                  <button
-                    onClick={() =>
-                      handleToggleStatus(
-                        r.id,
-                        r.status === 'published'
-                          ? 'pending'
-                          : 'published'
-                      )
-                    }
-                    className="px-4 py-2 rounded-lg border text-sm"
-                  >
-                    {r.status === 'published'
-                      ? 'Unpublish'
-                      : 'Publish'}
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(r.id)}
-                    className="px-4 py-2 rounded-lg border border-red-300 text-red-700 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
               </div>
             ))}
           </div>
@@ -234,7 +205,28 @@ export default function AdminReviewsPage() {
             No reviews found.
           </p>
         )}
-      </div>
+
+        {/* ================= PAGINATION ================= */}
+        <div className="mt-10 flex justify-center gap-4">
+          {page > 1 && (
+            <button
+              onClick={() => setPage((p) => p - 1)}
+              className="px-4 py-2 border rounded-lg"
+            >
+              Previous
+            </button>
+          )}
+
+          {hasNextPage && (
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              className="px-4 py-2 border rounded-lg"
+            >
+              Next
+            </button>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
