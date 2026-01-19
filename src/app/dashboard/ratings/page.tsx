@@ -3,13 +3,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
+
+import { useAuth } from '@/lib/auth-context';
+import { auth } from '@/lib/firebase';
 
 import RecalculateStats from '@/components/admin/RecalculateStats';
 
+/* ---------------- TYPES ---------------- */
+
 type FilterMode = 'all' | 'published' | 'pending';
-type SortMode = 'newest' | 'oldest';
 
 interface Review {
   id: string;
@@ -20,6 +23,8 @@ interface Review {
   createdAt?: any;
 }
 
+/* ---------------- COMPONENT ---------------- */
+
 export default function AdminReviewsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -27,7 +32,6 @@ export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterMode>('all');
-  const [sort, setSort] = useState<SortMode>('newest');
 
   /* ---------------- ADMIN GUARD ---------------- */
 
@@ -38,16 +42,27 @@ export default function AdminReviewsPage() {
     }
   }, [user, isLoading, router]);
 
-  /* ---------------- FETCH ---------------- */
+  /* ---------------- TOKEN HELPER ---------------- */
+
+  const getToken = async () => {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
+    return token;
+  };
+
+  /* ---------------- FETCH REVIEWS ---------------- */
 
   const fetchReviews = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+
       const res = await fetch('/api/admin/reviews', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         cache: 'no-store',
       });
 
@@ -62,22 +77,24 @@ export default function AdminReviewsPage() {
 
   useEffect(() => {
     if (user?.role === 'admin') fetchReviews();
-  }, [user?.role, sort]);
+  }, [user?.role]);
 
   /* ---------------- ACTIONS ---------------- */
 
   const handleDelete = async (id: string) => {
-    if (!user) return;
     if (!confirm('Delete this review?')) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+
       await fetch(`/api/admin/reviews/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      setReviews((r) => r.filter((x) => x.id !== id));
+      setReviews(prev => prev.filter(r => r.id !== id));
       toast.success('Review deleted');
     } catch {
       toast.error('Delete failed');
@@ -88,15 +105,16 @@ export default function AdminReviewsPage() {
     id: string,
     nextStatus: 'pending' | 'published'
   ) => {
-    if (!user) return;
-
-    // optimistic
-    setReviews((r) =>
-      r.map((x) => (x.id === id ? { ...x, status: nextStatus } : x))
+    // optimistic update
+    setReviews(prev =>
+      prev.map(r =>
+        r.id === id ? { ...r, status: nextStatus } : r
+      )
     );
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+
       await fetch(`/api/admin/reviews/${id}`, {
         method: 'PATCH',
         headers: {
@@ -109,15 +127,17 @@ export default function AdminReviewsPage() {
       toast.success('Status updated');
     } catch {
       toast.error('Update failed');
-      fetchReviews();
+      fetchReviews(); // revert
     }
   };
 
   /* ---------------- FILTER ---------------- */
 
   const displayedReviews = useMemo(() => {
-    if (filter === 'published') return reviews.filter(r => r.status === 'published');
-    if (filter === 'pending') return reviews.filter(r => r.status === 'pending');
+    if (filter === 'published')
+      return reviews.filter(r => r.status === 'published');
+    if (filter === 'pending')
+      return reviews.filter(r => r.status === 'pending');
     return reviews;
   }, [reviews, filter]);
 
@@ -127,6 +147,7 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* HEADER */}
       <div className="bg-white border-b py-8">
         <div className="max-w-7xl mx-auto px-6">
           <Link href="/dashboard" className="text-sm text-blue-600">
@@ -134,21 +155,24 @@ export default function AdminReviewsPage() {
           </Link>
 
           <div className="mt-6 flex flex-wrap gap-3 items-center">
-            {(['all', 'published', 'pending'] as FilterMode[]).map((m) => (
+            {(['all', 'published', 'pending'] as FilterMode[]).map(mode => (
               <button
-                key={m}
-                onClick={() => setFilter(m)}
+                key={mode}
+                onClick={() => setFilter(mode)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  filter === m
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white'
+                  filter === mode
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white border-gray-200'
                 }`}
               >
-                {m}
+                {mode}
               </button>
             ))}
 
-            <button onClick={fetchReviews} className="px-4 py-2 border rounded-lg">
+            <button
+              onClick={fetchReviews}
+              className="px-4 py-2 rounded-lg border bg-white text-sm"
+            >
               Refresh
             </button>
 
@@ -159,32 +183,45 @@ export default function AdminReviewsPage() {
         </div>
       </div>
 
+      {/* LIST */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {loading ? (
           <p className="text-center">Loading…</p>
-        ) : (
+        ) : displayedReviews.length ? (
           <div className="space-y-6">
-            {displayedReviews.map((r) => (
-              <div key={r.id} className="bg-white p-6 rounded-xl border">
-                <h3 className="font-bold">{r.userName || 'Anonymous'}</h3>
-                <p className="text-sm text-gray-600">{r.comment}</p>
+            {displayedReviews.map(r => (
+              <div
+                key={r.id}
+                className="bg-white p-6 rounded-xl border"
+              >
+                <h3 className="font-bold">
+                  {r.userName || 'Anonymous'}
+                </h3>
 
-                <div className="mt-4 flex gap-3">
+                <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">
+                  {r.comment}
+                </p>
+
+                <div className="mt-4 flex gap-3 flex-wrap">
                   <button
                     onClick={() =>
                       handleToggleStatus(
                         r.id,
-                        r.status === 'published' ? 'pending' : 'published'
+                        r.status === 'published'
+                          ? 'pending'
+                          : 'published'
                       )
                     }
-                    className="px-4 py-2 border rounded-lg"
+                    className="px-4 py-2 rounded-lg border text-sm"
                   >
-                    {r.status === 'published' ? 'Unpublish' : 'Publish'}
+                    {r.status === 'published'
+                      ? 'Unpublish'
+                      : 'Publish'}
                   </button>
 
                   <button
                     onClick={() => handleDelete(r.id)}
-                    className="px-4 py-2 border border-red-300 text-red-700 rounded-lg"
+                    className="px-4 py-2 rounded-lg border border-red-300 text-red-700 text-sm"
                   >
                     Delete
                   </button>
@@ -192,6 +229,10 @@ export default function AdminReviewsPage() {
               </div>
             ))}
           </div>
+        ) : (
+          <p className="text-center text-gray-600">
+            No reviews found.
+          </p>
         )}
       </div>
     </div>
