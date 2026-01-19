@@ -12,6 +12,7 @@ import PublicReviewGate from '@/components/PublicReviewGate';
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
 import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // 1️⃣ Import the new StarRating component
 // Adjust path if you placed it elsewhere, e.g. '@/components/StarRating'
