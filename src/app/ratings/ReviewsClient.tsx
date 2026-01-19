@@ -254,26 +254,39 @@ export default function ReviewsClient({
           </div>
         </div>
 
-        {/* ---------- REVIEW FORM ---------- */}
-        <div className="space-y-6">
-          <PublicReviewGate
-            myReview={myReview}
-            onWrite={() => setShowForm(true)}
-          />
+        {/* ---------- REVIEW FORM / MY REVIEW ---------- */}
+<div className="space-y-6">
 
-          {showForm && (
-            <ReviewForm
-              existingReview={myReview}
-              onSuccess={() => {
-                setShowForm(false);
-                fetchMyReview();
-                fetchReviews();
-                fetchStats();
-              }}
-              onCancel={() => setShowForm(false)}
-            />
-          )}
-        </div>
+  {/* CASE 1: User has NO review yet */}
+  {!myReview && !showForm && (
+    <PublicReviewGate
+      myReview={null}
+      onWrite={() => setShowForm(true)}
+    />
+  )}
+
+  {/* CASE 2: User has a review AND is NOT editing */}
+  {myReview && !showForm && (
+    <PublicReviewGate
+      myReview={myReview}
+      onWrite={() => {}} // disabled
+    />
+  )}
+
+  {/* CASE 3: Write OR Edit */}
+  {showForm && (
+    <ReviewForm
+      existingReview={myReview}
+      onSuccess={() => {
+        setShowForm(false);
+        fetchMyReview();
+        fetchReviews();
+        fetchStats();
+      }}
+      onCancel={() => setShowForm(false)}
+    />
+  )}
+</div>
       </div>
     </div>
   );
