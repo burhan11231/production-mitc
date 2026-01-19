@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
 
 async function requireAdmin(req: NextRequest) {
@@ -11,11 +11,8 @@ async function requireAdmin(req: NextRequest) {
   return decoded.role === 'admin' ? decoded : null;
 }
 
-/* ---------------- PATCH (Publish / Unpublish) ---------------- */
-export async function PATCH(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+/* ---------------- PATCH ---------------- */
+export async function PATCH(req: NextRequest, context: any) {
   try {
     const admin = await requireAdmin(req);
     if (!admin) {
@@ -44,10 +41,7 @@ export async function PATCH(
 }
 
 /* ---------------- DELETE ---------------- */
-export async function DELETE(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, context: any) {
   try {
     const admin = await requireAdmin(req);
     if (!admin) {
