@@ -1,30 +1,41 @@
+// src/app/api/reviews/public/route.ts
 import { NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
+
+const PER_PAGE = 10;
 
 export async function GET(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(null, { status: 401 });
-    }
+    const { searchParams } = new URL(req.url);
 
-    const token = authHeader.replace('Bearer ', '');
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const page = Math.max(1, Number(searchParams.get('page') || 1));
+    const rating = Number(searchParams.get('rating') || 0);
 
-    const snap = await getAdminDb()
+    let query = getAdminDb()
       .collection('reviews')
-      .doc(decoded.uid)
-      .get();
+      .where('status', '==', 'published')
+      .orderBy('createdAt', 'desc');
 
-    if (!snap.exists) {
-      return NextResponse.json(null);
+    if (rating >= 1 && rating <= 5) {
+      query = query.where('rating', '==', rating);
     }
+
+    // Firestore pagination workaround
+    const snap = await query.limit(page * PER_PAGE + 1).get();
+
+    const docs = snap.docs;
+    const start = (page - 1) * PER_PAGE;
+    const end = start + PER_PAGE;
 
     return NextResponse.json({
-      id: snap.id,
-      ...snap.data(),
+      reviews: docs.slice(start, end).map(d => ({
+        id: d.id,
+        ...d.data(),
+      })),
+      hasNextPage: docs.length > end,
     });
-  } catch {
-    return NextResponse.json(null, { status: 500 });
+  } catch (err) {
+    console.error('[PUBLIC_REVIEWS_GET]', err);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
