@@ -1,11 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
-
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
 
 async function requireAdmin(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -20,12 +14,13 @@ async function requireAdmin(req: NextRequest) {
 /* ---------------- PATCH (Publish / Unpublish) ---------------- */
 export async function PATCH(
   req: NextRequest,
-  context: RouteContext
+  context: { params: { id: string } }
 ) {
   try {
     const admin = await requireAdmin(req);
-    if (!admin)
+    if (!admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const { status } = await req.json();
     if (!['pending', 'published'].includes(status)) {
@@ -51,12 +46,13 @@ export async function PATCH(
 /* ---------------- DELETE ---------------- */
 export async function DELETE(
   req: NextRequest,
-  context: RouteContext
+  context: { params: { id: string } }
 ) {
   try {
     const admin = await requireAdmin(req);
-    if (!admin)
+    if (!admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     await getAdminDb()
       .collection('reviews')
