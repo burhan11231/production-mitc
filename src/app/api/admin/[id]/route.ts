@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/adminfirebase';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
 
 async function requireAdmin(req: Request) {
   const authHeader = req.headers.get('authorization');
