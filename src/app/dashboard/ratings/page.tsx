@@ -4,17 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { db } from '@/lib/firebase';
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-  Timestamp,
-} from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 // 👇 IMPORT THE NEW COMPONENT HERE
@@ -65,28 +54,30 @@ export default function AdminReviewsPage() {
   /* ---------------- FETCH ---------------- */
 
   const fetchReviews = async () => {
-    setReviewsLoading(true);
-    try {
-      const q = query(
-        collection(db, 'reviews'),
-        orderBy('createdAt', sort === 'newest' ? 'desc' : 'asc')
-      );
+  if (!user) return;
 
-      const snap = await getDocs(q);
+  setReviewsLoading(true);
 
-      setReviews(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Review, 'id'>),
-        }))
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load reviews');
-    } finally {
-      setReviewsLoading(false);
-    }
-  };
+  try {
+    const token = await user.getIdToken();
+
+    const res = await fetch('/api/admin/reviews', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) throw new Error('Failed');
+
+    const data = await res.json();
+    setReviews(data);
+  } catch {
+    toast.error('Failed to load reviews');
+  } finally {
+    setReviewsLoading(false);
+  }
+};
 
   /* ---------------- HELPERS ---------------- */
 
