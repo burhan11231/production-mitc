@@ -1,15 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
-
-async function requireAdmin(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
-
-  const token = authHeader.replace('Bearer ', '');
-  const decoded = await getAdminAuth().verifyIdToken(token);
-
-  return decoded.role === 'admin' ? decoded : null;
-}
+import { getAdminDb } from '@/lib/firebase-admin';
+import { requireAdmin } from '@/lib/requireAdmin';
 
 /* ---------------- PATCH ---------------- */
 export async function PATCH(req: NextRequest, context: any) {
@@ -35,7 +26,7 @@ export async function PATCH(req: NextRequest, context: any) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error('[ADMIN_REVIEW_PATCH]', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
@@ -55,7 +46,7 @@ export async function DELETE(req: NextRequest, context: any) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error('[ADMIN_REVIEW_DELETE]', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
