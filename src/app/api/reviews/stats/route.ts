@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/adminfirebase';
+import { getAdminDb } from '@/lib/firebase-admin';
 
 export async function GET() {
   const snap = await getAdminDb()
