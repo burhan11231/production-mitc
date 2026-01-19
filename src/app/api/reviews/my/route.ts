@@ -1,5 +1,3 @@
-// src/app/api/reviews/my/route.ts
-
 import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
 
@@ -27,7 +25,7 @@ export async function GET(req: Request) {
       ...snap.data(),
     });
   } catch (err) {
-    console.error('[REVIEWS_MY]', err);
+    console.error('[REVIEWS_MY_GET]', err);
     return NextResponse.json(null, { status: 500 });
   }
 }
