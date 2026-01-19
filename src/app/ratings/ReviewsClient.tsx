@@ -63,33 +63,26 @@ export default function ReviewsClient({
 
   /* ---------------- FETCH PUBLIC REVIEWS ---------------- */
 
-  const fetchMyReview = async () => {
-  if (!user) {
-    setMyReview(null);
-    return;
-  }
-
+const fetchReviews = async () => {
+  setLoading(true);
   try {
-    const res = await fetch('/api/reviews/my', {
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    if (ratingFilter) params.set('rating', String(ratingFilter));
+
+    const res = await fetch(`/api/reviews/public?${params.toString()}`, {
       cache: 'no-store',
     });
 
-    if (!res.ok) {
-      setMyReview(null);
-      return;
-    }
+    if (!res.ok) throw new Error();
 
     const data = await res.json();
-
-    // ⛔ hide deleted reviews completely
-    if (!data || data.status === 'deleted') {
-      setMyReview(null);
-      return;
-    }
-
-    setMyReview(data);
+    setReviews(data.reviews);
+    setHasNextPage(data.hasNextPage);
   } catch {
-    setMyReview(null);
+    toast.error('Failed to load reviews');
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -110,23 +103,35 @@ export default function ReviewsClient({
 
   /* ---------------- FETCH MY REVIEW ---------------- */
 
-  const fetchMyReview = async () => {
-    if (!user) {
+const fetchMyReview = async () => {
+  if (!user) {
+    setMyReview(null);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/reviews/my', {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
       setMyReview(null);
       return;
     }
 
-    try {
-      const res = await fetch(`/api/reviews/my`, {
-        cache: 'no-store',
-      });
+    const data = await res.json();
 
-      if (!res.ok) return;
-      setMyReview(await res.json());
-    } catch {
-      /* silent */
+    // Hide soft-deleted reviews
+    if (!data || data.status === 'deleted') {
+      setMyReview(null);
+      return;
     }
-  };
+
+    setMyReview(data);
+  } catch {
+    setMyReview(null);
+  }
+};
 
   /* ---------------- EFFECTS ---------------- */
 
