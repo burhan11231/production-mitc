@@ -115,58 +115,69 @@ export default function ContactInquiryForm({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <input
-          name="name"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={handleChange}
-          disabled={isLoading || isBlocked}
-          className="input h-12"
-          required
-        />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          disabled={isLoading || isBlocked}
-          className="input h-12"
-          required
-        />
+  <div>
+    <label className="field-label">Full Name</label>
+    <input
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      disabled={isLoading || isBlocked}
+      className="input h-12"
+      required
+    />
+  </div>
 
-        <input
-          name="phone"
-          placeholder="Phone (optional)"
-          value={formData.phone}
-          onChange={handleChange}
-          disabled={isLoading || isBlocked}
-          className="input h-12"
-        />
+  <div>
+    <label className="field-label">Email</label>
+    <input
+      type="email"
+      name="email"
+      value={formData.email}
+      onChange={handleChange}
+      disabled={isLoading || isBlocked}
+      className="input h-12"
+      required
+    />
+  </div>
 
-        <textarea
-          name="message"
-          placeholder="How can we help?"
-          value={formData.message}
-          onChange={handleChange}
-          disabled={isLoading || isBlocked}
-          rows={compact ? 3 : 4}
-          className="input py-4 resize-none"
-          required
-        />
+  <div>
+    <label className="field-label">
+      Phone <span className="text-gray-400">(optional)</span>
+    </label>
+    <input
+      name="phone"
+      value={formData.phone}
+      onChange={handleChange}
+      disabled={isLoading || isBlocked}
+      className="input h-12"
+    />
+  </div>
 
-        <button
-          disabled={isLoading || isBlocked}
-          className="submit-btn h-12 disabled:opacity-50"
-        >
-          {isBlocked
-            ? 'Messages unavailable'
-            : isLoading
-            ? 'Sending…'
-            : 'Send Message ↗'}
-        </button>
-      </form>
+  <div>
+    <label className="field-label">How can we help?</label>
+    <textarea
+      name="message"
+      value={formData.message}
+      onChange={handleChange}
+      disabled={isLoading || isBlocked}
+      rows={4}
+      className="input py-3 resize-none"
+      required
+    />
+  </div>
+
+  <button
+    disabled={isLoading || isBlocked}
+    className="submit-btn h-12 mt-2"
+  >
+    {isBlocked
+      ? 'Messages unavailable'
+      : isLoading
+      ? 'Sending…'
+      : 'Send Message ↗'}
+  </button>
+</form>
     </div>
   );
 }
