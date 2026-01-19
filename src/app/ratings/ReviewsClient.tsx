@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 import StarRating from '@/components/StarRatings';
 import PublicReviewGate from '@/components/PublicReviewGate';
 import ReviewForm from '@/components/ReviewForm';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
@@ -139,8 +141,7 @@ const handleSoftDelete = async () => {
   if (!confirm('Delete your review?')) return;
 
   try {
-    const ref = doc(db, 'reviews', user.uid);
-    await updateDoc(ref, {
+    await updateDoc(doc(db, 'reviews', user.uid), {
       status: 'deleted',
       updatedAt: serverTimestamp(),
     });
@@ -198,123 +199,119 @@ const handleSoftDelete = async () => {
       </div>
 
       {/* ---------- CONTENT ---------- */}
-      <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[1fr_2fr] gap-10">
-        {/* ---------- REVIEWS ---------- */}
-        <div className="space-y-6">
-          {/* FILTERS */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => changeRatingFilter(null)}
-              className={`px-4 py-2 rounded-xl border text-sm ${
-                ratingFilter === null
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white'
-              }`}
-            >
-              All
-            </button>
+<div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[1fr_2fr] gap-10">
 
-            {[5, 4, 3, 2, 1].map((r) => (
-              <button
-                key={r}
-                onClick={() => changeRatingFilter(r)}
-                className={`px-4 py-2 rounded-xl border text-sm ${
-                  ratingFilter === r
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white'
-                }`}
-              >
-                {r}★
-              </button>
-            ))}
+  {/* ---------- LEFT: MY REVIEW / FORM ---------- */}
+  <div className="space-y-6">
+
+    {!myReview && !showForm && (
+      <PublicReviewGate
+        myReview={null}
+        onEdit={() => setShowForm(true)}
+        onDelete={() => {}}
+      />
+    )}
+
+    {myReview && !showForm && (
+      <PublicReviewGate
+        myReview={myReview}
+        onEdit={() => {
+          if (myReview.status === 'pending') return;
+          setShowForm(true);
+        }}
+        onDelete={handleSoftDelete}
+      />
+    )}
+
+    {showForm && (
+      <ReviewForm
+        existingReview={myReview}
+        onSuccess={() => {
+          setShowForm(false);
+          fetchMyReview();
+          fetchReviews();
+          fetchStats();
+        }}
+        onCancel={() => setShowForm(false)}
+      />
+    )}
+  </div>
+
+  {/* ---------- RIGHT: REVIEWS LIST ---------- */}
+  <div className="space-y-6">
+
+    {/* FILTERS */}
+    <div className="flex gap-2 flex-wrap">
+      <button
+        onClick={() => changeRatingFilter(null)}
+        className={`px-4 py-2 rounded-xl border text-sm ${
+          ratingFilter === null ? 'bg-gray-900 text-white' : 'bg-white'
+        }`}
+      >
+        All
+      </button>
+
+      {[5, 4, 3, 2, 1].map((r) => (
+        <button
+          key={r}
+          onClick={() => changeRatingFilter(r)}
+          className={`px-4 py-2 rounded-xl border text-sm ${
+            ratingFilter === r ? 'bg-gray-900 text-white' : 'bg-white'
+          }`}
+        >
+          {r}★
+        </button>
+      ))}
+    </div>
+
+    {/* LIST */}
+    {loading ? (
+      <p className="text-center py-10">Loading…</p>
+    ) : reviews.length ? (
+      reviews.map((r) => (
+        <div
+          key={r.id}
+          className="bg-white p-6 rounded-2xl border"
+        >
+          <div className="flex items-center gap-3">
+            <p className="font-bold">
+              {r.userName || 'Verified Customer'}
+            </p>
+            <StarRating rating={r.rating} size={18} />
           </div>
 
-
-{/* ---------- REVIEW FORM / MY REVIEW ---------- */}
-<div className="space-y-6">
-
-  {/* CASE 1: User has NO review yet */}
-  {!myReview && !showForm && (
-    <PublicReviewGate
-      myReview={null}
-      onWrite={() => setShowForm(true)}
-    />
-  )}
-
-  {/* CASE 2: User has a review AND is NOT editing */}
-  {myReview && !showForm && (
-    <PublicReviewGate
-      myReview={myReview}
-      onWrite={() => {}} // disabled
-    />
-  )}
-
-  {/* CASE 3: Write OR Edit */}
-  {showForm && (
-    <ReviewForm
-      existingReview={myReview}
-      onSuccess={() => {
-        setShowForm(false);
-        fetchMyReview();
-        fetchReviews();
-        fetchStats();
-      }}
-      onCancel={() => setShowForm(false)}
-    />
-  )}
-</div>
-
-
-
-          {/* LIST */}
-          {loading ? (
-            <p className="text-center py-10">Loading…</p>
-          ) : reviews.length ? (
-            reviews.map((r) => (
-              <div
-                key={r.id}
-                className="bg-white p-6 rounded-2xl border"
-              >
-                <div className="flex items-center gap-3">
-                  <p className="font-bold">
-                    {r.userName || 'Verified Customer'}
-                  </p>
-                  <StarRating rating={r.rating} size={18} />
-                </div>
-
-                <p className="text-gray-700 mt-3 whitespace-pre-line">
-                  {r.comment}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500">No reviews found.</p>
-          )}
-
-          {/* PAGINATION */}
-          <div className="flex justify-between pt-6">
-            {page > 1 && (
-              <button
-                onClick={() => setPage((p) => p - 1)}
-                className="px-4 py-2 border rounded-xl"
-              >
-                Previous
-              </button>
-            )}
-
-            {hasNextPage && (
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                className="px-4 py-2 border rounded-xl ml-auto"
-              >
-                Next
-              </button>
-            )}
-          </div>
+          <p className="text-gray-700 mt-3 whitespace-pre-line">
+            {r.comment}
+          </p>
         </div>
+      ))
+    ) : (
+      <p className="text-gray-500">No reviews found.</p>
+    )}
 
-        
-      </div>
+    {/* PAGINATION */}
+    <div className="flex justify-between pt-6">
+      {page > 1 && (
+        <button
+          onClick={() => setPage((p) => p - 1)}
+          className="px-4 py-2 border rounded-xl"
+        >
+          Previous
+        </button>
+      )}
+
+      {hasNextPage && (
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          className="px-4 py-2 border rounded-xl ml-auto"
+        >
+          Next
+        </button>
+      )}
+    </div>
+
+  </div>
+</div>
     </div>
   );
 }
