@@ -1,37 +1,33 @@
-import { auth } from '@/lib/firebase';
+// src/app/api/reviews/my/route.ts
 
-const fetchMyReview = async () => {
-  if (!auth.currentUser) {
-    setMyReview(null);
-    return;
-  }
+import { NextResponse } from 'next/server';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
 
+export async function GET(req: Request) {
   try {
-    const token = await auth.currentUser.getIdToken();
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(null, { status: 401 });
+    }
 
-    const res = await fetch('/api/reviews/my', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: 'no-store',
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = await getAdminAuth().verifyIdToken(token);
+
+    const snap = await getAdminDb()
+      .collection('reviews')
+      .doc(decoded.uid)
+      .get();
+
+    if (!snap.exists) {
+      return NextResponse.json(null);
+    }
+
+    return NextResponse.json({
+      id: snap.id,
+      ...snap.data(),
     });
-
-    if (!res.ok) {
-      setMyReview(null);
-      return;
-    }
-
-    const data = await res.json();
-
-    // hide soft-deleted reviews
-    if (!data || data.status === 'deleted') {
-      setMyReview(null);
-      return;
-    }
-
-    setMyReview(data);
   } catch (err) {
-    console.error('[FETCH_MY_REVIEW]', err);
-    setMyReview(null);
+    console.error('[REVIEWS_MY]', err);
+    return NextResponse.json(null, { status: 500 });
   }
-};
+}
