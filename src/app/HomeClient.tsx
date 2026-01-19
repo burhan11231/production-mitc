@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
 
 import {
   FaTools,
@@ -19,8 +18,8 @@ import { HiOutlineCurrencyRupee, HiOutlineSparkles } from 'react-icons/hi2';
 import { RiEyeLine } from 'react-icons/ri';
 import { TbArrowsUpRight, TbChecks } from 'react-icons/tb';
 
+import ContactInquiryForm from '@/components/ContactInquiryForm';
 import TopFooter from '@/components/topFooter';
-import { useAuth } from '@/lib/auth-context';
 
 /* ---------------- CONSTANTS ---------------- */
 
@@ -86,93 +85,7 @@ export default function HomeClient() {
     return () => clearInterval(interval);
   }, []);
 
-  /* -------- AUTH -------- */
-  const { user } = useAuth();
-
-  /* -------- CONTACT FORM STATE -------- */
-  const [isLoading, setIsLoading] = useState(false);
-  const [isBlocked, setIsBlocked] = useState(false);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
-  });
-
-  /* -------- PREFILL USER DATA -------- */
-  useEffect(() => {
-    if (!user) return;
-
-    setFormData(prev => ({
-      ...prev,
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.phone || '',
-    }));
-  }, [user]);
-
-  /* -------- GLOBAL CONTACT STATUS -------- */
-  useEffect(() => {
-    fetch('/api/contact/status', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => setIsBlocked(Boolean(data?.blocked)))
-      .catch(() => setIsBlocked(false)); // fail-open
-  }, []);
-
-  /* -------- FORM HANDLERS -------- */
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (isBlocked) {
-      toast.error('Messages are temporarily unavailable.');
-      return;
-    }
-
-    if (!formData.message.trim()) {
-      toast.error('Message is required');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim() || null,
-          message: formData.message.trim(),
-        }),
-      });
-
-      let data: any = null;
-      try {
-        data = await res.json();
-      } catch {}
-
-      if (!res.ok) {
-        toast.error(data?.error || 'Failed to send message');
-        return;
-      }
-
-      toast.success('Message sent successfully');
-      setFormData(prev => ({ ...prev, message: '' }));
-    } catch {
-      toast.error('Failed to send message');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
 
   /* ---------------- UI STARTS BELOW ---------------- */
   return (
@@ -479,107 +392,10 @@ export default function HomeClient() {
       </div>
 
       {/* CONTACT FORM */}
-      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 lg:p-10">
-        <h4 className="text-2xl font-bold text-gray-900 mb-1">
-          Send an Inquiry
-        </h4>
-        <p className="text-sm text-gray-500 mb-6">
-          Tell us what you need. Our team responds within working hours.
-        </p>
-
-{isBlocked && (
-  <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-    We are temporarily pausing new inquiries due to system capacity.
-    Please try again later or visit our showroom.
-  </div>
-)}
-
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          <div>
-            <label className="field-label mb-1.5 block">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Your name"
-              className="input h-12"
-              disabled={isLoading || isBlocked}
-            />
-          </div>
-
-          <div>
-            <label className="field-label mb-1.5 block">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="you@example.com"
-              className="input h-12"
-              disabled={isLoading || isBlocked}
-            />
-          </div>
-
-          <div>
-            <label className="field-label mb-1.5 block">
-              Phone <span className="text-gray-400">(optional)</span>
-            </label>
-            <input
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="+91 7006 XXX XXX"
-              className="input h-12"
-              disabled={isLoading || isBlocked}
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Used only for this inquiry.
-            </p>
-          </div>
-
-          <div>
-            <label className="field-label mb-1.5 block">
-              How can we help? <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              required
-              rows={4}
-              placeholder="Laptop model, specifications, or any questions you have..."
-              className="input py-4 resize-none"
-              disabled={isLoading || isBlocked}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading || isBlocked}
-            className="submit-btn h-12 text-sm mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isBlocked
-              ? 'Messages temporarily unavailable'
-              : isLoading
-              ? 'Sending…'
-              : 'Send Message ↗'}
-          </button>
-
-          {isBlocked && (
-            <p className="mt-3 text-xs text-red-600 text-center">
-              Messages are temporarily disabled due to system capacity.
-            </p>
-          )}
-        </form>
-      </div>
+      <ContactInquiryForm
+  title="Send an Inquiry"
+  subtitle="Tell us what you need. Our team responds within working hours."
+/>
     </div>
   </div>
 </section>
