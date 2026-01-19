@@ -69,6 +69,27 @@ export default function ReviewsClient({
 
   
 
+
+
+useEffect(() => {
+  setLoadingStats(true);
+
+  fetch('/api/reviews/stats', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      setStats(data);
+    })
+    .catch(err => {
+      console.error(err);
+      setStats(null);
+    })
+    .finally(() => {
+      setLoadingStats(false);
+    });
+
+  fetchMyReview();
+}, []);
+
   /* ---------------- FETCH MY REVIEW ---------------- */
 
   const fetchMyReview = async () => {
