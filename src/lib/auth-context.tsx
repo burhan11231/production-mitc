@@ -3,7 +3,6 @@
 import {
   onAuthStateChanged,
   signOut,
-  User,
 } from 'firebase/auth';
 import {
   doc,
@@ -16,6 +15,8 @@ import React, {
   useState,
 } from 'react';
 import { auth, db } from '@/lib/firebase';
+
+/* ---------------- TYPES ---------------- */
 
 export interface AppUser {
   uid: string;
@@ -33,9 +34,17 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+/* ---------------- CONTEXT ---------------- */
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+/* ---------------- PROVIDER ---------------- */
+
+export function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,33 +56,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const snap = await getDoc(doc(db, 'users', authUser.uid));
+      try {
+        const snap = await getDoc(doc(db, 'users', authUser.uid));
 
-      if (snap.exists()) {
-        const data = snap.data();
-        setUser({
-          uid: authUser.uid,
-          name: data.name,
-          email: data.email,
-          phone: data.phone || '',
-          role: data.role || 'user',
-          photoURL: data.photoURL || authUser.photoURL || null,
-          providers: authUser.providerData.map(p => p.providerId),
-        });
-      } else {
-        // Safety fallback
-        setUser({
-          uid: authUser.uid,
-          name: authUser.displayName || 'User',
-          email: authUser.email || '',
-          phone: '',
-          role: 'user',
-          photoURL: authUser.photoURL || null,
-          providers: authUser.providerData.map(p => p.providerId),
-        });
+        if (snap.exists()) {
+          const data = snap.data();
+
+          setUser({
+            uid: authUser.uid,
+            name: data.name || authUser.displayName || 'User',
+            email: data.email || authUser.email || '',
+            phone: data.phone || '',
+            role: data.role === 'admin' ? 'admin' : 'user',
+            photoURL: data.photoURL || authUser.photoURL || null,
+            providers: authUser.providerData.map(p => p.providerId),
+          });
+        } else {
+          // Firestore doc missing → safe fallback
+          setUser({
+            uid: authUser.uid,
+            name: authUser.displayName || 'User',
+            email: authUser.email || '',
+            phone: '',
+            role: 'user',
+            photoURL: authUser.photoURL || null,
+            providers: authUser.providerData.map(p => p.providerId),
+          });
+        }
+      } catch (err) {
+        console.error('[AUTH_LOAD_ERROR]', err);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     });
   }, []);
 
@@ -88,6 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
+/* ---------------- HOOK ---------------- */
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
