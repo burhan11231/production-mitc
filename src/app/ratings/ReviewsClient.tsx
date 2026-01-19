@@ -71,29 +71,12 @@ export default function ReviewsClient({
 
 
 
-useEffect(() => {
-  setLoadingStats(true);
 
-  fetch('/api/reviews/stats', { cache: 'no-store' })
-    .then(res => res.json())
-    .then(data => {
-      setStats(data);
-    })
-    .catch(err => {
-      console.error(err);
-      setStats(null);
-    })
-    .finally(() => {
-      setLoadingStats(false);
-    });
-
-  fetchMyReview();
-}, []);
 
   /* ---------------- FETCH MY REVIEW ---------------- */
-
-  const fetchMyReview = async () => {
+const fetchMyReview = async () => {
   if (!user) return;
+
   try {
     const snap = await getDoc(doc(db, 'reviews', user.uid));
     if (snap.exists()) {
@@ -107,21 +90,21 @@ useEffect(() => {
   }
 };
 
+/* ---------------- STATS + MY REVIEW ---------------- */
 useEffect(() => {
   setLoadingStats(true);
 
   fetch('/api/reviews/stats', { cache: 'no-store' })
     .then(res => res.json())
-    .then(data => setStats(data))
+    .then(setStats)
     .catch(() => setStats(null))
     .finally(() => setLoadingStats(false));
 
   fetchMyReview();
-}, []);
+}, [user]);
 
-  /* ---------------- EFFECTS ---------------- */
-
-  useEffect(() => {
+/* ---------------- PUBLIC REVIEWS ---------------- */
+useEffect(() => {
   setLoadingReviews(true);
 
   const params = new URLSearchParams();
@@ -136,13 +119,8 @@ useEffect(() => {
       setReviews(data.reviews || []);
       setHasNextPage(Boolean(data.hasNextPage));
     })
-    .catch(err => {
-      console.error(err);
-      setReviews([]);
-    })
-    .finally(() => {
-      setLoadingReviews(false);
-    });
+    .catch(() => setReviews([]))
+    .finally(() => setLoadingReviews(false));
 }, [initialPage, initialRating]);
 
 
