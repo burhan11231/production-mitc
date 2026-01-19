@@ -1,56 +1,40 @@
 import { NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/adminfirebase';
+import { getAdminDb } from '@/lib/firebase-admin';
 
 const PER_PAGE = 10;
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
-  const page = Number(searchParams.get('page') || 1);
+  const page = Math.max(1, Number(searchParams.get('page') || 1));
   const rating = Number(searchParams.get('rating') || 0);
 
   const db = getAdminDb();
 
-  let q = db
+  let query = db
     .collection('reviews')
     .where('status', '==', 'published')
-    .orderBy('createdAt', 'desc')
-    .limit(PER_PAGE + 1);
+    .orderBy('createdAt', 'desc');
 
   if (rating >= 1 && rating <= 5) {
-    q = q.where('rating', '==', rating);
+    query = query.where('rating', '==', rating);
   }
 
-  // Pagination cursor
-  if (page > 1) {
-    const cursorSnap = await db
-      .collection('reviewCursors')
-      .doc(`page-${page - 1}-${rating || 'all'}`)
-      .get();
-
-    if (cursorSnap.exists) {
-      q = q.startAfter(cursorSnap.data()!.lastDoc);
-    }
-  }
-
-  const snap = await q.get();
+  // Fetch only what we need
+  const snap = await query.limit(page * PER_PAGE + 1).get();
   const docs = snap.docs;
 
-  const hasNextPage = docs.length > PER_PAGE;
-  const pageDocs = hasNextPage ? docs.slice(0, PER_PAGE) : docs;
+  const start = (page - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
 
-  // Save cursor
-  if (pageDocs.length) {
-    await db
-      .collection('reviewCursors')
-      .doc(`page-${page}-${rating || 'all'}`)
-      .set({
-        lastDoc: pageDocs[pageDocs.length - 1],
-      });
-  }
+  const pageDocs = docs.slice(start, end);
+  const hasNextPage = docs.length > end;
 
   return NextResponse.json({
-    reviews: pageDocs.map(d => ({ id: d.id, ...d.data() })),
+    reviews: pageDocs.map(d => ({
+      id: d.id,
+      ...d.data(),
+    })),
     hasNextPage,
   });
 }
