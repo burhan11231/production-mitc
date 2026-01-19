@@ -63,28 +63,35 @@ export default function ReviewsClient({
 
   /* ---------------- FETCH PUBLIC REVIEWS ---------------- */
 
-  const fetchReviews = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('page', String(page));
-      if (ratingFilter) params.set('rating', String(ratingFilter));
+  const fetchMyReview = async () => {
+  if (!user) {
+    setMyReview(null);
+    return;
+  }
 
-      const res = await fetch(`/api/reviews/public?${params.toString()}`, {
-        cache: 'no-store',
-      });
+  try {
+    const res = await fetch('/api/reviews/my', {
+      cache: 'no-store',
+    });
 
-      if (!res.ok) throw new Error();
-
-      const data = await res.json();
-      setReviews(data.reviews);
-      setHasNextPage(data.hasNextPage);
-    } catch {
-      toast.error('Failed to load reviews');
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      setMyReview(null);
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    // ⛔ hide deleted reviews completely
+    if (!data || data.status === 'deleted') {
+      setMyReview(null);
+      return;
+    }
+
+    setMyReview(data);
+  } catch {
+    setMyReview(null);
+  }
+};
 
   /* ---------------- FETCH STATS ---------------- */
 
@@ -204,24 +211,26 @@ const handleSoftDelete = async () => {
   {/* ---------- LEFT: MY REVIEW / FORM ---------- */}
   <div className="space-y-6">
 
-    {!myReview && !showForm && (
-      <PublicReviewGate
-        myReview={null}
-        onEdit={() => setShowForm(true)}
-        onDelete={() => {}}
-      />
-    )}
+    {/* USER HAS NO REVIEW */}
+{myReview === null && !showForm && (
+  <PublicReviewGate
+    myReview={null}
+    onEdit={() => setShowForm(true)}
+    onDelete={() => {}}
+  />
+)}
 
-    {myReview && !showForm && (
-      <PublicReviewGate
-        myReview={myReview}
-        onEdit={() => {
-          if (myReview.status === 'pending') return;
-          setShowForm(true);
-        }}
-        onDelete={handleSoftDelete}
-      />
-    )}
+{/* USER HAS REVIEW */}
+{myReview !== null && !showForm && (
+  <PublicReviewGate
+    myReview={myReview}
+    onEdit={() => {
+      if (myReview.status === 'pending') return;
+      setShowForm(true);
+    }}
+    onDelete={handleSoftDelete}
+  />
+)}
 
     {showForm && (
       <ReviewForm
