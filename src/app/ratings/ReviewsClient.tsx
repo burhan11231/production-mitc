@@ -74,38 +74,75 @@ export default function ReviewsClient({
 
 
 
-  /* ---------------- FETCH MY REVIEW ---------------- */
-const fetchMyReview = async () => {
-  if (!user) return;
-
-  try {
-    const snap = await getDoc(doc(db, 'reviews', user.uid));
-    if (snap.exists()) {
-      setMyReview({
-        id: snap.id,
-        ...(snap.data() as Omit<Review, 'id'>),
-      });
-    }
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-/* ---------------- STATS + MY REVIEW ---------------- */
+  /* ------------------------------------
+   FETCH REVIEW STATS (PUBLIC)
+------------------------------------ */
 useEffect(() => {
+  let mounted = true;
+
   setLoadingStats(true);
 
   fetch('/api/reviews/stats', { cache: 'no-store' })
     .then(res => res.json())
-    .then(setStats)
-    .catch(() => setStats(null))
-    .finally(() => setLoadingStats(false));
+    .then(data => {
+      if (!mounted) return;
+      setStats(data);
+    })
+    .catch(() => {
+      if (!mounted) return;
+      setStats(null);
+    })
+    .finally(() => {
+      if (!mounted) return;
+      setLoadingStats(false);
+    });
 
-  fetchMyReview();
+  return () => {
+    mounted = false;
+  };
+}, []);
+
+/* ------------------------------------
+   FETCH MY REVIEW (USER-ONLY)
+------------------------------------ */
+useEffect(() => {
+  if (!user) {
+    setMyReview(null);
+    return;
+  }
+
+  let mounted = true;
+
+  (async () => {
+    try {
+      const snap = await getDoc(doc(db, 'reviews', user.uid));
+      if (!mounted) return;
+
+      if (snap.exists()) {
+        setMyReview({
+          id: snap.id,
+          ...(snap.data() as Omit<Review, 'id'>),
+        });
+      } else {
+        setMyReview(null);
+      }
+    } catch (err) {
+      console.error(err);
+      if (mounted) setMyReview(null);
+    }
+  })();
+
+  return () => {
+    mounted = false;
+  };
 }, [user]);
 
-/* ---------------- PUBLIC REVIEWS ---------------- */
+/* ------------------------------------
+   FETCH PUBLIC REVIEWS (PAGINATED)
+------------------------------------ */
 useEffect(() => {
+  let mounted = true;
+
   setLoadingReviews(true);
 
   const params = new URLSearchParams();
@@ -117,11 +154,23 @@ useEffect(() => {
   })
     .then(res => res.json())
     .then(data => {
+      if (!mounted) return;
       setReviews(data.reviews || []);
       setHasNextPage(Boolean(data.hasNextPage));
     })
-    .catch(() => setReviews([]))
-    .finally(() => setLoadingReviews(false));
+    .catch(() => {
+      if (!mounted) return;
+      setReviews([]);
+      setHasNextPage(false);
+    })
+    .finally(() => {
+      if (!mounted) return;
+      setLoadingReviews(false);
+    });
+
+  return () => {
+    mounted = false;
+  };
 }, [initialPage, initialRating]);
 
 
