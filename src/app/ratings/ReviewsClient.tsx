@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+
+import StarRating from '@/components/StarRatings';
+import PublicReviewGate from '@/components/PublicReviewformGate';
+import ReviewForm from '@/components/ReviewForm';
 
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
 
-import StarRating from '@/components/StarRatings';
-import PublicReviewGate from '@/components/PublicReviewformGate';
+import { useAuth } from '@/lib/auth-context';
 
 /* ---------------- TYPES ---------------- */
 
@@ -26,7 +29,9 @@ interface ReviewStats {
   starCounts: Record<string, number>;
 }
 
-interface Props {
+/* ---------------- PROPS ---------------- */
+
+interface ReviewsClientProps {
   initialPage: number;
   initialRating: number | null;
 }
@@ -36,197 +41,240 @@ interface Props {
 export default function ReviewsClient({
   initialPage,
   initialRating,
-}: Props) {
+}: ReviewsClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReviewStats | null>(null);
 
   const [page, setPage] = useState(initialPage);
-  const [rating, setRating] = useState<number | null>(initialRating);
+  const [ratingFilter, setRatingFilter] = useState<number | null>(
+    initialRating
+  );
 
-  const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
+  const [myReview, setMyReview] = useState<any>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  /* ---------------- FETCH PUBLIC REVIEWS ---------------- */
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      if (ratingFilter) params.set('rating', String(ratingFilter));
+
+      const res = await fetch(`/api/reviews/public?${params.toString()}`, {
+        cache: 'no-store',
+      });
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+      setReviews(data.reviews);
+      setHasNextPage(data.hasNextPage);
+    } catch {
+      toast.error('Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ---------------- FETCH STATS ---------------- */
 
-  useEffect(() => {
-    fetch('/api/reviews/stats', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then(setStats)
-      .catch(() => {});
-  }, []);
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/reviews/stats', {
+        cache: 'no-store',
+      });
 
-  /* ---------------- FETCH REVIEWS ---------------- */
+      if (!res.ok) return;
+      setStats(await res.json());
+    } catch {
+      /* silent */
+    }
+  };
+
+  /* ---------------- FETCH MY REVIEW ---------------- */
+
+  const fetchMyReview = async () => {
+    if (!user) {
+      setMyReview(null);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/reviews/my`, {
+        cache: 'no-store',
+      });
+
+      if (!res.ok) return;
+      setMyReview(await res.json());
+    } catch {
+      /* silent */
+    }
+  };
+
+  /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
-    setLoading(true);
+    fetchReviews();
+    fetchStats();
+  }, [page, ratingFilter]);
+
+  useEffect(() => {
+    fetchMyReview();
+  }, [user]);
+
+  /* ---------------- HANDLERS ---------------- */
+
+  const changeRatingFilter = (rating: number | null) => {
+    setPage(1);
+    setRatingFilter(rating);
 
     const params = new URLSearchParams();
-    params.set('page', String(page));
     if (rating) params.set('rating', String(rating));
-
-    fetch(`/api/reviews/public?${params}`, {
-      cache: 'no-store',
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        setReviews(data.reviews);
-        setHasNextPage(data.hasNextPage);
-      })
-      .catch(() => {
-        toast.error('Failed to load reviews');
-      })
-      .finally(() => setLoading(false));
-  }, [page, rating]);
-
-  /* ---------------- URL SYNC ---------------- */
-
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    params.set('page', String(page));
-    rating ? params.set('rating', String(rating)) : params.delete('rating');
-
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [page, rating]);
-
-  /* ---------------- FILTERED REVIEWS ---------------- */
-
-  const schemaReviews = useMemo(
-    () =>
-      reviews.map((r) => ({
-        userName: r.userName,
-        rating: r.rating,
-        comment: r.comment,
-        createdAt: r.createdAt,
-      })),
-    [reviews]
-  );
+    router.push(`/ratings?${params.toString()}`);
+  };
 
   /* ---------------- UI ---------------- */
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ================= SCHEMA (SEO) ================= */}
-      {stats && page === 1 && !rating && (
+      {/* ---------- SEO STRUCTURED DATA ---------- */}
+      {stats && page === 1 && !ratingFilter && (
         <>
           <AggregateRatingSchema
             avg={stats.averageRating}
             total={stats.totalReviews}
           />
-          <ReviewSchema reviews={schemaReviews} />
+          <ReviewSchema reviews={reviews} />
         </>
       )}
 
-      {/* ================= HEADER ================= */}
-      <section className="bg-white border-b py-12">
+      {/* ---------- HEADER ---------- */}
+      <div className="bg-white border-b py-10">
         <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-3">
-            Customer Reviews
-          </h1>
+          <h1 className="text-4xl font-bold">Customer Reviews</h1>
 
           {stats && (
-            <div className="flex items-center gap-4">
-              <StarRating rating={stats.averageRating} size={22} />
-              <span className="text-gray-600">
-                {stats.averageRating.toFixed(1)} · {stats.totalReviews} reviews
+            <div className="mt-4 flex items-center gap-4">
+              <StarRating rating={stats.averageRating} size={26} />
+              <span className="text-lg font-semibold">
+                {stats.averageRating.toFixed(1)} / 5
+              </span>
+              <span className="text-gray-500">
+                ({stats.totalReviews} reviews)
               </span>
             </div>
           )}
         </div>
-      </section>
+      </div>
 
-      {/* ================= FILTER ================= */}
-      <section className="max-w-7xl mx-auto px-6 py-6 flex gap-3 flex-wrap">
-        <button
-          onClick={() => {
-            setRating(null);
-            setPage(1);
-          }}
-          className={`px-4 py-2 rounded-lg border ${
-            rating === null ? 'bg-gray-900 text-white' : 'bg-white'
-          }`}
-        >
-          All
-        </button>
+      {/* ---------- CONTENT ---------- */}
+      <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[2fr_1fr] gap-10">
+        {/* ---------- REVIEWS ---------- */}
+        <div className="space-y-6">
+          {/* FILTERS */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => changeRatingFilter(null)}
+              className={`px-4 py-2 rounded-xl border text-sm ${
+                ratingFilter === null
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-white'
+              }`}
+            >
+              All
+            </button>
 
-        {[5, 4, 3, 2, 1].map((r) => (
-          <button
-            key={r}
-            onClick={() => {
-              setRating(r);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-lg border ${
-              rating === r ? 'bg-gray-900 text-white' : 'bg-white'
-            }`}
-          >
-            {r}★
-          </button>
-        ))}
-      </section>
+            {[5, 4, 3, 2, 1].map((r) => (
+              <button
+                key={r}
+                onClick={() => changeRatingFilter(r)}
+                className={`px-4 py-2 rounded-xl border text-sm ${
+                  ratingFilter === r
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white'
+                }`}
+              >
+                {r}★
+              </button>
+            ))}
+          </div>
 
-      {/* ================= REVIEW GATE ================= */}
-      <section className="max-w-7xl mx-auto px-6 mb-10">
-        <PublicReviewGate
-          myReview={null /* fetched elsewhere if needed */}
-          onWrite={() => router.push('/profile')}
-        />
-      </section>
-
-      {/* ================= LIST ================= */}
-      <section className="max-w-7xl mx-auto px-6 pb-16">
-        {loading ? (
-          <p className="text-center">Loading…</p>
-        ) : reviews.length ? (
-          <div className="space-y-6">
-            {reviews.map((r) => (
+          {/* LIST */}
+          {loading ? (
+            <p className="text-center py-10">Loading…</p>
+          ) : reviews.length ? (
+            reviews.map((r) => (
               <div
                 key={r.id}
-                className="bg-white p-6 rounded-xl border"
+                className="bg-white p-6 rounded-2xl border"
               >
-                <div className="flex justify-between mb-2">
-                  <p className="font-semibold">
+                <div className="flex items-center gap-3">
+                  <p className="font-bold">
                     {r.userName || 'Verified Customer'}
                   </p>
-                  <StarRating rating={r.rating} />
+                  <StarRating rating={r.rating} size={18} />
                 </div>
 
-                <p className="text-gray-700 whitespace-pre-line">
+                <p className="text-gray-700 mt-3 whitespace-pre-line">
                   {r.comment}
                 </p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-600">
-            No reviews found.
-          </p>
-        )}
-
-        {/* ================= PAGINATION ================= */}
-        <div className="mt-10 flex justify-center gap-4">
-          {page > 1 && (
-            <button
-              onClick={() => setPage((p) => p - 1)}
-              className="px-4 py-2 border rounded-lg"
-            >
-              Previous
-            </button>
+            ))
+          ) : (
+            <p className="text-gray-500">No reviews found.</p>
           )}
 
-          {hasNextPage && (
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              className="px-4 py-2 border rounded-lg"
-            >
-              Next
-            </button>
+          {/* PAGINATION */}
+          <div className="flex justify-between pt-6">
+            {page > 1 && (
+              <button
+                onClick={() => setPage((p) => p - 1)}
+                className="px-4 py-2 border rounded-xl"
+              >
+                Previous
+              </button>
+            )}
+
+            {hasNextPage && (
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                className="px-4 py-2 border rounded-xl ml-auto"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ---------- REVIEW FORM ---------- */}
+        <div className="space-y-6">
+          <PublicReviewGate
+            myReview={myReview}
+            onWrite={() => setShowForm(true)}
+          />
+
+          {showForm && (
+            <ReviewForm
+              existingReview={myReview}
+              onSuccess={() => {
+                setShowForm(false);
+                fetchMyReview();
+                fetchReviews();
+                fetchStats();
+              }}
+              onCancel={() => setShowForm(false)}
+            />
           )}
         </div>
-      </section>
+      </div>
     </div>
   );
 }
