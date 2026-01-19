@@ -89,13 +89,28 @@ export default function ReviewsClient({
   /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
-  fetch('/api/reviews/stats', { cache: 'no-store' })
-    .then(res => res.json())
-    .then(setStats)
-    .finally(() => setLoadingStats(false));
+  setLoadingReviews(true);
 
-  fetchMyReview();
-}, []);
+  const params = new URLSearchParams();
+  params.set('page', String(initialPage));
+  if (initialRating) params.set('rating', String(initialRating));
+
+  fetch(`/api/reviews/public?${params.toString()}`, {
+    cache: 'no-store',
+  })
+    .then(res => res.json())
+    .then(data => {
+      setReviews(data.reviews || []);
+      setHasNextPage(Boolean(data.hasNextPage));
+    })
+    .catch(err => {
+      console.error(err);
+      setReviews([]);
+    })
+    .finally(() => {
+      setLoadingReviews(false);
+    });
+}, [initialPage, initialRating]);
 
 
   /* ---------------- ACTIONS ---------------- */
