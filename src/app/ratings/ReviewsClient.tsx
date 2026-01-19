@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 
 import { FaStar, FaPen } from 'react-icons/fa';
@@ -12,6 +11,7 @@ import { MdMessage, MdClose } from 'react-icons/md';
 import PublicReviewGate from '@/components/PublicReviewGate';
 import AggregateRatingSchema from './AggregateRatingSchema';
 import ReviewSchema from './ReviewSchema';
+import { doc, getDoc } from 'firebase/firestore';
 
 // 1️⃣ Import the new StarRating component
 // Adjust path if you placed it elsewhere, e.g. '@/components/StarRating'
@@ -93,19 +93,31 @@ useEffect(() => {
   /* ---------------- FETCH MY REVIEW ---------------- */
 
   const fetchMyReview = async () => {
-    if (!user) return;
-    try {
-      const snap = await getDoc(doc(db, 'reviews', user.uid));
-      if (snap.exists()) {
-        setMyReview({
-          id: snap.id,
-          ...(snap.data() as Omit<Review, 'id'>),
-        });
-      }
-    } catch (e) {
-      console.error(e);
+  if (!user) return;
+  try {
+    const snap = await getDoc(doc(db, 'reviews', user.uid));
+    if (snap.exists()) {
+      setMyReview({
+        id: snap.id,
+        ...(snap.data() as Omit<Review, 'id'>),
+      });
     }
-  };
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+useEffect(() => {
+  setLoadingStats(true);
+
+  fetch('/api/reviews/stats', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => setStats(data))
+    .catch(() => setStats(null))
+    .finally(() => setLoadingStats(false));
+
+  fetchMyReview();
+}, []);
 
   /* ---------------- EFFECTS ---------------- */
 
