@@ -7,18 +7,17 @@ import { useAuth } from '@/lib/auth-context';
 interface Props {
   title?: string;
   subtitle?: string;
-  compact?: boolean;
 }
 
 export default function ContactInquiryForm({
-  title = 'Send an Inquiry',
-  subtitle = 'Tell us what you need. Our team responds within working hours.',
-  compact = false,
+  title = 'Let’s Talk',
+  subtitle = 'Send us your requirement. We respond within working hours.',
 }: Props) {
   const { user } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [usagePercent, setUsagePercent] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -27,7 +26,7 @@ export default function ContactInquiryForm({
     message: '',
   });
 
-  /* ---------- Prefill from auth ---------- */
+  /* ---------- Prefill from Auth ---------- */
   useEffect(() => {
     if (!user) return;
     setFormData(prev => ({
@@ -38,12 +37,20 @@ export default function ContactInquiryForm({
     }));
   }, [user]);
 
-  /* ---------- Global storage status ---------- */
+  /* ---------- Storage Status (Sync with Page Logic) ---------- */
   useEffect(() => {
+    let mounted = true;
     fetch('/api/contact/status', { cache: 'no-store' })
       .then(res => res.json())
-      .then(data => setIsBlocked(Boolean(data?.blocked)))
-      .catch(() => setIsBlocked(false)); // fail-open
+      .then(data => {
+        if (!mounted) return;
+        setIsBlocked(Boolean(data?.blocked));
+        setUsagePercent(typeof data?.percent === 'number' ? data.percent : null);
+      })
+      .catch(() => {
+        if (mounted) setIsBlocked(false); // Fail-open
+      });
+    return () => { mounted = false; };
   }, []);
 
   /* ---------- Handlers ---------- */
@@ -58,7 +65,7 @@ export default function ContactInquiryForm({
     e.preventDefault();
 
     if (isBlocked) {
-      toast.error('Messages are temporarily unavailable.');
+      toast.error('Messages are currently unavailable. Please try again later.');
       return;
     }
 
@@ -104,80 +111,124 @@ export default function ContactInquiryForm({
 
   /* ---------- UI ---------- */
   return (
-    <div className="bg-white rounded-3xl shadow-2xl p-8 lg:p-10">
-      <h4 className="text-2xl font-bold text-gray-900 mb-1">{title}</h4>
-      <p className="text-sm text-gray-500 mb-6">{subtitle}</p>
-
-      {isBlocked && (
-        <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-          We are temporarily pausing new inquiries due to system capacity.
-        </div>
-      )}
+    <div className="bg-white rounded-3xl shadow-xl p-8 lg:p-10">
+      <div className="mb-8">
+        <h4 className="text-2xl font-bold text-gray-900 mb-2">{title}</h4>
+        <p className="text-gray-600 text-sm">{subtitle}</p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="field-label">Full Name</label>
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Your name"
+            disabled={isLoading || isBlocked}
+            className="input h-12"
+            required
+          />
+        </div>
 
-  <div>
-    <label className="field-label">Full Name</label>
-    <input
-      name="name"
-      value={formData.name}
-      onChange={handleChange}
-      disabled={isLoading || isBlocked}
-      className="input h-12"
-      required
-    />
-  </div>
+        <div>
+          <label className="field-label">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
+            disabled={isLoading || isBlocked}
+            className="input h-12"
+            required
+          />
+        </div>
 
-  <div>
-    <label className="field-label">Email</label>
-    <input
-      type="email"
-      name="email"
-      value={formData.email}
-      onChange={handleChange}
-      disabled={isLoading || isBlocked}
-      className="input h-12"
-      required
-    />
-  </div>
+        <div>
+          <label className="field-label">
+            Phone <span className="text-gray-400">(optional)</span>
+          </label>
+          <input
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="+91 7006 XXX XXX"
+            disabled={isLoading || isBlocked}
+            className="input h-12"
+          />
+        </div>
 
-  <div>
-    <label className="field-label">
-      Phone <span className="text-gray-400">(optional)</span>
-    </label>
-    <input
-      name="phone"
-      value={formData.phone}
-      onChange={handleChange}
-      disabled={isLoading || isBlocked}
-      className="input h-12"
-    />
-  </div>
+        <div>
+          <label className="field-label">How can we help?</label>
+          <textarea
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            placeholder="Laptop model, specifications or any questions you have..."
+            disabled={isLoading || isBlocked}
+            rows={4}
+            className="input py-3 resize-none"
+            required
+          />
+        </div>
 
-  <div>
-    <label className="field-label">How can we help?</label>
-    <textarea
-      name="message"
-      value={formData.message}
-      onChange={handleChange}
-      disabled={isLoading || isBlocked}
-      rows={4}
-      className="input py-3 resize-none"
-      required
-    />
-  </div>
+        <button
+          disabled={isLoading || isBlocked}
+          className="submit-btn h-12 mt-2"
+        >
+          {isBlocked
+            ? 'Messages temporarily unavailable'
+            : isLoading
+            ? 'Sending…'
+            : 'Send Message ↗'}
+        </button>
 
-  <button
-    disabled={isLoading || isBlocked}
-    className="submit-btn h-12 mt-2"
-  >
-    {isBlocked
-      ? 'Messages unavailable'
-      : isLoading
-      ? 'Sending…'
-      : 'Send Message ↗'}
-  </button>
-</form>
+        {isBlocked && (
+          <p className="text-xs text-red-600 mt-2 text-center">
+            Messages are temporarily disabled due to system capacity.
+          </p>
+        )}
+      </form>
+
+      {/* STYLES - Matches ContactPage exactly */}
+      <style jsx>{`
+        .field-label {
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 4px;
+          display: block;
+          color: #374151;
+        }
+        .input {
+          width: 100%;
+          border-radius: 14px;
+          border: 2px solid #e5e7eb;
+          padding: 0 14px;
+          font-size: 14px;
+          transition: border-color 0.2s;
+        }
+        .input:focus {
+          outline: none;
+          border-color: #3b82f6;
+        }
+        .submit-btn {
+          width: 100%;
+          background: #111827;
+          color: white;
+          border-radius: 9999px;
+          font-weight: 700;
+          transition: 0.2s;
+        }
+        .submit-btn:hover:not(:disabled) {
+          background: #000;
+          transform: translateY(-1px);
+        }
+        .submit-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      `}</style>
     </div>
   );
 }
