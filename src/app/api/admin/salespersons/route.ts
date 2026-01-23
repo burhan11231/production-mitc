@@ -1,73 +1,48 @@
-// src/app/api/admin/salespersons/route.ts
-import { NextResponse } from 'next/server'
-import { getAdminDb } from '@/lib/firebase-admin'
-import { FieldValue } from 'firebase-admin/firestore'
+import { NextResponse } from 'next/server';
+import { getAdminDb } from '@/lib/firebase-admin';
 
-/* =======================
-   GET – Load all members
-======================= */
-export async function GET() {
-  const adminDb = getAdminDb() // ✅ INIT INSIDE HANDLER
+export async function GET(req: Request) {
+  try {
+    const adminDb = getAdminDb();
+    const userId = req.headers.get('x-user-id');
 
-  const snap = await adminDb
-    .collection('salespersons')
-    .orderBy('order', 'asc')
-    .get()
+    const snap = await adminDb
+      .collection('salespersons')
+      .where('isActive', '==', true)
+      .orderBy('order', 'asc')
+      .get();
 
-  const data = snap.docs.map(d => ({
-    id: d.id,
-    ...d.data(),
-  }))
+    const salespersons = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as any[];
 
-  return NextResponse.json(data, {
-    headers: { 'Cache-Control': 'no-store' },
-  })
-}
+    // ✅ Attach user reaction (if logged in)
+    if (userId) {
+      const reactionRefs = salespersons.map(sp =>
+        adminDb.doc(`salesperson_reactions/${userId}_${sp.id}`)
+      );
 
-/* =======================
-   POST – Add member
-======================= */
-export async function POST(req: Request) {
-  const adminDb = getAdminDb()
+      const reactionSnaps = await adminDb.getAll(...reactionRefs);
 
-  const body = await req.json()
+      reactionSnaps.forEach((r, i) => {
+        salespersons[i].userReaction = r.exists
+          ? r.data()?.type ?? null
+          : null;
+      });
+    }
 
-  await adminDb.collection('salespersons').add({
-    ...body,
-    likesCount: 0,
-    dislikesCount: 0,
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
-  })
-
-  return NextResponse.json({ success: true })
-}
-
-/* =======================
-   PATCH – Update member
-======================= */
-export async function PATCH(req: Request) {
-  const adminDb = getAdminDb()
-
-  const { id, updates } = await req.json()
-
-  await adminDb.doc(`salespersons/${id}`).update({
-    ...updates,
-    updatedAt: FieldValue.serverTimestamp(),
-  })
-
-  return NextResponse.json({ success: true })
-}
-
-/* =======================
-   DELETE – Remove member
-======================= */
-export async function DELETE(req: Request) {
-  const adminDb = getAdminDb()
-
-  const { id } = await req.json()
-
-  await adminDb.doc(`salespersons/${id}`).delete()
-
-  return NextResponse.json({ success: true })
+    // ✅ IMPORTANT: disable caching
+    return NextResponse.json(salespersons, {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (err) {
+    console.error('SALESPERSONS_API_ERROR', err);
+    return NextResponse.json(
+      { error: 'Failed to load salespersons' },
+      { status: 500 }
+    );
+  }
 }
