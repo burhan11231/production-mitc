@@ -305,11 +305,12 @@ useEffect(() => {
   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200
     ${
       userReaction === 'like'
-        ? 'bg-blue-600 border border-blue-600 text-white shadow-md hover:bg-blue-700'
-        : 'bg-white border border-transparent text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+        ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300 hover:bg-blue-700 hover:ring-blue-400'
+        : 'bg-white text-gray-600 hover:text-blue-600 hover:ring-2 hover:ring-blue-200'
     }
+    active:scale-95
   `}
->    
+>   
                     <svg className="h-5 w-5" fill={userReaction === 'like' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">    
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.708c.94 0 1.667.83 1.547 1.755l-1.304 10A1.75 1.75 0 0 1 17.204 23H7V10l7-7V10Z" />    
                     </svg>    
@@ -324,9 +325,10 @@ useEffect(() => {
   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200
     ${
       userReaction === 'dislike'
-        ? 'bg-red-600 border border-red-600 text-white shadow-md hover:bg-red-700'
-        : 'bg-white border border-transparent text-gray-600 hover:bg-red-50 hover:text-red-600'
+        ? 'bg-red-600 text-white shadow-md ring-2 ring-red-300 hover:bg-red-700 hover:ring-red-400'
+        : 'bg-white text-gray-600 hover:text-red-600 hover:ring-2 hover:ring-red-200'
     }
+    active:scale-95
   `}
 >    
                     <svg className="h-5 w-5" fill={userReaction === 'dislike' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">    
