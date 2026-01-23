@@ -125,7 +125,7 @@ export default function TeamPage() {
               <select
                 value={roleFilter}
                 onChange={e => setRoleFilter(e.target.value)}
-                className="rounded-2xl border px-4 py-3 text-sm bg-white"
+                className="rounded-2xl border px-4 pr-10 py-3 text-sm bg-white"
               >
                 <option value="all">All roles</option>
                 {roles.map(r => (
