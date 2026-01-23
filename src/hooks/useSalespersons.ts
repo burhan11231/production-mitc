@@ -18,14 +18,18 @@ export function useSalespersons() {
   useEffect(() => {
     let mounted = true;
 
+    // ✅ Serve from memory if available
     if (cachedSalespersons) {
       setSalespersons(cachedSalespersons);
       setIsLoading(false);
       return;
     }
 
+    // ✅ Single fetch guard
     if (!fetchPromise) {
-      fetchPromise = fetch('/api/salespersons')
+      fetchPromise = fetch('/api/salespersons', {
+        cache: 'no-store',
+      })
         .then(res => {
           if (!res.ok) throw new Error('Failed to fetch');
           return res.json();
@@ -33,7 +37,7 @@ export function useSalespersons() {
         .then((data: Salesperson[]) => {
           cachedSalespersons = data;
 
-          // ✅ Fill session cache
+          // ✅ Hydrate reaction cache
           data.forEach(sp => {
             reactionCache.set(sp.id!, sp.userReaction ?? null);
           });
