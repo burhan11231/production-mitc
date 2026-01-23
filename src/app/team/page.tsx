@@ -148,7 +148,7 @@ export default function TeamPage() {
               <select
                 value={sortMode}
                 onChange={e => setSortMode(e.target.value as SortMode)}
-                className="rounded-2xl border px-4 py-3 text-sm bg-white"
+                className="rounded-2xl border px-4 pr-10 py-3 text-sm bg-white"
               >
                 <option value="recommended">Recommended</option>
                 <option value="name-asc">Name A–Z</option>
