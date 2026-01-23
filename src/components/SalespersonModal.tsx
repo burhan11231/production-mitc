@@ -52,15 +52,19 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
   const [authError, setAuthError] =    
     useState<{ type: 'like' | 'dislike'; msg: string } | null>(null)    
     
-  /* ✅ INIT COUNTS FROM SALESPERSON (FIX) */    
-  useEffect(() => {
+  /* ✅ INIT COUNTS + USER REACTION (FINAL FIX) */
+useEffect(() => {
   if (!isOpen || !salesperson) return;
 
   setLikesCount(salesperson.likesCount ?? 0);
   setDislikesCount(salesperson.dislikesCount ?? 0);
 
+  const cached = reactionCache.get(salesperson.id!);
+
   setUserReaction(
-    reactionCache.get(salesperson.id!) ?? null
+    cached !== undefined
+      ? cached
+      : salesperson.userReaction ?? null
   );
 }, [isOpen, salesperson]);   
  
