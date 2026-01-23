@@ -299,15 +299,17 @@ useEffect(() => {
     
                 {/* Reaction Buttons */}    
                 <div className="flex items-center gap-2.5 bg-white rounded-xl border border-gray-200 p-1.5">    
-                  <button    
-                    onClick={() => handleReaction('like')}    
-                    disabled={isProcessing}    
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 ${    
-                      userReaction === 'like'    
-                        ? 'bg-blue-600 border border-blue-600 text-white shadow-md'    
-                        : 'bg-white border border-transparent text-gray-600 hover:bg-gray-50'    
-                    }`}    
-                  >    
+                  <button
+  onClick={() => handleReaction('like')}
+  disabled={isProcessing}
+  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200
+    ${
+      userReaction === 'like'
+        ? 'bg-blue-600 border border-blue-600 text-white shadow-md hover:bg-blue-700'
+        : 'bg-white border border-transparent text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+    }
+  `}
+>    
                     <svg className="h-5 w-5" fill={userReaction === 'like' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">    
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.708c.94 0 1.667.83 1.547 1.755l-1.304 10A1.75 1.75 0 0 1 17.204 23H7V10l7-7V10Z" />    
                     </svg>    
@@ -316,15 +318,17 @@ useEffect(() => {
     
                   <div className="h-6 w-px bg-gray-300"></div>    
     
-                  <button    
-                    onClick={() => handleReaction('dislike')}    
-                    disabled={isProcessing}    
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 ${    
-                      userReaction === 'dislike'    
-                        ? 'bg-red-600 border border-red-600 text-white shadow-md'    
-                        : 'bg-white border border-transparent text-gray-600 hover:bg-gray-50'    
-                    }`}    
-                  >    
+                  <button
+  onClick={() => handleReaction('dislike')}
+  disabled={isProcessing}
+  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200
+    ${
+      userReaction === 'dislike'
+        ? 'bg-red-600 border border-red-600 text-white shadow-md hover:bg-red-700'
+        : 'bg-white border border-transparent text-gray-600 hover:bg-red-50 hover:text-red-600'
+    }
+  `}
+>    
                     <svg className="h-5 w-5" fill={userReaction === 'dislike' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">    
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14H5.292c-.94 0-1.667-.83-1.547-1.755l1.304-10A1.75 1.75 0 0 1 6.796 1h10.204v13l-7 7V14Z" />    
                     </svg>    
