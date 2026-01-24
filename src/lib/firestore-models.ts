@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   addressText: '',
   mapEmbedUrl: '',
 
-  /* Socials (ADMIN-CONTROLLED ONLY) */
+  /* Socials */
   instagram: '',
   facebook: '',
   twitter: '',
@@ -118,17 +118,6 @@ export interface Salesperson {
   isActive: boolean
   order: number
   specializations?: string[]
-  likesCount?: number
-  dislikesCount?: number
-
-  // ✅ ADD
-  userReaction?: 'like' | 'dislike' | null
-}
-
-export interface SalespersonReaction {
-  userId: string
-  salespersonId: string
-  type: 'like' | 'dislike'
 }
 
 /* ----------------------------------
