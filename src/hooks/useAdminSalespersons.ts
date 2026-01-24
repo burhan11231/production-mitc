@@ -9,11 +9,21 @@ export function useAdminSalespersons() {
   const [isLoading, setIsLoading] = useState(true)
 
   const load = async () => {
-    setIsLoading(true)
-    const res = await fetch('/api/admin/salespersons')
-    const data = await res.json()
-    setSalespersons(data)
-    setIsLoading(false)
+    try {
+      setIsLoading(true)
+      const res = await fetch('/api/admin/salespersons', {
+        cache: 'no-store',
+      })
+
+      if (!res.ok) throw new Error('Failed to load')
+
+      const data = await res.json()
+      setSalespersons(data)
+    } catch {
+      toast.error('Failed to load salespersons')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -23,6 +33,7 @@ export function useAdminSalespersons() {
   const addSalesperson = async (data: any) => {
     await fetch('/api/admin/salespersons', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
     toast.success('Salesperson added')
@@ -32,6 +43,7 @@ export function useAdminSalespersons() {
   const updateSalesperson = async (id: string, updates: any) => {
     await fetch('/api/admin/salespersons', {
       method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, updates }),
     })
     toast.success('Salesperson updated')
@@ -41,6 +53,7 @@ export function useAdminSalespersons() {
   const deleteSalesperson = async (id: string) => {
     await fetch('/api/admin/salespersons', {
       method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     })
     toast.success('Salesperson deleted')
