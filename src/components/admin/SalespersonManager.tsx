@@ -7,6 +7,7 @@ import { Salesperson } from '@/lib/firestore-models'
 import { compressImage, validateImageFile } from '@/lib/image-utils'
 import toast from 'react-hot-toast'
 
+/* ================= TYPES ================= */
 
 interface FormData extends Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'> {}
 
@@ -22,10 +23,10 @@ const AVAILABLE_SPECIALIZATIONS = [
   'Billing & Licensing',
   'API & Development',
   'Security & Compliance',
-  'Data Analytics'
+  'Data Analytics',
 ]
 
-const ROLES = ['Sales', 'Support', 'Manager']
+const ROLES = ['Sales', 'Support', 'Manager'] as const
 
 interface ConfirmDialogState {
   isOpen: boolean
@@ -34,37 +35,35 @@ interface ConfirmDialogState {
   salespersonName: string
 }
 
+/* ================= COMPONENT ================= */
+
 export default function AdminTeamManager() {
   const {
-  salespersons: activeSalespersons,
-  isLoading,
-  addSalesperson,
-  updateSalesperson,
-  deleteSalesperson,
-} = useAdminSalespersons()
+    salespersons: activeSalespersons,
+    isLoading,
+    addSalesperson,
+    updateSalesperson,
+    deleteSalesperson,
+  } = useAdminSalespersons()
 
+  /* ================= STATE ================= */
 
-
-const [isImageProcessing, setIsImageProcessing] = useState(false)
-
-
-  // ALL salespersons (both active and inactive) - need separate hook or query
   const [allSalespersons, setAllSalespersons] = useState<Salesperson[]>([])
   const [filteredSalespersons, setFilteredSalespersons] = useState<Salesperson[]>([])
 
-  // UI States
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [originalData, setOriginalData] = useState<FormData | null>(null)
+
   const [showForm, setShowForm] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  
+  const [isImageProcessing, setIsImageProcessing] = useState(false)
+
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
-  // Filters & Search
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [roleFilter, setRoleFilter] = useState<string>('all')
 
-  // Confirmation Dialog
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
     isOpen: false,
     action: null,
@@ -85,214 +84,160 @@ const [isImageProcessing, setIsImageProcessing] = useState(false)
     order: 0,
   })
 
-  
+  /* ================= EFFECTS ================= */
 
-  // Fetch all salespersons (active + inactive)
-  
-
-  // Simulate fetching all salespersons - in real app, use separate hook
   useEffect(() => {
     setAllSalespersons(activeSalespersons)
   }, [activeSalespersons])
 
-  // Apply filters and search
   useEffect(() => {
-    let filtered = allSalespersons
+    let filtered = [...allSalespersons]
 
-    // Status filter
     if (statusFilter === 'active') {
       filtered = filtered.filter(sp => sp.isActive)
     } else if (statusFilter === 'inactive') {
       filtered = filtered.filter(sp => !sp.isActive)
     }
 
-    // Role filter
     if (roleFilter !== 'all') {
       filtered = filtered.filter(sp => sp.role === roleFilter)
     }
 
-    // Search
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(sp =>
-        sp.name.toLowerCase().includes(term) ||
-        sp.email.toLowerCase().includes(term) ||
-        sp.phone.includes(searchTerm)
+      filtered = filtered.filter(
+        sp =>
+          sp.name.toLowerCase().includes(term) ||
+          sp.email.toLowerCase().includes(term) ||
+          sp.phone.includes(searchTerm)
       )
     }
 
-    // Sort by order
-    filtered = filtered.sort((a, b) => (a.order || 0) - (b.order || 0))
-
+    filtered.sort((a, b) => (a.order || 0) - (b.order || 0))
     setFilteredSalespersons(filtered)
   }, [allSalespersons, searchTerm, statusFilter, roleFilter])
 
-  /* ============ Image Handlers ============ */
+  /* ================= IMAGE HANDLERS ================= */
 
-const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0]
-  if (!file) return
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  const validation = validateImageFile(file)
-  if (!validation.valid) {
-    toast.error(validation.error || 'Invalid image')
-    return
-  }
+    const validation = validateImageFile(file)
+    if (!validation.valid) {
+      toast.error(validation.error || 'Invalid image')
+      return
+    }
 
-  try {
-    setIsImageProcessing(true)
-    toast.loading('Compressing image...')
-    const compressed = await compressImage(file, 700)
+    try {
+      setIsImageProcessing(true)
+      toast.loading('Compressing image...')
+      const compressed = await compressImage(file, 700)
 
-    setFormData(prev => ({
-      ...prev,
-      imageUrl: compressed,
-    }))
-
-    toast.success('Image ready')
-  } catch {
-    toast.error('Image compression failed')
-  } finally {
-    toast.dismiss()
-    setIsImageProcessing(false)
-    e.target.value = ''
-  }
-}
-
-const removeImage = () => {
-  setFormData(prev => ({
-    ...prev,
-    imageUrl: '',
-  }))
-}
-
-  /* ============ Specialization ============ */
-  const toggleSpecialization = (specialization: string) => {
-    setFormData(prev => {
-      const current = prev.specializations || []
-      const isSelected = current.includes(specialization)
-
-      return {
+      setFormData(prev => ({
         ...prev,
-        specializations: isSelected
-          ? current.filter(s => s !== specialization)
-          : [...current, specialization]
-      }
-    })
+        imageUrl: compressed,
+      }))
+
+      toast.success('Image ready')
+    } catch {
+      toast.error('Image compression failed')
+    } finally {
+      toast.dismiss()
+      setIsImageProcessing(false)
+      e.target.value = ''
+    }
   }
 
-  /* ============ Form Helpers ============ */
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, imageUrl: '' }))
+  }
+
+  /* ================= FORM HELPERS ================= */
+
   const resetForm = () => {
-  setFormData({
-    name: '',
-    role: 'Sales',
-    imageUrl: '',
-    email: '',
-    phone: '',
-    whatsapp: '',
-    bio: '',
-    specializations: [],
-    isActive: true,
-    order: allSalespersons.length,
-  })
+    setFormData({
+      name: '',
+      role: 'Sales',
+      imageUrl: '',
+      email: '',
+      phone: '',
+      whatsapp: '',
+      bio: '',
+      specializations: [],
+      isActive: true,
+      order: allSalespersons.length,
+    })
 
-  setEditingId(null)
-  setShowForm(false)
-
-  // ✅ Reset image state
-  setIsImageProcessing(false)
-}
+    setEditingId(null)
+    setOriginalData(null)
+    setShowForm(false)
+    setIsImageProcessing(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+    e.preventDefault()
 
-  // ⛔ Block submit if image still processing
-  if (isImageProcessing) {
-    toast.error('Please wait for image processing to finish')
-    return
-  }
+    if (isImageProcessing) {
+      toast.error('Please wait for image processing to finish')
+      return
+    }
 
-  // ⛔ Edge case: image field exists but is invalid
-  if (formData.imageUrl === undefined) {
-    toast.error('Image not ready yet')
-    return
-  }
-
-  setIsSaving(true)
-
-  try {
     if (!formData.name || !formData.email || !formData.phone) {
       toast.error('Please fill all required fields')
       return
     }
 
-    if (editingId) {
-      await updateSalesperson(editingId, formData)
-      toast.success('Team member updated')
-    } else {
-      await addSalesperson(formData)
-      toast.success('Team member added')
+    if (editingId && originalData) {
+      const hasChanges =
+        JSON.stringify(formData) !== JSON.stringify(originalData)
+
+      if (!hasChanges) {
+        toast.error('No changes made')
+        return
+      }
     }
 
-    resetForm()
-  } finally {
-    setIsSaving(false)
+    setIsSaving(true)
+
+    try {
+      if (editingId) {
+        await updateSalesperson(editingId, formData)
+        toast.success('Team member updated')
+      } else {
+        await addSalesperson(formData)
+        toast.success('Team member added')
+      }
+
+      resetForm()
+    } catch {
+      toast.error('Failed to save team member')
+    } finally {
+      setIsSaving(false)
+    }
   }
-}
 
   const handleEdit = (person: Salesperson) => {
-    setFormData({
+    const cleanData = {
       ...person,
-      specializations: person.specializations || []
-    } as FormData)
+      specializations: person.specializations || [],
+    } as FormData
+
+    setFormData(cleanData)
+    setOriginalData(cleanData)
     setEditingId(person.id || null)
     setShowForm(true)
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /* ============ Delete Action ============ */
-  const handleDeleteClick = (id: string, name: string) => {
-    setConfirmDialog({
-      isOpen: true,
-      action: 'delete',
-      salespersonId: id,
-      salespersonName: name,
-    })
-  }
-
-  const confirmDelete = async () => {
-    if (confirmDialog.salespersonId) {
-      await deleteSalesperson(confirmDialog.salespersonId)
-      setConfirmDialog({ isOpen: false, action: null, salespersonId: null, salespersonName: '' })
-    }
-  }
-
-  /* ============ Status Toggle ============ */
-  const handleStatusToggle = (person: Salesperson) => {
-    const action = person.isActive ? 'deactivate' : 'activate'
-    setConfirmDialog({
-      isOpen: true,
-      action: action as any,
-      salespersonId: person.id || null,
-      salespersonName: person.name,
-    })
-  }
-
-  const confirmStatusChange = async () => {
-    if (confirmDialog.salespersonId && confirmDialog.action) {
-      const newStatus = confirmDialog.action === 'activate'
-      await updateSalesperson(confirmDialog.salespersonId, {
-        isActive: newStatus
-      })
-      setConfirmDialog({ isOpen: false, action: null, salespersonId: null, salespersonName: '' })
-    }
-  }
+  /* ================= LOADING ================= */
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="h-10 w-10 mx-auto mb-4 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
+          <div className="h-10 w-10 mx-auto mb-4 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin" />
           <p className="text-gray-600">Loading team members…</p>
         </div>
       </div>
