@@ -191,8 +191,13 @@ const filteredSalespersons = useMemo(() => {
     setIsImageProcessing(false)
   }
 
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
+
+if (isSaving) return
 
   if (isImageProcessing) {
     toast.error('Please wait for image processing')
@@ -214,12 +219,14 @@ const filteredSalespersons = useMemo(() => {
     }
 
     diff = Object.fromEntries(
-      Object.entries(formData).filter(
-        ([key, value]) =>
-          JSON.stringify(value) !==
-          JSON.stringify(originalData[key as keyof FormData])
-      )
+  Object.entries(formData).filter(([key, value]) => {
+    if (key === 'order') return false
+    return (
+      JSON.stringify(value) !==
+      JSON.stringify(originalData[key as keyof FormData])
     )
+  })
+)
 
     if (Object.keys(diff).length === 0) {
       toast.error('No changes made')
