@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase-admin';
-import { requireAdmin } from '@/lib/requireAdmin';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const admin = await requireAdmin(req);
-    if (!admin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const adminDb = getAdminDb();
 
     const snap = await adminDb
       .collection('salespersons')
+      .where('isActive', '==', true)
       .orderBy('order', 'asc')
       .get();
 
@@ -23,11 +18,11 @@ export async function GET(req: Request) {
 
     return NextResponse.json(salespersons, {
       headers: {
-        'Cache-Control': 'no-store',
+        'Cache-Control': 'private, max-age=300',
       },
     });
   } catch (err) {
-    console.error('[ADMIN_SALESPERSONS_GET]', err);
+    console.error('SALESPERSONS_API_ERROR', err);
     return NextResponse.json(
       { error: 'Failed to load salespersons' },
       { status: 500 }
