@@ -2,18 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
 import { requireAdmin } from '@/lib/requireAdmin'
 
-export async function PATCH(
-  req: NextRequest,
-  { params }
-) {
+export async function PATCH(req: NextRequest, context: any) {
   try {
     const admin = await requireAdmin(req)
     if (!admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // ✅ SAFE CAST INSIDE FUNCTION
+    const { id } = context.params as { id: string }
+
     const data = await req.json()
-    const { id } = params
 
     const adminDb = getAdminDb()
     await adminDb
@@ -31,17 +30,15 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }
-) {
+export async function DELETE(req: NextRequest, context: any) {
   try {
     const admin = await requireAdmin(req)
     if (!admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { id } = params
+    // ✅ SAFE CAST INSIDE FUNCTION
+    const { id } = context.params as { id: string }
 
     const adminDb = getAdminDb()
     await adminDb.collection('salespersons').doc(id).delete()
