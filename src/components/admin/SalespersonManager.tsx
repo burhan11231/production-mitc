@@ -43,6 +43,11 @@ export default function AdminTeamManager() {
   deleteSalesperson,
 } = useAdminSalespersons()
 
+
+
+const [isImageProcessing, setIsImageProcessing] = useState(false)
+
+
   // ALL salespersons (both active and inactive) - need separate hook or query
   const [allSalespersons, setAllSalespersons] = useState<Salesperson[]>([])
   const [filteredSalespersons, setFilteredSalespersons] = useState<Salesperson[]>([])
@@ -122,28 +127,44 @@ export default function AdminTeamManager() {
     setFilteredSalespersons(filtered)
   }, [allSalespersons, searchTerm, statusFilter, roleFilter])
 
-  /* ============ Image Upload ============ */
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  /* ============ Image Handlers ============ */
 
-    const validation = validateImageFile(file)
-    if (!validation.valid) {
-      toast.error(validation.error || 'Invalid image')
-      return
-    }
+const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
 
-    try {
-      toast.loading('Compressing image...')
-      const compressed = await compressImage(file, 700)
-      setFormData(prev => ({ ...prev, imageUrl: compressed }))
-      toast.dismiss()
-      toast.success('Image ready')
-    } catch (err) {
-      toast.dismiss()
-      toast.error('Image compression failed')
-    }
+  const validation = validateImageFile(file)
+  if (!validation.valid) {
+    toast.error(validation.error || 'Invalid image')
+    return
   }
+
+  try {
+    setIsImageProcessing(true)
+    toast.loading('Compressing image...')
+    const compressed = await compressImage(file, 700)
+
+    setFormData(prev => ({
+      ...prev,
+      imageUrl: compressed,
+    }))
+
+    toast.success('Image ready')
+  } catch {
+    toast.error('Image compression failed')
+  } finally {
+    toast.dismiss()
+    setIsImageProcessing(false)
+    e.target.value = ''
+  }
+}
+
+const removeImage = () => {
+  setFormData(prev => ({
+    ...prev,
+    imageUrl: '',
+  }))
+}
 
   /* ============ Specialization ============ */
   const toggleSpecialization = (specialization: string) => {
@@ -162,45 +183,62 @@ export default function AdminTeamManager() {
 
   /* ============ Form Helpers ============ */
   const resetForm = () => {
-    setFormData({
-      name: '',
-      role: 'Sales',
-      imageUrl: '',
-      email: '',
-      phone: '',
-      whatsapp: '',
-      bio: '',
-      specializations: [],
-      isActive: true,
-      order: allSalespersons.length,
-    })
-    setEditingId(null)
-    setShowForm(false)
-  }
+  setFormData({
+    name: '',
+    role: 'Sales',
+    imageUrl: '',
+    email: '',
+    phone: '',
+    whatsapp: '',
+    bio: '',
+    specializations: [],
+    isActive: true,
+    order: allSalespersons.length,
+  })
+
+  setEditingId(null)
+  setShowForm(false)
+
+  // ✅ Reset image state
+  setIsImageProcessing(false)
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+  e.preventDefault()
 
-    try {
-      if (!formData.name || !formData.email || !formData.phone) {
-        toast.error('Please fill all required fields')
-        return
-      }
-
-      if (editingId) {
-        await updateSalesperson(editingId, formData)
-        toast.success('Team member updated')
-      } else {
-        await addSalesperson(formData)
-        toast.success('Team member added')
-      }
-
-      resetForm()
-    } finally {
-      setIsSaving(false)
-    }
+  // ⛔ Block submit if image still processing
+  if (isImageProcessing) {
+    toast.error('Please wait for image processing to finish')
+    return
   }
+
+  // ⛔ Edge case: image field exists but is invalid
+  if (formData.imageUrl === undefined) {
+    toast.error('Image not ready yet')
+    return
+  }
+
+  setIsSaving(true)
+
+  try {
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast.error('Please fill all required fields')
+      return
+    }
+
+    if (editingId) {
+      await updateSalesperson(editingId, formData)
+      toast.success('Team member updated')
+    } else {
+      await addSalesperson(formData)
+      toast.success('Team member added')
+    }
+
+    resetForm()
+  } finally {
+    setIsSaving(false)
+  }
+}
 
   const handleEdit = (person: Salesperson) => {
     setFormData({
@@ -414,30 +452,75 @@ export default function AdminTeamManager() {
               </div>
 
               {/* Profile Image */}
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Profile Image</label>
-                <div className="flex items-center gap-4">
-                  <label className="flex-1 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <div className="text-center">
-                      <svg className="h-6 w-6 mx-auto text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <p className="text-sm font-medium text-gray-700">Click to upload image</p>
-                    </div>
-                  </label>
-                  {formData.imageUrl && (
-                    <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                      <Image src={formData.imageUrl} alt="Preview" fill className="object-cover" unoptimized />
-                    </div>
-                  )}
-                </div>
-              </div>
+<div>
+  <label className="block text-sm font-semibold mb-2 text-gray-700">
+    Profile Image
+  </label>
+
+  <div className="flex items-center gap-4">
+    {/* Upload Box */}
+    <label className="flex-1 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+      <div className="text-center">
+        <svg
+          className="h-6 w-6 mx-auto text-gray-400 mb-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+        <p className="text-sm font-medium text-gray-700">
+          Click to upload image
+        </p>
+      </div>
+    </label>
+
+    {/* Preview + Remove */}
+    {formData.imageUrl && (
+      <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+        <Image
+          src={formData.imageUrl}
+          alt="Preview"
+          fill
+          className="object-cover"
+          unoptimized
+        />
+
+        {/* Remove button */}
+        <button
+          type="button"
+          onClick={removeImage}
+          title="Remove image"
+          className="
+            absolute -top-2 -right-2
+            h-6 w-6
+            rounded-full
+            bg-black/70
+            text-white
+            text-sm
+            font-bold
+            flex items-center justify-center
+            hover:bg-red-600
+            transition
+          "
+        >
+          ×
+        </button>
+      </div>
+    )}
+  </div>
+</div>
 
               {/* Status Toggle */}
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -456,8 +539,8 @@ export default function AdminTeamManager() {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-2">
                 <button
-                  type="submit"
-                  disabled={isSaving}
+  type="submit"
+  disabled={isSaving || isImageProcessing}
                   className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-400 text-white py-2.5 rounded-lg font-semibold transition-all"
                 >
                   {isSaving ? 'Saving…' : editingId ? 'Update Member' : 'Add Member'}
