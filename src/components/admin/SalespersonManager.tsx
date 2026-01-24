@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
+import toast from 'react-hot-toast'
+
 import { useAdminSalespersons } from '@/hooks/useAdminSalespersons'
 import { Salesperson } from '@/lib/firestore-models'
 import { compressImage, validateImageFile } from '@/lib/image-utils'
-import toast from 'react-hot-toast'
 
 /* ================= TYPES ================= */
 
@@ -39,7 +40,7 @@ interface ConfirmDialogState {
 
 export default function AdminTeamManager() {
   const {
-    salespersons: activeSalespersons,
+    salespersons,
     isLoading,
     addSalesperson,
     updateSalesperson,
@@ -48,21 +49,12 @@ export default function AdminTeamManager() {
 
   /* ================= STATE ================= */
 
-  const [allSalespersons, setAllSalespersons] = useState<Salesperson[]>([])
-  const [filteredSalespersons, setFilteredSalespersons] = useState<Salesperson[]>([])
-
   const [editingId, setEditingId] = useState<string | null>(null)
   const [originalData, setOriginalData] = useState<FormData | null>(null)
 
   const [showForm, setShowForm] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isImageProcessing, setIsImageProcessing] = useState(false)
-
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
-  const [roleFilter, setRoleFilter] = useState<string>('all')
 
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
     isOpen: false,
@@ -84,38 +76,47 @@ export default function AdminTeamManager() {
     order: 0,
   })
 
-  /* ================= EFFECTS ================= */
 
-  useEffect(() => {
-    setAllSalespersons(activeSalespersons)
-  }, [activeSalespersons])
+const [searchTerm, setSearchTerm] = useState('')
+const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+const [roleFilter, setRoleFilter] = useState<string>('all')
+const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
-  useEffect(() => {
-    let filtered = [...allSalespersons]
 
-    if (statusFilter === 'active') {
-      filtered = filtered.filter(sp => sp.isActive)
-    } else if (statusFilter === 'inactive') {
-      filtered = filtered.filter(sp => !sp.isActive)
-    }
+  /* ================= DERIVED ================= */
 
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(sp => sp.role === roleFilter)
-    }
+  const nextOrder = useMemo(
+    () => (salespersons?.length ?? 0),
+    [salespersons]
+  )
 
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(
-        sp =>
-          sp.name.toLowerCase().includes(term) ||
-          sp.email.toLowerCase().includes(term) ||
-          sp.phone.includes(searchTerm)
-      )
-    }
 
-    filtered.sort((a, b) => (a.order || 0) - (b.order || 0))
-    setFilteredSalespersons(filtered)
-  }, [allSalespersons, searchTerm, statusFilter, roleFilter])
+const filteredSalespersons = useMemo(() => {
+  let list = [...salespersons]
+
+  if (statusFilter === 'active') {
+    list = list.filter(p => p.isActive)
+  } else if (statusFilter === 'inactive') {
+    list = list.filter(p => !p.isActive)
+  }
+
+  if (roleFilter !== 'all') {
+    list = list.filter(p => p.role === roleFilter)
+  }
+
+  if (searchTerm.trim()) {
+    const q = searchTerm.toLowerCase()
+    list = list.filter(
+      p =>
+        p.name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.phone.includes(searchTerm)
+    )
+  }
+
+  return list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}, [salespersons, searchTerm, statusFilter, roleFilter])
+
 
   /* ================= IMAGE HANDLERS ================= */
 
@@ -131,7 +132,8 @@ export default function AdminTeamManager() {
 
     try {
       setIsImageProcessing(true)
-      toast.loading('Compressing image...')
+      toast.loading('Optimizing image…')
+
       const compressed = await compressImage(file, 700)
 
       setFormData(prev => ({
@@ -141,7 +143,7 @@ export default function AdminTeamManager() {
 
       toast.success('Image ready')
     } catch {
-      toast.error('Image compression failed')
+      toast.error('Image processing failed')
     } finally {
       toast.dismiss()
       setIsImageProcessing(false)
@@ -151,6 +153,20 @@ export default function AdminTeamManager() {
 
   const removeImage = () => {
     setFormData(prev => ({ ...prev, imageUrl: '' }))
+  }
+
+  /* ================= SPECIALIZATIONS ================= */
+
+  const toggleSpecialization = (spec: string) => {
+    setFormData(prev => {
+      const current = prev.specializations || []
+      return {
+        ...prev,
+        specializations: current.includes(spec)
+          ? current.filter(s => s !== spec)
+          : [...current, spec],
+      }
+    })
   }
 
   /* ================= FORM HELPERS ================= */
@@ -166,7 +182,7 @@ export default function AdminTeamManager() {
       bio: '',
       specializations: [],
       isActive: true,
-      order: allSalespersons.length,
+      order: nextOrder,
     })
 
     setEditingId(null)
@@ -179,7 +195,7 @@ export default function AdminTeamManager() {
     e.preventDefault()
 
     if (isImageProcessing) {
-      toast.error('Please wait for image processing to finish')
+      toast.error('Please wait for image processing')
       return
     }
 
@@ -205,26 +221,34 @@ export default function AdminTeamManager() {
         await updateSalesperson(editingId, formData)
         toast.success('Team member updated')
       } else {
-        await addSalesperson(formData)
+        await addSalesperson({ ...formData, order: nextOrder })
         toast.success('Team member added')
       }
 
       resetForm()
     } catch {
-      toast.error('Failed to save team member')
+      toast.error('Save failed')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleEdit = (person: Salesperson) => {
-    const cleanData = {
-      ...person,
+    const clean: FormData = {
+      name: person.name,
+      role: person.role,
+      imageUrl: person.imageUrl || '',
+      email: person.email,
+      phone: person.phone,
+      whatsapp: person.whatsapp || '',
+      bio: person.bio || '',
       specializations: person.specializations || [],
-    } as FormData
+      isActive: person.isActive,
+      order: person.order || 0,
+    }
 
-    setFormData(cleanData)
-    setOriginalData(cleanData)
+    setFormData(clean)
+    setOriginalData(clean)
     setEditingId(person.id || null)
     setShowForm(true)
 
@@ -244,460 +268,317 @@ export default function AdminTeamManager() {
     )
   }
 
-  return (
-    <>
-      <div className="space-y-6">
-        {/* ============ HEADER ============ */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          
-          {!showForm && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Add Team Member
-            </button>
-          )}
-        </div>
 
-        {/* ============ FORM SECTION ============ */}
-        {showForm && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-b">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingId ? '✏️ Edit Team Member' : '➕ Add New Team Member'}
-              </h2>
+
+return (
+  <>
+    <div className="space-y-6">
+      {/* ============ HEADER ============ */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>
+
+        {!showForm && (
+          <button
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+          >
+            + Add Member
+          </button>
+        )}
+      </div>
+
+      {/* ============ FORM ============ */}
+      {showForm && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-lg">
+          <div className="px-6 py-4 border-b bg-gray-50">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {editingId ? 'Edit Team Member' : 'Add Team Member'}
+            </h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* BASIC INFO */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name *</label>
+                <input
+                  value={formData.name}
+                  onChange={e =>
+                    setFormData(prev => ({ ...prev, name: e.target.value }))
+                  }
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Role</label>
+                <select
+                  value={formData.role}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      role: e.target.value as FormData['role'],
+                    }))
+                  }
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  {ROLES.map(role => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={e =>
+                    setFormData(prev => ({ ...prev, email: e.target.value }))
+                  }
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Phone *</label>
+                <input
+                  value={formData.phone}
+                  onChange={e =>
+                    setFormData(prev => ({ ...prev, phone: e.target.value }))
+                  }
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Full name"
-                    required
-                  />
-                </div>
+            {/* BIO */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Bio</label>
+              <textarea
+                rows={3}
+                value={formData.bio}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, bio: e.target.value }))
+                }
+                className="w-full px-4 py-2 border rounded-lg resize-none"
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">Role</label>
-                  <select
-                    value={formData.role}
-                    onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            {/* IMAGE */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Profile Image
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+
+              {formData.imageUrl && (
+                <div className="mt-3 relative h-20 w-20 rounded-lg overflow-hidden">
+                  <Image
+                    src={formData.imageUrl}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute -top-2 -right-2 bg-black text-white rounded-full h-6 w-6"
                   >
-                    {ROLES.map(role => (
-                      <option key={role} value={role}>{role}</option>
-                    ))}
-                  </select>
+                    ×
+                  </button>
                 </div>
+              )}
+            </div>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="email@example.com"
-                    required
-                  />
-                </div>
+            {/* ACTION BUTTONS */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={isSaving || isImageProcessing}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 text-white py-2.5 rounded-lg font-semibold"
+              >
+                {isSaving
+                  ? 'Saving…'
+                  : editingId
+                  ? 'Update Member'
+                  : 'Add Member'}
+              </button>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    value={formData.phone}
-                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="+91 98765 43210"
-                    required
-                  />
-                </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-lg font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">WhatsApp</label>
-                  <input
-                    value={formData.whatsapp}
-                    onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="+91 98765 43210"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Display Order <span className="text-xs text-gray-400">(lower = first)</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.order}
-                    onChange={e => setFormData({ ...formData, order: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              {/* Specializations */}
-              <div>
-                <label className="block text-sm font-semibold mb-3 text-gray-700">
-                  Areas of Expertise
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                  {AVAILABLE_SPECIALIZATIONS.map(spec => {
-                    const isSelected = (formData.specializations || []).includes(spec)
-                    return (
-                      <button
-                        key={spec}
-                        type="button"
-                        onClick={() => toggleSpecialization(spec)}
-                        className={`px-3.5 py-2.5 text-sm rounded-lg border-2 font-medium transition-all ${
-                          isSelected
-                            ? 'bg-blue-100 border-blue-500 text-blue-700 shadow-sm'
-                            : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
-                        }`}
-                      >
-                        {isSelected && <span className="mr-1">✓</span>}
-                        {spec}
-                      </button>
-                    )
-                  })}
-                </div>
-                {formData.specializations && formData.specializations.length > 0 && (
-                  <p className="text-xs text-gray-500 mt-2.5">
-                    {formData.specializations.length} selected
-                  </p>
-                )}
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Professional Bio</label>
-                <textarea
-                  rows={3}
-                  value={formData.bio}
-                  onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                  placeholder="Tell us about this team member..."
-                />
-              </div>
-
-              {/* Profile Image */}
-<div>
-  <label className="block text-sm font-semibold mb-2 text-gray-700">
-    Profile Image
-  </label>
-
-  <div className="flex items-center gap-4">
-    {/* Upload Box */}
-    <label className="flex-1 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageUpload}
-        className="hidden"
-      />
-      <div className="text-center">
-        <svg
-          className="h-6 w-6 mx-auto text-gray-400 mb-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        <p className="text-sm font-medium text-gray-700">
-          Click to upload image
-        </p>
-      </div>
-    </label>
-
-    {/* Preview + Remove */}
-    {formData.imageUrl && (
-      <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-        <Image
-          src={formData.imageUrl}
-          alt="Preview"
-          fill
-          className="object-cover"
-          unoptimized
-        />
-
-        {/* Remove button */}
-        <button
-          type="button"
-          onClick={removeImage}
-          title="Remove image"
-          className="
-            absolute -top-2 -right-2
-            h-6 w-6
-            rounded-full
-            bg-black/70
-            text-white
-            text-sm
-            font-bold
-            flex items-center justify-center
-            hover:bg-red-600
-            transition
-          "
-        >
-          ×
-        </button>
-      </div>
-    )}
-  </div>
-</div>
-
-              {/* Status Toggle */}
-              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                  Active on website
-                </label>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-  type="submit"
-  disabled={isSaving || isImageProcessing}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-400 text-white py-2.5 rounded-lg font-semibold transition-all"
-                >
-                  {isSaving ? 'Saving…' : editingId ? 'Update Member' : 'Add Member'}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-lg font-semibold transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* ============ FILTERS & CONTROLS ============ */}
+{/* ============ FILTERS & CONTROLS ============ */}
         {!showForm && (
           <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               {/* Search */}
               <div className="flex-1 relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
                 <input
                   type="text"
-                  placeholder="Search by name, email, or phone..."
+                  placeholder="Search by name, email, or phone…"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-2.5 border rounded-lg"
                 />
               </div>
 
-              {/* Status Filter */}
+              {/* Status */}
               <select
                 value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value as any)}
-                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+                onChange={e =>
+                  setStatusFilter(e.target.value as typeof statusFilter)
+                }
+                className="px-4 py-2.5 border rounded-lg bg-white"
               >
                 <option value="all">All Status</option>
-                <option value="active">Active Only</option>
-                <option value="inactive">Inactive Only</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
 
-              {/* Role Filter */}
+              {/* Role */}
               <select
                 value={roleFilter}
                 onChange={e => setRoleFilter(e.target.value)}
-                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+                className="px-4 py-2.5 border rounded-lg bg-white"
               >
                 <option value="all">All Roles</option>
-                {ROLES.map(role => (
-                  <option key={role} value={role}>{role}</option>
+                {ROLES.map(r => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
                 ))}
               </select>
 
-              {/* View Mode Toggle */}
-              <div className="flex gap-2 border border-gray-300 rounded-lg p-1">
+              {/* View Mode */}
+              <div className="flex border rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 rounded transition-all ${
+                  className={`px-3 py-2 ${
                     viewMode === 'list'
                       ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-gray-600 hover:text-gray-900'
+                      : 'bg-white'
                   }`}
-                  title="List view"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
+                  List
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`px-3 py-1.5 rounded transition-all ${
+                  className={`px-3 py-2 ${
                     viewMode === 'grid'
                       ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-gray-600 hover:text-gray-900'
+                      : 'bg-white'
                   }`}
-                  title="Grid view"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
+                  Grid
                 </button>
               </div>
             </div>
 
-            {/* Results Count */}
-            <div className="flex items-center justify-between pt-2">
-              <p className="text-sm text-gray-600">
-                Showing <span className="font-semibold text-gray-900">{filteredSalespersons.length}</span> of <span className="font-semibold text-gray-900">{allSalespersons.length}</span> members
-              </p>
-              {(searchTerm || statusFilter !== 'all' || roleFilter !== 'all') && (
-                <button
-                  onClick={() => {
-                    setSearchTerm('')
-                    setStatusFilter('all')
-                    setRoleFilter('all')
-                  }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Clear filters
-                </button>
-              )}
-            </div>
+            {/* Count */}
+            <p className="text-sm text-gray-600">
+              Showing{' '}
+              <span className="font-semibold text-gray-900">
+                {filteredSalespersons.length}
+              </span>{' '}
+              of{' '}
+              <span className="font-semibold text-gray-900">
+                {salespersons.length}
+              </span>
+            </p>
           </div>
         )}
 
         {/* ============ EMPTY STATE ============ */}
-        {filteredSalespersons.length === 0 && !showForm && (
-          <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-            <svg className="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM6 20a9 9 0 0118 0v2H0v-2a9 9 0 0118 0z" />
-            </svg>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No team members found</h3>
-            <p className="text-gray-600 mb-6">
-              {searchTerm || statusFilter !== 'all' || roleFilter !== 'all'
-                ? 'Try adjusting your filters'
-                : 'Start by adding your first team member'}
-            </p>
-            <button
-              onClick={() => {
-                setSearchTerm('')
-                setStatusFilter('all')
-                setRoleFilter('all')
-              }}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Clear filters
-            </button>
+        {!showForm && filteredSalespersons.length === 0 && (
+          <div className="text-center py-16 bg-white border rounded-xl">
+            <p className="text-gray-600">No team members found</p>
           </div>
         )}
 
         {/* ============ LIST VIEW ============ */}
-        {viewMode === 'list' && filteredSalespersons.length > 0 && !showForm && (
+        {!showForm && viewMode === 'list' && filteredSalespersons.length > 0 && (
           <div className="space-y-3">
             {filteredSalespersons.map(person => (
               <div
                 key={person.id}
-                className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 hover:shadow-md transition-shadow"
+                className="bg-white border rounded-xl p-4 flex items-center gap-4"
               >
-                {/* Avatar & Basic Info */}
-                <div className="flex items-start gap-4 flex-1 min-w-0">
-                  <div className="relative h-14 w-14 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-blue-400 to-cyan-400">
-                    {person.imageUrl ? (
-                      <Image src={person.imageUrl} alt={person.name} fill className="object-cover" unoptimized />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-white font-bold text-lg">
-                        {person.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-gray-900 text-lg">{person.name}</p>
-                      <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                        {person.role}
-                      </span>
-                      {!person.isActive && (
-                        <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
-                          Inactive
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{person.email}</p>
-                    <p className="text-sm text-gray-600">{person.phone}</p>
-
-                    {person.specializations && person.specializations.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {person.specializations.slice(0, 3).map(spec => (
-                          <span key={spec} className="inline-block px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-md border border-blue-200">
-                            {spec}
-                          </span>
-                        ))}
-                        {person.specializations.length > 3 && (
-                          <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-md">
-                            +{person.specializations.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-blue-500 text-white flex items-center justify-center font-bold">
+                  {person.imageUrl ? (
+                    <Image
+                      src={person.imageUrl}
+                      alt={person.name}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    person.name[0]
+                  )}
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 self-end md:self-center">
-                  <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
+                <div className="flex-1">
+                  <p className="font-semibold">{person.name}</p>
+                  <p className="text-sm text-gray-600">{person.email}</p>
+                </div>
 
-                  <button
-                    onClick={() => handleStatusToggle(person)}
-                    className={`px-3 py-2 rounded-lg font-medium text-sm transition-all ${
-                      person.isActive
-                        ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                    title={person.isActive ? 'Deactivate' : 'Activate'}
-                  >
-                    {person.isActive ? '✓ Active' : '○ Inactive'}
-                  </button>
-
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(person)}
-                    className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium text-sm transition-all"
+                    className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg"
                   >
                     Edit
                   </button>
 
                   <button
-                    onClick={() => handleDeleteClick(person.id || '', person.name)}
-                    className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-medium text-sm transition-all"
+                    onClick={() =>
+                      setConfirmDialog({
+                        isOpen: true,
+                        action: person.isActive ? 'deactivate' : 'activate',
+                        salespersonId: person.id || null,
+                        salespersonName: person.name,
+                      })
+                    }
+                    className="px-3 py-1.5 bg-gray-100 rounded-lg"
+                  >
+                    {person.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setConfirmDialog({
+                        isOpen: true,
+                        action: 'delete',
+                        salespersonId: person.id || null,
+                        salespersonName: person.name,
+                      })
+                    }
+                    className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg"
                   >
                     Delete
                   </button>
@@ -708,89 +589,52 @@ export default function AdminTeamManager() {
         )}
 
         {/* ============ GRID VIEW ============ */}
-        {viewMode === 'grid' && filteredSalespersons.length > 0 && !showForm && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {!showForm && viewMode === 'grid' && filteredSalespersons.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {filteredSalespersons.map(person => (
               <div
                 key={person.id}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-blue-200 transition-all"
+                className="bg-white border rounded-xl overflow-hidden"
               >
-                {/* Card Header */}
-                <div className="relative h-32 bg-gradient-to-br from-blue-400 to-cyan-400">
+                <div className="relative h-28 bg-blue-500 text-white flex items-center justify-center text-3xl font-bold">
                   {person.imageUrl ? (
-                    <Image src={person.imageUrl} alt={person.name} fill className="object-cover" unoptimized />
+                    <Image
+                      src={person.imageUrl}
+                      alt={person.name}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-white font-bold text-4xl">
-                      {person.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                  )}
-
-                  {/* Status Badge */}
-                  <div className="absolute top-2 right-2">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold text-white ${
-                      person.isActive ? 'bg-green-500' : 'bg-gray-500'
-                    }`}>
-                      {person.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Card Body */}
-                <div className="p-4 space-y-3">
-                  <div>
-                    <p className="font-bold text-gray-900">{person.name}</p>
-                    <p className="text-sm text-blue-600 font-medium">{person.role}</p>
-                  </div>
-
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>{person.email}</p>
-                    <p>{person.phone}</p>
-                  </div>
-
-                  {person.specializations && person.specializations.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {person.specializations.slice(0, 2).map(spec => (
-                        <span key={spec} className="px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded border border-blue-200">
-                          {spec}
-                        </span>
-                      ))}
-                      {person.specializations.length > 2 && (
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                          +{person.specializations.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {person.bio && (
-                    <p className="text-xs text-gray-600 italic line-clamp-2">\"{person.bio}\"</p>
+                    person.name[0]
                   )}
                 </div>
 
-                {/* Card Footer */}
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(person)}
-                    className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium text-sm transition-all"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleStatusToggle(person)}
-                    className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
-                      person.isActive
-                        ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    }`}
-                  >
-                    {person.isActive ? 'Active' : 'Inactive'}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(person.id || '', person.name)}
-                    className="flex-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-medium text-sm transition-all"
-                  >
-                    Delete
-                  </button>
+                <div className="p-4 space-y-2">
+                  <p className="font-semibold">{person.name}</p>
+                  <p className="text-sm text-gray-600">{person.role}</p>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => handleEdit(person)}
+                      className="flex-1 bg-blue-50 text-blue-600 py-1.5 rounded-lg"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() =>
+                        setConfirmDialog({
+                          isOpen: true,
+                          action: 'delete',
+                          salespersonId: person.id || null,
+                          salespersonName: person.name,
+                        })
+                      }
+                      className="flex-1 bg-red-50 text-red-600 py-1.5 rounded-lg"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -798,64 +642,59 @@ export default function AdminTeamManager() {
         )}
       </div>
 
-      {/* ============ CONFIRMATION DIALOG ============ */}
+      {/* ============ CONFIRM DIALOG ============ */}
       {confirmDialog.isOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center gap-3">
-              {confirmDialog.action === 'delete' && (
-                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </div>
-              )}
-              {(confirmDialog.action === 'activate' || confirmDialog.action === 'deactivate') && (
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              )}
-              <div>
-                <h3 className="font-bold text-gray-900">
-                  {confirmDialog.action === 'delete' && 'Delete Team Member?'}
-                  {confirmDialog.action === 'activate' && 'Activate Member?'}
-                  {confirmDialog.action === 'deactivate' && 'Deactivate Member?'}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {confirmDialog.action === 'delete' && `Remove ${confirmDialog.salespersonName} from the system?`}
-                  {confirmDialog.action === 'activate' && `Activate ${confirmDialog.salespersonName}?`}
-                  {confirmDialog.action === 'deactivate' && `Deactivate ${confirmDialog.salespersonName}?`}
-                </p>
-              </div>
-            </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm space-y-4">
+            <h3 className="font-semibold text-lg">
+              {confirmDialog.action === 'delete'
+                ? 'Delete team member?'
+                : confirmDialog.action === 'activate'
+                ? 'Activate member?'
+                : 'Deactivate member?'}
+            </h3>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3">
               <button
-                onClick={() => setConfirmDialog({ isOpen: false, action: null, salespersonId: null, salespersonName: '' })}
-                className="flex-1 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-all"
+                onClick={() =>
+                  setConfirmDialog({
+                    isOpen: false,
+                    action: null,
+                    salespersonId: null,
+                    salespersonName: '',
+                  })
+                }
+                className="flex-1 bg-gray-200 py-2 rounded-lg"
               >
                 Cancel
               </button>
+
               <button
-                onClick={confirmDialog.action === 'delete' ? confirmDelete : confirmStatusChange}
-                className={`flex-1 px-4 py-2.5 text-white rounded-lg font-medium transition-all ${
-                  confirmDialog.action === 'delete'
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                onClick={async () => {
+                  if (!confirmDialog.salespersonId) return
+
+                  if (confirmDialog.action === 'delete') {
+                    await deleteSalesperson(confirmDialog.salespersonId)
+                  } else {
+                    await updateSalesperson(confirmDialog.salespersonId, {
+                      isActive: confirmDialog.action === 'activate',
+                    })
+                  }
+
+                  setConfirmDialog({
+                    isOpen: false,
+                    action: null,
+                    salespersonId: null,
+                    salespersonName: '',
+                  })
+                }}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
               >
-                {confirmDialog.action === 'delete' && 'Delete'}
-                {confirmDialog.action === 'activate' && 'Activate'}
-                {confirmDialog.action === 'deactivate' && 'Deactivate'}
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
-
-      
     </>
-  )
-}
+)
