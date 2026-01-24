@@ -192,46 +192,60 @@ const filteredSalespersons = useMemo(() => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    if (isImageProcessing) {
-      toast.error('Please wait for image processing')
+  if (isImageProcessing) {
+    toast.error('Please wait for image processing')
+    return
+  }
+
+  if (!formData.name || !formData.email || !formData.phone) {
+    toast.error('Please fill all required fields')
+    return
+  }
+
+  // ---------- PRE-VALIDATION (NO try) ----------
+  let diff: Partial<FormData> | null = null
+
+  if (editingId) {
+    if (!originalData) {
+      toast.error('Original data missing')
       return
     }
 
-    if (!formData.name || !formData.email || !formData.phone) {
-      toast.error('Please fill all required fields')
+    diff = Object.fromEntries(
+      Object.entries(formData).filter(
+        ([key, value]) =>
+          JSON.stringify(value) !==
+          JSON.stringify(originalData[key as keyof FormData])
+      )
+    )
+
+    if (Object.keys(diff).length === 0) {
+      toast.error('No changes made')
       return
-    }
-
-    if (editingId && originalData) {
-      const hasChanges =
-        JSON.stringify(formData) !== JSON.stringify(originalData)
-
-      if (!hasChanges) {
-        toast.error('No changes made')
-        return
-      }
-    }
-
-    setIsSaving(true)
-
-    try {
-      if (editingId) {
-        await updateSalesperson(editingId, formData)
-        toast.success('Team member updated')
-      } else {
-        await addSalesperson({ ...formData, order: nextOrder })
-        toast.success('Team member added')
-      }
-
-      resetForm()
-    } catch {
-      toast.error('Save failed')
-    } finally {
-      setIsSaving(false)
     }
   }
+
+  setIsSaving(true)
+
+  try {
+    if (editingId && diff) {
+      await updateSalesperson(editingId, diff)
+      toast.success('Team member updated')
+    } else {
+      await addSalesperson({ ...formData, order: nextOrder })
+      toast.success('Team member added')
+    }
+
+    resetForm()
+  } catch (err) {
+    console.error('[ADMIN_TEAM_SAVE]', err)
+    toast.error('Save failed')
+  } finally {
+    setIsSaving(false)
+  }
+}
 
   const handleEdit = (person: Salesperson) => {
     const clean: FormData = {
