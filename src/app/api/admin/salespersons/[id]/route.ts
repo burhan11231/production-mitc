@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
 import { requireAdmin } from '@/lib/requireAdmin'
 
-type RouteContext = {
-  params: {
-    id: string
-  }
-}
-
 export async function PATCH(
   req: NextRequest,
-  context: RouteContext
+  { params }
 ) {
   try {
     const admin = await requireAdmin(req)
@@ -19,13 +13,16 @@ export async function PATCH(
     }
 
     const data = await req.json()
-    const { id } = context.params
+    const { id } = params
 
     const adminDb = getAdminDb()
-    await adminDb.collection('salespersons').doc(id).update({
-      ...data,
-      updatedAt: Date.now(),
-    })
+    await adminDb
+      .collection('salespersons')
+      .doc(id)
+      .update({
+        ...data,
+        updatedAt: Date.now(),
+      })
 
     return NextResponse.json({ success: true })
   } catch (err) {
@@ -36,7 +33,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  context: RouteContext
+  { params }
 ) {
   try {
     const admin = await requireAdmin(req)
@@ -44,7 +41,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { id } = context.params
+    const { id } = params
 
     const adminDb = getAdminDb()
     await adminDb.collection('salespersons').doc(id).delete()
