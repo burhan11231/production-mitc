@@ -7,9 +7,6 @@ import toast from 'react-hot-toast';
 let cachedSalespersons: Salesperson[] | null = null;
 let fetchPromise: Promise<Salesperson[]> | null = null;
 
-// ✅ Reaction cache per session
-export const reactionCache = new Map<string, 'like' | 'dislike' | null>();
-
 export function useSalespersons() {
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +15,7 @@ export function useSalespersons() {
   useEffect(() => {
     let mounted = true;
 
-    // ✅ Serve from memory if available
+    // ✅ Serve from memory cache
     if (cachedSalespersons) {
       setSalespersons(cachedSalespersons);
       setIsLoading(false);
@@ -36,12 +33,6 @@ export function useSalespersons() {
         })
         .then((data: Salesperson[]) => {
           cachedSalespersons = data;
-
-          // ✅ Hydrate reaction cache
-          data.forEach(sp => {
-            reactionCache.set(sp.id!, sp.userReaction ?? null);
-          });
-
           return data;
         });
     }
