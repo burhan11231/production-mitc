@@ -140,52 +140,52 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
             </div>
 
             {/* ============ FOOTER ============ */}
-            <div className="bg-gray-50 border-t px-6 py-5">
-              <div className="flex items-center justify-between w-full">
+<div className="bg-gray-50 border-t px-6 py-5">
+  <div className="flex items-center justify-between w-full">
 
-                {/* Call */}
-                <button
-                  onClick={() => tel && (window.location.href = `tel:${tel}`)}
-                  disabled={!tel}
-                  className="h-12 w-12 rounded-xl bg-blue-600 shadow hover:bg-blue-700 flex items-center justify-center"
-                  title="Call"
-                >
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/16076/16076069.png"
-                    alt="Call"
-                    className="h-6 w-6"
-                  />
-                </button>
+    {/* Call */}
+    <button
+      onClick={() => tel && (window.location.href = `tel:${tel}`)}
+      disabled={!tel}
+      title="Call"
+      className="p-3 rounded-full hover:bg-gray-100 active:scale-95 transition"
+    >
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/16076/16076069.png"
+        alt="Call"
+        className="h-7 w-7"
+      />
+    </button>
 
-                {/* WhatsApp */}
-                <button
-                  onClick={() => wa && window.open(wa, '_blank')}
-                  disabled={!wa}
-                  className="h-12 w-12 rounded-xl bg-emerald-500 shadow hover:bg-emerald-600 flex items-center justify-center"
-                  title="WhatsApp"
-                >
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/3536/3536445.png"
-                    alt="WhatsApp"
-                    className="h-6 w-6"
-                  />
-                </button>
+    {/* WhatsApp */}
+    <button
+      onClick={() => wa && window.open(wa, '_blank')}
+      disabled={!wa}
+      title="WhatsApp"
+      className="p-3 rounded-full hover:bg-gray-100 active:scale-95 transition"
+    >
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/3536/3536445.png"
+        alt="WhatsApp"
+        className="h-7 w-7"
+      />
+    </button>
 
-                {/* Gmail */}
-                <button
-                  onClick={() => window.open(`mailto:${salesperson.email}`, '_blank')}
-                  className="h-12 w-12 rounded-xl bg-white shadow flex items-center justify-center"
-                  title="Gmail"
-                >
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/732/732200.png"
-                    alt="Gmail"
-                    className="h-6 w-6"
-                  />
-                </button>
+    {/* Gmail */}
+    <button
+      onClick={() => window.open(`mailto:${salesperson.email}`, '_blank')}
+      title="Gmail"
+      className="p-3 rounded-full hover:bg-gray-100 active:scale-95 transition"
+    >
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/732/732200.png"
+        alt="Gmail"
+        className="h-7 w-7"
+      />
+    </button>
 
-              </div>
-            </div>
+  </div>
+</div>
 
           </DialogPanel>
         </div>
