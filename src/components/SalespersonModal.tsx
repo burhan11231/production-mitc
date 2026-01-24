@@ -2,9 +2,7 @@
 
 import { Fragment } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/react'
-
 import { Salesperson } from '@/lib/firestore-models'
 
 type Props = {
@@ -55,7 +53,13 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-white shadow-md">
                     {salesperson.imageUrl ? (
-                      <Image src={salesperson.imageUrl} alt={salesperson.name} fill className="object-cover" unoptimized />
+                      <Image
+                        src={salesperson.imageUrl}
+                        alt={salesperson.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-white font-bold text-xl">
                         {initials(salesperson.name)}
@@ -63,23 +67,37 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                     )}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{salesperson.name}</h2>
-                    <p className="text-sm font-semibold text-blue-600">{salesperson.role}</p>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {salesperson.name}
+                    </h2>
+                    <p className="text-sm font-semibold text-blue-600">
+                      {salesperson.role}
+                    </p>
                   </div>
                 </div>
 
                 <button onClick={onClose} className="p-2 hover:bg-white rounded-full">
-                  <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="h-6 w-6 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.5"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
 
             {/* ============ BODY ============ */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
 
-              {/* ---- Bio (Moved to Top) ---- */}
+              {/* Bio */}
               {salesperson.bio && (
                 <section>
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
@@ -93,26 +111,26 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                 </section>
               )}
 
-              {/* ---- Specializations ---- */}
-{(salesperson.specializations?.length ?? 0) > 0 && (
-  <section>
-    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
-      Areas of Expertise
-    </h3>
-    <div className="flex flex-wrap gap-2">
-      {salesperson.specializations!.map(spec => (
-        <span
-          key={spec}
-          className="px-3.5 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg border"
-        >
-          ✓ {spec}
-        </span>
-      ))}
-    </div>
-  </section>
-)}
+              {/* Specializations */}
+              {(salesperson.specializations?.length ?? 0) > 0 && (
+                <section>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+                    Areas of Expertise
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {salesperson.specializations!.map(spec => (
+                      <span
+                        key={spec}
+                        className="px-3.5 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg border"
+                      >
+                        ✓ {spec}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-              {/* ---- Status ---- */}
+              {/* Status */}
               {salesperson.isActive === false && (
                 <div className="p-4 rounded-xl bg-amber-50 border text-amber-800 text-sm font-medium flex items-center gap-3">
                   <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></span>
@@ -129,20 +147,28 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                 <button
                   onClick={() => tel && (window.location.href = `tel:${tel}`)}
                   disabled={!tel}
-                  className="h-12 w-12 rounded-xl bg-blue-600 text-white shadow hover:bg-blue-700"
+                  className="h-12 w-12 rounded-xl bg-blue-600 shadow hover:bg-blue-700 flex items-center justify-center"
                   title="Call"
                 >
-                  📞
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/16076/16076069.png"
+                    alt="Call"
+                    className="h-6 w-6"
+                  />
                 </button>
 
                 {/* WhatsApp */}
                 <button
                   onClick={() => wa && window.open(wa, '_blank')}
                   disabled={!wa}
-                  className="h-12 w-12 rounded-xl bg-emerald-500 text-white shadow hover:bg-emerald-600"
+                  className="h-12 w-12 rounded-xl bg-emerald-500 shadow hover:bg-emerald-600 flex items-center justify-center"
                   title="WhatsApp"
                 >
-                  🟢
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/3536/3536445.png"
+                    alt="WhatsApp"
+                    className="h-6 w-6"
+                  />
                 </button>
 
                 {/* Gmail */}
@@ -151,12 +177,11 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
                   className="h-12 w-12 rounded-xl bg-white shadow flex items-center justify-center"
                   title="Gmail"
                 >
-                  <svg viewBox="0 0 48 48" className="h-6 w-6">
-                    <path fill="#EA4335" d="M24 24L44 8v32H4V8z" />
-                    <path fill="#FBBC05" d="M4 8l20 16L44 8z" />
-                    <path fill="#34A853" d="M4 40l20-16 20 16z" />
-                    <path fill="#4285F4" d="M24 24L4 8v32z" />
-                  </svg>
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/732/732200.png"
+                    alt="Gmail"
+                    className="h-6 w-6"
+                  />
                 </button>
 
               </div>
