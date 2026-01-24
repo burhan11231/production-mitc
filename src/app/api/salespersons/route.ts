@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase-admin';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const adminDb = getAdminDb();
-    const userId = req.headers.get('x-user-id');
 
     const snap = await adminDb
       .collection('salespersons')
@@ -15,21 +14,7 @@ export async function GET(req: Request) {
     const salespersons = snap.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    })) as any[];
-
-    if (userId) {
-      const reactionRefs = salespersons.map(sp =>
-        adminDb.doc(`salesperson_reactions/${userId}_${sp.id}`)
-      );
-
-      const reactionSnaps = await adminDb.getAll(...reactionRefs);
-
-      reactionSnaps.forEach((r, i) => {
-        salespersons[i].userReaction = r.exists
-          ? r.data()?.type ?? null
-          : null;
-      });
-    }
+    }));
 
     return NextResponse.json(salespersons, {
       headers: {
