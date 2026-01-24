@@ -1,11 +1,10 @@
 'use client'
 
-import { Fragment, useMemo, useEffect } from 'react'
+import { Fragment, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Dialog, DialogBackdrop, DialogPanel, Transition } from '@headlessui/react'
 import { Salesperson } from '@/lib/firestore-models'
-import { reactionCache } from '@/hooks/useSalespersons'
 
 type Props = {
   isOpen: boolean
@@ -19,21 +18,23 @@ type Props = {
   viewAllHref?: string
 }
 
+/* ---------------- Utils ---------------- */
 
-function toDigits(phone: string) {
+function toDigits(phone?: string) {
   return (phone || '').replace(/\D/g, '')
 }
 
-function toWaLink(phone: string) {
+function toWaLink(phone?: string) {
   const digits = toDigits(phone)
-  if (!digits) return ''
-  return `https://wa.me/${digits}`
+  return digits ? `https://wa.me/${digits}` : ''
 }
 
 function initials(name?: string) {
   const parts = (name || '').trim().split(/\s+/).filter(Boolean)
   return parts.slice(0, 2).map(p => p[0]?.toUpperCase()).join('')
 }
+
+/* ---------------- Component ---------------- */
 
 export default function TeamModal({
   isOpen,
@@ -46,21 +47,6 @@ export default function TeamModal({
   onSelectPerson,
   viewAllHref = '/team',
 }: Props) {
-
-
-useEffect(() => {
-  if (!isOpen || !salespersons?.length) return
-
-  salespersons.forEach(p => {
-    if (!p.id) return
-
-    // Only seed if cache is empty for this salesperson
-    if (!reactionCache.has(p.id)) {
-      reactionCache.set(p.id, p.userReaction ?? null)
-    }
-  })
-}, [isOpen, salespersons])
-
 
   const list = useMemo(() => {
     const sorted = [...(salespersons || [])].sort(
@@ -78,9 +64,7 @@ useEffect(() => {
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-            <DialogPanel
-              className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5"
-            >
+            <DialogPanel className="w-full max-w-3xl rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden">
 
               {/* Header */}
               <div className="px-6 py-5 border-b border-black/5 bg-white">
@@ -101,11 +85,7 @@ useEffect(() => {
 
               {/* Body */}
               <div className="p-6 max-h-[70vh] overflow-y-auto bg-sky-50/60">
-
-                {/* Subtitle moved here */}
-                <p className="mb-5 text-sm text-gray-600">
-                  {subtitle}
-                </p>
+                <p className="mb-5 text-sm text-gray-600">{subtitle}</p>
 
                 {list.length === 0 ? (
                   <div className="py-10 text-center text-gray-600">
@@ -113,9 +93,9 @@ useEffect(() => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {list.map((p) => {
-                      const wa = toWaLink(p.whatsapp || p.phone || '')
-                      const tel = toDigits(p.phone || '')
+                    {list.map(p => {
+                      const wa = toWaLink(p.whatsapp || p.phone)
+                      const tel = toDigits(p.phone)
 
                       return (
                         <div
@@ -157,7 +137,7 @@ useEffect(() => {
                           <div className="mt-4 grid grid-cols-3 gap-2">
                             <a
                               href={tel ? `tel:${tel}` : '#'}
-                              onClick={(e) => !tel && e.preventDefault()}
+                              onClick={e => !tel && e.preventDefault()}
                               className="text-center rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 transition"
                             >
                               Call
@@ -167,7 +147,7 @@ useEffect(() => {
                               href={wa || '#'}
                               target="_blank"
                               rel="noopener noreferrer"
-                              onClick={(e) => !wa && e.preventDefault()}
+                              onClick={e => !wa && e.preventDefault()}
                               className="text-center rounded-2xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 transition"
                             >
                               WhatsApp
