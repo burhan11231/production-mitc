@@ -83,7 +83,7 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
               {salesperson.bio && (
                 <section>
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
-                    Professional Bio
+                    Bio
                   </h3>
                   <div className="p-5 rounded-xl bg-gradient-to-br from-slate-50 to-blue-50 border">
                     <p className="text-gray-700 leading-relaxed italic">
@@ -94,23 +94,23 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
               )}
 
               {/* ---- Specializations ---- */}
-              {salesperson.specializations?.length > 0 && (
-                <section>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
-                    Areas of Expertise
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {salesperson.specializations.map(spec => (
-                      <span
-                        key={spec}
-                        className="px-3.5 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg border"
-                      >
-                        ✓ {spec}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              )}
+{(salesperson.specializations?.length ?? 0) > 0 && (
+  <section>
+    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+      Areas of Expertise
+    </h3>
+    <div className="flex flex-wrap gap-2">
+      {salesperson.specializations!.map(spec => (
+        <span
+          key={spec}
+          className="px-3.5 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg border"
+        >
+          ✓ {spec}
+        </span>
+      ))}
+    </div>
+  </section>
+)}
 
               {/* ---- Status ---- */}
               {salesperson.isActive === false && (
