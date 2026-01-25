@@ -52,7 +52,7 @@ export default function ReviewSection() {
           />
         ) : review ? (
           <>
-            {/* Rating */}
+            {/* Rating Row */}
             <div className="flex items-center gap-3">
               <StarRatings rating={review.rating} size={22} />
               <span className="text-sm font-semibold text-gray-700">
@@ -61,21 +61,26 @@ export default function ReviewSection() {
             </div>
 
             {/* Review Text */}
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
               {review.comment}
             </p>
 
-            {/* Meta */}
+            {/* Metadata */}
             {review.updatedAt && (
               <p className="text-xs text-gray-400">
-                Last updated {new Date(review.updatedAt).toLocaleDateString()}
+                Updated on{' '}
+                {new Date(review.updatedAt).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
               </p>
             )}
 
             {/* Action */}
             <button
               onClick={() => setEditing(true)}
-              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors"
             >
               Edit review
             </button>
