@@ -4,51 +4,56 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { auth, db } from '@/lib/firebase'
 import {
-  EmailAuthProvider,
   GoogleAuthProvider,
   linkWithPopup,
-  reauthenticateWithPopup,
+  unlink,
   sendPasswordResetEmail,
+  signOut,
   deleteUser,
 } from 'firebase/auth'
-import { deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
 import {
   ShieldCheckIcon,
   KeyIcon,
   ArrowRightOnRectangleIcon,
-  TrashIcon,
   LinkIcon,
+  TrashIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 
 export default function AccountSettings() {
   const { user, logout } = useAuth()
 
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [keepReviews, setKeepReviews] = useState(true)
-
-  if (!user) return null
-
-  const authUser = auth.currentUser!
-  const providers = user.providers
+  const [loading, setLoading] = useState(false)
+  const hasGoogle = user?.providers.includes('google.com')
+  const isPasswordUser = user?.providers.includes('password')
 
   /* ---------------- PROVIDERS ---------------- */
 
   const connectGoogle = async () => {
     try {
-      await linkWithPopup(authUser, new GoogleAuthProvider())
+      await linkWithPopup(auth.currentUser!, new GoogleAuthProvider())
       toast.success('Google account connected')
-      location.reload()
     } catch (e: any) {
       toast.error(e.message || 'Failed to connect Google')
+    }
+  }
+
+  const disconnectGoogle = async () => {
+    try {
+      await unlink(auth.currentUser!, 'google.com')
+      toast.success('Google account disconnected')
+    } catch {
+      toast.error('Cannot disconnect Google (needs another login method)')
     }
   }
 
   /* ---------------- PASSWORD ---------------- */
 
   const resetPassword = async () => {
+    if (!user?.email) return
     try {
       await sendPasswordResetEmail(auth, user.email)
       toast.success('Password reset email sent')
@@ -57,55 +62,44 @@ export default function AccountSettings() {
     }
   }
 
-  /* ---------------- DEACTIVATE ---------------- */
+  /* ---------------- SECURITY ---------------- */
+
+  const signOutAll = () => {
+    toast('Sign out all devices requires admin access', { icon: '🔒' })
+  }
+
+  /* ---------------- ACCOUNT STATE ---------------- */
 
   const deactivateAccount = async () => {
+    if (!user) return
     try {
       await updateDoc(doc(db, 'users', user.uid), {
         isDisabled: true,
       })
-      toast.success('Account deactivated')
       await logout()
+      toast.success('Account deactivated')
     } catch {
       toast.error('Failed to deactivate account')
     }
   }
 
-  /* ---------------- DELETE ---------------- */
-
   const deleteAccount = async () => {
-    if (isDeleting) return
-    setIsDeleting(true)
+    if (!user) return
 
+    const confirm = window.confirm(
+      'This will permanently delete your account. This cannot be undone.'
+    )
+    if (!confirm) return
+
+    setLoading(true)
     try {
-      // Re-auth (Google or Email)
-      if (providers.includes('google.com')) {
-        await reauthenticateWithPopup(authUser, new GoogleAuthProvider())
-      } else {
-        await reauthenticateWithPopup(
-          authUser,
-          new EmailAuthProvider()
-        )
-      }
-
-      if (!keepReviews) {
-        // future: cascade delete user content
-      } else {
-        await updateDoc(doc(db, 'users', user.uid), {
-          name: 'Deleted User',
-          photoURL: '',
-        })
-      }
-
       await deleteDoc(doc(db, 'users', user.uid))
-      await deleteUser(authUser)
-
-      toast.success('Account permanently deleted')
-      location.href = '/'
-    } catch (e: any) {
-      toast.error(e.message || 'Account deletion failed')
+      await deleteUser(auth.currentUser!)
+      toast.success('Account deleted')
+    } catch {
+      toast.error('Re-authentication required')
     } finally {
-      setIsDeleting(false)
+      setLoading(false)
     }
   }
 
@@ -113,106 +107,109 @@ export default function AccountSettings() {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 space-y-8">
-      {/* OVERVIEW */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-gray-700">
+      {/* ACCOUNT OVERVIEW */}
+      <section className="space-y-2">
+        <div className="flex items-center gap-2 text-gray-700 font-medium">
           <ShieldCheckIcon className="w-5 h-5" />
-          {user.email}
-          {authUser.emailVerified ? (
-            <span className="text-green-600 text-xs font-semibold">
-              Verified
-            </span>
-          ) : (
-            <span className="text-amber-600 text-xs font-semibold">
-              Unverified
-            </span>
-          )}
+          Account
         </div>
 
-        <div className="text-xs text-gray-500">
-          Created: {new Date(authUser.metadata.creationTime!).toLocaleDateString()}
+        <div className="text-sm text-gray-600 space-y-1">
+          <p>Email: {user?.email}</p>
+          <p>
+            Providers:{' '}
+            {user?.providers.includes('google.com') && 'Google '}
+            {user?.providers.includes('password') && 'Email '}
+          </p>
         </div>
-        <div className="text-xs text-gray-500">
-          Last login: {new Date(authUser.metadata.lastSignInTime!).toLocaleDateString()}
-        </div>
+      </section>
 
-        <div className="flex gap-2 flex-wrap pt-2">
-          {providers.map(p => (
-            <span
-              key={p}
-              className="px-2 py-1 rounded-md bg-gray-100 text-xs"
-            >
-              {p.replace('.com', '')}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* PASSWORD */}
+      {isPasswordUser && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 font-medium text-gray-700">
+            <KeyIcon className="w-5 h-5" />
+            Password
+          </div>
 
-      {/* SECURITY */}
-      <div className="space-y-3">
-        {providers.includes('password') && (
           <button
             onClick={resetPassword}
-            className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+            className="w-full border rounded-lg py-2 hover:bg-gray-50 text-sm"
           >
-            <KeyIcon className="w-4 h-4" />
-            Reset password
+            Send password reset email
           </button>
-        )}
+        </section>
+      )}
 
-        {!providers.includes('google.com') && (
+      {/* CONNECTED ACCOUNTS */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2 font-medium text-gray-700">
+          <LinkIcon className="w-5 h-5" />
+          Connected accounts
+        </div>
+
+        {hasGoogle ? (
+          <button
+            onClick={disconnectGoogle}
+            className="w-full border rounded-lg py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            Disconnect Google
+          </button>
+        ) : (
           <button
             onClick={connectGoogle}
-            className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+            className="w-full border rounded-lg py-2 text-sm hover:bg-gray-50"
           >
-            <LinkIcon className="w-4 h-4" />
-            Connect Google account
+            Connect Google
           </button>
         )}
+      </section>
+
+      {/* SECURITY */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2 font-medium text-gray-700">
+          <ArrowRightOnRectangleIcon className="w-5 h-5" />
+          Sessions
+        </div>
 
         <button
           onClick={logout}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:underline"
+          className="w-full border rounded-lg py-2 text-sm hover:bg-gray-50"
         >
-          <ArrowRightOnRectangleIcon className="w-4 h-4" />
-          Sign out
+          Sign out from this device
         </button>
-      </div>
+
+        <button
+          onClick={signOutAll}
+          className="w-full border rounded-lg py-2 text-sm text-gray-400 cursor-not-allowed"
+        >
+          Sign out from all devices (coming soon)
+        </button>
+      </section>
 
       {/* DANGER ZONE */}
-      <div className="border-t pt-6 space-y-4">
-        <div className="flex items-center gap-2 text-red-600 text-sm font-semibold">
+      <section className="pt-6 border-t space-y-4">
+        <div className="flex items-center gap-2 font-semibold text-red-600">
           <ExclamationTriangleIcon className="w-5 h-5" />
           Danger zone
         </div>
 
         <button
           onClick={deactivateAccount}
-          className="text-sm text-red-600 hover:underline"
+          className="w-full border border-red-200 rounded-lg py-2 text-sm text-red-600 hover:bg-red-50"
         >
           Deactivate account
         </button>
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs text-gray-600">
-            <input
-              type="checkbox"
-              checked={keepReviews}
-              onChange={e => setKeepReviews(e.target.checked)}
-            />
-            Keep my reviews (anonymized)
-          </label>
-
-          <button
-            onClick={deleteAccount}
-            disabled={isDeleting}
-            className="flex items-center gap-2 text-sm text-red-700 font-semibold hover:underline"
-          >
-            <TrashIcon className="w-4 h-4" />
-            Permanently delete account
-          </button>
-        </div>
-      </div>
+        <button
+          onClick={deleteAccount}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+        >
+          <TrashIcon className="w-4 h-4" />
+          Delete account permanently
+        </button>
+      </section>
     </div>
   )
 }
