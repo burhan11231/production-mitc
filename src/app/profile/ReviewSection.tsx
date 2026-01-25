@@ -36,12 +36,31 @@ export default function ReviewSection() {
     loadReview()
   }, [])
 
-  if (loading) return null
-
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
       <div className="p-6 space-y-6">
-        {editing ? (
+        {/* ================= LOADING SKELETON ================= */}
+        {loading && (
+          <>
+            {/* Stars */}
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+            </div>
+
+            {/* Text lines */}
+            <div className="space-y-2">
+              <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-11/12 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-9/12 bg-gray-200 rounded animate-pulse" />
+            </div>
+
+            {/* Button */}
+            <div className="h-12 w-full bg-gray-200 rounded-xl animate-pulse" />
+          </>
+        )}
+
+        {/* ================= EDIT MODE ================= */}
+        {!loading && editing && (
           <ReviewForm
             existingReview={review}
             onSuccess={() => {
@@ -50,9 +69,12 @@ export default function ReviewSection() {
             }}
             onCancel={() => setEditing(false)}
           />
-        ) : review ? (
+        )}
+
+        {/* ================= VIEW MODE ================= */}
+        {!loading && !editing && review && (
           <>
-            {/* Rating Row */}
+            {/* Rating */}
             <div className="flex items-center gap-3">
               <StarRatings rating={review.rating} size={22} />
               <span className="text-sm font-semibold text-gray-700">
@@ -60,12 +82,12 @@ export default function ReviewSection() {
               </span>
             </div>
 
-            {/* Review Text */}
+            {/* Review text */}
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">
               {review.comment}
             </p>
 
-            {/* Metadata */}
+            {/* Meta */}
             {review.updatedAt && (
               <p className="text-xs text-gray-400">
                 Updated on{' '}
@@ -85,7 +107,10 @@ export default function ReviewSection() {
               Edit review
             </button>
           </>
-        ) : (
+        )}
+
+        {/* ================= NO REVIEW ================= */}
+        {!loading && !editing && !review && (
           <button
             onClick={() => setEditing(true)}
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-colors"
