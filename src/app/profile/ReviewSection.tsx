@@ -71,7 +71,7 @@ export default function ReviewSection() {
   /* ---------------- UI ---------------- */
 
   return (
-    
+    <div className="p-6">
       {loading && (
         <div className="h-24 bg-gray-100 animate-pulse rounded-xl" />
       )}
