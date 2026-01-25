@@ -49,98 +49,115 @@ export default function ReviewForm({
   /* ---------------- SUBMIT ---------------- */
 
   const submit = async (e: React.FormEvent) => {
-  e.preventDefault()
+    e.preventDefault()
 
-  if (!user) {
-    toast.error('Login required')
-    return
-  }
-
-  if (rating < 1 || rating > 5) {
-    toast.error('Please select a rating')
-    return
-  }
-
-  if (comment.trim().length < 10) {
-    toast.error('Review must be at least 10 characters')
-    return
-  }
-
-  if (existingReview && !hasChanges) {
-    toast.error('No changes made')
-    return
-  }
-
-  try {
-    setSaving(true)
-
-    const ref = doc(db, 'reviews', user.uid)
-
-    const payload = {
-      userId: user.uid,
-      userName: user.name || 'User',
-      rating,
-      comment,
-      status: 'pending',
-      updatedAt: serverTimestamp(),
+    if (!user) {
+      toast.error('You must be logged in to submit a review')
+      return
     }
 
-    if (existingReview) {
-      await updateDoc(ref, payload)
-      toast.success('Review updated and sent for approval')
-    } else {
-      await setDoc(ref, {
-        ...payload,
-        createdAt: serverTimestamp(),
-      })
-      toast.success('Review submitted for approval')
+    if (rating < 1 || rating > 5) {
+      toast.error('Please select a valid rating')
+      return
     }
 
-    onSuccess()
-  } catch (err) {
-    console.error('[REVIEW_SUBMIT_ERROR]', err)
-    toast.error('Failed to submit review')
-  } finally {
-    setSaving(false)
+    if (comment.trim().length < 10) {
+      toast.error('Review must be at least 10 characters long')
+      return
+    }
+
+    if (existingReview && !hasChanges) {
+      toast.error('No changes were made')
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      const ref = doc(db, 'reviews', user.uid)
+
+      const payload = {
+        userId: user.uid,
+        userName: user.name || 'User',
+        rating,
+        comment,
+        status: 'pending',
+        updatedAt: serverTimestamp(),
+      }
+
+      if (existingReview) {
+        await updateDoc(ref, payload)
+        toast.success('Review updated and sent for approval')
+      } else {
+        await setDoc(ref, {
+          ...payload,
+          createdAt: serverTimestamp(),
+        })
+        toast.success('Review submitted for approval')
+      }
+
+      onSuccess()
+    } catch (err) {
+      console.error('[REVIEW_SUBMIT_ERROR]', err)
+      toast.error('Failed to submit review')
+    } finally {
+      setSaving(false)
+    }
   }
-}
 
   /* ---------------- UI ---------------- */
 
   return (
     <form onSubmit={submit} className="space-y-6">
       {/* RATING */}
-      <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setRating(s)}
-            aria-label={`Rate ${s} stars`}
-          >
-            <FaStar
-              size={30}
-              className={s <= rating ? 'text-yellow-400' : 'text-gray-200'}
-            />
-          </button>
-        ))}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Your Rating
+        </label>
+
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setRating(s)}
+              aria-label={`Rate ${s} stars`}
+              className="transition-transform hover:scale-110"
+            >
+              <FaStar
+                size={30}
+                className={s <= rating ? 'text-yellow-400' : 'text-gray-200'}
+              />
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* COMMENT */}
-      <textarea
-        rows={4}
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        className="w-full px-4 py-3 rounded-xl border"
-        placeholder="Share your experience"
-      />
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Your Feedback
+        </label>
+
+        <textarea
+          rows={4}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Share your experience in detail…"
+          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+        />
+
+        <p className="text-xs text-gray-400 mt-1">
+          {comment.length} / 500 characters
+        </p>
+      </div>
 
       {/* ACTIONS */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 h-12 rounded-full bg-gray-900 text-white font-bold disabled:opacity-50"
+          className="flex-1 h-12 rounded-full bg-gray-900 text-white font-bold flex items-center justify-center disabled:opacity-50"
         >
           {saving
             ? 'Submitting…'
@@ -153,7 +170,7 @@ export default function ReviewForm({
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="flex-1 h-12 rounded-full border-2 border-gray-300 font-bold disabled:opacity-50"
+          className="flex-1 h-12 rounded-full border-2 border-gray-300 text-gray-700 font-bold flex items-center justify-center disabled:opacity-50"
         >
           Cancel
         </button>
