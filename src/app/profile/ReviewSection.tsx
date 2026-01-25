@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { auth } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 import ReviewForm from '@/components/ReviewForm'
-import StarRating from '@/components/StarRating'
+import StarRatings from '@/components/StarRatings'
 
 export default function ReviewSection() {
   const [review, setReview] = useState<any>(null)
@@ -54,7 +54,7 @@ export default function ReviewSection() {
           <>
             {/* Rating */}
             <div className="flex items-center gap-3">
-              <StarRating rating={review.rating} size={22} />
+              <StarRatings rating={review.rating} size={22} />
               <span className="text-sm font-semibold text-gray-700">
                 {review.rating.toFixed(1)} / 5
               </span>
