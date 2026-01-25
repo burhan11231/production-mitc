@@ -7,6 +7,7 @@ import {
 import {
   doc,
   getDoc,
+  Timestamp,
 } from 'firebase/firestore';
 import React, {
   createContext,
@@ -26,6 +27,9 @@ export interface AppUser {
   role: 'user' | 'admin';
   photoURL: string | null;
   providers: string[];
+
+  // ✅ OPTION A: add optional cooldown field
+  lastNameUpdatedAt?: Timestamp;
 }
 
 interface AuthContextType {
@@ -70,6 +74,9 @@ export function AuthProvider({
             role: data.role === 'admin' ? 'admin' : 'user',
             photoURL: data.photoURL || authUser.photoURL || null,
             providers: authUser.providerData.map(p => p.providerId),
+
+            // ✅ SAFE OPTIONAL FIELD
+            lastNameUpdatedAt: data.lastNameUpdatedAt,
           });
         } else {
           // Firestore doc missing → safe fallback
