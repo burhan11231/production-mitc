@@ -6,7 +6,6 @@ import { useEffect } from 'react'
 
 import ProfileSection from './ProfileSection'
 import ReviewSection from './ReviewSection'
-import AccountSettings from './AccountSettings'
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth()
@@ -26,16 +25,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-12 px-4">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-8">
-
-        {/* LEFT */}
-        <div className="lg:col-span-2 space-y-8">
-          <ProfileSection />
-          <ReviewSection />
-        </div>
-
-        {/* RIGHT */}
-        <AccountSettings />
+      <div className="max-w-4xl mx-auto space-y-8">
+        <ProfileSection />
+        <ReviewSection />
       </div>
     </div>
   )
