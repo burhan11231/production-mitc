@@ -13,6 +13,8 @@ export default function ReviewSection() {
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  /* ---------------- LOAD REVIEW ---------------- */
+
   const loadReview = async () => {
     try {
       const token = await auth.currentUser?.getIdToken()
@@ -36,6 +38,8 @@ export default function ReviewSection() {
     loadReview()
   }, [])
 
+  /* ---------------- DELETE ---------------- */
+
   const deleteReview = async () => {
     if (!confirm('Are you sure you want to delete your review?')) return
 
@@ -51,23 +55,41 @@ export default function ReviewSection() {
     }
   }
 
+  /* ---------------- STATUS ---------------- */
+
+  const isPending = review?.status === 'pending'
+
   const statusBadge = (status: string) => {
-    if (status === 'approved')
-      return <span className="text-xs font-semibold text-emerald-600">Approved</span>
-    if (status === 'pending')
-      return <span className="text-xs font-semibold text-amber-600">Pending approval</span>
+    if (status === 'published') {
+      return (
+        <span className="text-xs font-semibold text-emerald-600">
+          Published
+        </span>
+      )
+    }
+    if (status === 'pending') {
+      return (
+        <span className="text-xs font-semibold text-amber-600">
+          Pending approval
+        </span>
+      )
+    }
     return null
   }
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
       <div className="p-6 space-y-6">
 
         {/* LOADING */}
-        {loading && <div className="h-24 bg-gray-100 animate-pulse rounded-xl" />}
+        {loading && (
+          <div className="h-24 bg-gray-100 animate-pulse rounded-xl" />
+        )}
 
         {/* EDIT MODE */}
-        {!loading && editing && (
+        {!loading && editing && review && (
           <ReviewForm
             existingReview={review}
             onSuccess={() => {
@@ -81,6 +103,7 @@ export default function ReviewSection() {
         {/* VIEW MODE */}
         {!loading && !editing && review && (
           <>
+            {/* HEADER */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <StarRatings rating={review.rating} size={22} />
@@ -91,14 +114,21 @@ export default function ReviewSection() {
               {statusBadge(review.status)}
             </div>
 
+            {/* COMMENT */}
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">
               {review.comment}
             </p>
 
+            {/* ACTIONS */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={() => setEditing(true)}
-                className="flex-1 h-12 rounded-full bg-gray-900 text-white font-bold"
+                disabled={isPending}
+                className={`flex-1 h-12 rounded-full font-bold flex items-center justify-center ${
+                  isPending
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-900 text-white'
+                }`}
               >
                 Edit review
               </button>
@@ -106,11 +136,18 @@ export default function ReviewSection() {
               <button
                 onClick={deleteReview}
                 disabled={deleting}
-                className="flex-1 h-12 rounded-full border-2 border-red-300 text-red-600 font-bold disabled:opacity-50"
+                className="flex-1 h-12 rounded-full border-2 border-red-300 text-red-600 font-bold flex items-center justify-center disabled:opacity-50"
               >
-                Delete review
+                {deleting ? 'Deleting…' : 'Delete review'}
               </button>
             </div>
+
+            {/* INFO (PENDING) */}
+            {isPending && (
+              <p className="text-xs text-gray-500">
+                Your review is under moderation. Editing will be enabled after approval.
+              </p>
+            )}
           </>
         )}
 
@@ -118,7 +155,7 @@ export default function ReviewSection() {
         {!loading && !editing && !review && (
           <button
             onClick={() => setEditing(true)}
-            className="w-full h-12 rounded-full bg-gray-900 text-white font-bold"
+            className="w-full h-12 rounded-full bg-gray-900 text-white font-bold flex items-center justify-center"
           >
             Write a review
           </button>
