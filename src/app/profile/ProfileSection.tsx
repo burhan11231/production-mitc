@@ -4,11 +4,10 @@ import { useAuth } from '@/lib/auth-context'
 import { db, auth } from '@/lib/firebase'
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { updateProfile } from 'firebase/auth'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { compressImage, validateImageFile } from '@/lib/image-utils'
-
 import AccountSettings from './AccountSettings'
 
 import {
@@ -18,6 +17,8 @@ import {
   CheckIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+
+const NAME_UPDATE_COOLDOWN_DAYS = 14
 
 export default function ProfileSection() {
   const { user } = useAuth()
@@ -49,6 +50,35 @@ export default function ProfileSection() {
       photoURL !== original.photoURL,
     [name, phone, photoURL, original]
   )
+
+  /* ---------------- NAME COOLDOWN ---------------- */
+
+  const lastNameUpdatedAt = user!.lastNameUpdatedAt
+    ? new Date(user!.lastNameUpdatedAt.seconds * 1000)
+    : null
+
+  const canUpdateName = !lastNameUpdatedAt
+    ? true
+    : Date.now() - lastNameUpdatedAt.getTime() >
+      NAME_UPDATE_COOLDOWN_DAYS * 24 * 60 * 60 * 1000
+
+  /* ---------------- UNSAVED CHANGES GUARD ---------------- */
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!hasChanges || !isEditing) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hasChanges, isEditing])
+
+  const confirmDiscard = () => {
+    if (!hasChanges) return true
+    return confirm('You have unsaved changes. Discard them?')
+  }
 
   /* ---------------- IMAGE ---------------- */
 
@@ -82,21 +112,33 @@ export default function ProfileSection() {
   /* ---------------- SAVE ---------------- */
 
   const saveProfile = async () => {
-    if (!hasChanges || saving || isImageProcessing) return
+    if (!hasChanges) {
+      toast.error('No changes to save')
+      return
+    }
+
+    if (saving || isImageProcessing) return
 
     setSaving(true)
     try {
-      await updateDoc(doc(db, 'users', user!.uid), {
-        name,
+      const updatePayload: any = {
         phone,
         photoURL,
         updatedAt: serverTimestamp(),
-      })
+      }
 
-      await updateProfile(auth.currentUser!, {
+      if (name !== original.name && canUpdateName) {
+        updatePayload.name = name
+        updatePayload.lastNameUpdatedAt = serverTimestamp()
+      }
+
+      await updateDoc(doc(db, 'users', user!.uid), updatePayload)
+
+      // Non-blocking auth update
+      updateProfile(auth.currentUser!, {
         displayName: name,
         photoURL,
-      })
+      }).catch(() => {})
 
       toast.success('Profile updated')
       setIsEditing(false)
@@ -108,6 +150,7 @@ export default function ProfileSection() {
   }
 
   const cancelEdit = () => {
+    if (!confirmDiscard()) return
     setName(original.name)
     setPhone(original.phone)
     setPhotoURL(original.photoURL)
@@ -119,56 +162,34 @@ export default function ProfileSection() {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
       {/* HEADER */}
-      <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between gap-4">
-        {/* LEFT: IDENTITY */}
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="relative h-14 w-14 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-xl font-bold shrink-0">
+      <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="relative h-14 w-14 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-xl font-bold">
             {photoURL ? (
-              <Image
-                src={photoURL}
-                alt={name}
-                fill
-                className="object-cover"
-                unoptimized
-              />
+              <Image src={photoURL} alt="" fill className="object-cover" unoptimized />
             ) : (
-              name?.[0]
+              user!.email?.[0]
             )}
 
             {isEditing && (
-              <label className="absolute inset-0 bg-black/50 flex items-center justify-center text-white cursor-pointer">
+              <label className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer">
                 <CameraIcon className="w-5 h-5" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
               </label>
             )}
           </div>
 
-          <div className="min-w-0">
-            <p className="font-semibold text-gray-900 truncate">
-              {name}
-            </p>
-            <p className="text-sm text-gray-500 truncate">
-              {user!.email}
-            </p>
-          </div>
+          <p className="text-sm text-gray-600 truncate">{user!.email}</p>
         </div>
 
-        {/* RIGHT: ACTIONS */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
+              if (!confirmDiscard()) return
               setShowSettings(v => !v)
               setIsEditing(false)
             }}
-            title="Account settings"
-            className={`p-2 rounded-lg hover:bg-gray-200 ${
-              showSettings ? 'text-blue-600' : 'text-gray-500'
-            }`}
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
           >
             <Cog6ToothIcon className="w-5 h-5" />
           </button>
@@ -176,8 +197,7 @@ export default function ProfileSection() {
           {!isEditing && !showSettings && (
             <button
               onClick={() => setIsEditing(true)}
-              title="Edit profile"
-              className="p-2 rounded-lg hover:bg-gray-200 text-gray-700"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
             >
               <PencilSquareIcon className="w-5 h-5" />
             </button>
@@ -185,60 +205,58 @@ export default function ProfileSection() {
         </div>
       </div>
 
-      {/* SETTINGS */}
       {showSettings && (
         <div className="border-b p-6">
           <AccountSettings />
         </div>
       )}
 
-      {/* PROFILE FORM */}
       {!showSettings && (
         <div className="p-6 space-y-6">
-          <div className="grid gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                Full name
-              </label>
-              <input
-                disabled={!isEditing}
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              Full name
+            </label>
+            <input
+              disabled={!isEditing || !canUpdateName}
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100"
+            />
+            {!canUpdateName && (
+              <p className="text-xs text-red-500 mt-1">
+                Name can be updated once every 14 days
+              </p>
+            )}
+          </div>
 
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                Phone
-              </label>
-              <input
-                disabled={!isEditing}
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="Add phone number"
-                className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              Phone
+            </label>
+            <input
+              disabled={!isEditing}
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100"
+            />
           </div>
 
           {isEditing && (
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-3 pt-6 border-t">
               <button
                 onClick={cancelEdit}
-                className="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
+                className="flex-1 h-12 rounded-full border-2 border-gray-300 font-bold"
               >
-                <XMarkIcon className="w-5 h-5" />
                 Cancel
               </button>
 
               <button
                 onClick={saveProfile}
                 disabled={!hasChanges || saving || isImageProcessing}
-                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-3 rounded-lg font-semibold"
+                className="flex-1 h-12 rounded-full bg-gray-900 text-white font-bold disabled:opacity-50"
               >
-                <CheckIcon className="w-5 h-5" />
-                {saving ? 'Saving…' : 'Save changes'}
+                {saving ? 'Saving…' : 'Save Changes'}
               </button>
             </div>
           )}
