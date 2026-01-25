@@ -59,8 +59,9 @@ export default function ReviewsClient({
   const [loading, setLoading] = useState(true);
   const [hasNextPage, setHasNextPage] = useState(false);
 
-  const [myReview, setMyReview] = useState<any>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [myReview, setMyReview] = useState<any>(null)
+const [myReviewLoading, setMyReviewLoading] = useState(true)
+const [showForm, setShowForm] = useState(false);
 
   /* ---------------- FETCH PUBLIC REVIEWS ---------------- */
 
@@ -105,37 +106,42 @@ const fetchReviews = async () => {
   /* ---------------- FETCH MY REVIEW ---------------- */
 
 const fetchMyReview = async () => {
+  setMyReviewLoading(true)
+
   if (!auth.currentUser) {
-    setMyReview(null);
-    return;
+    setMyReview(null)
+    setMyReviewLoading(false)
+    return
   }
 
   try {
-    const token = await auth.currentUser.getIdToken();
+    const token = await auth.currentUser.getIdToken()
 
     const res = await fetch('/api/reviews/my', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       cache: 'no-store',
-    });
+    })
 
     if (!res.ok) {
-      setMyReview(null);
-      return;
+      setMyReview(null)
+      return
     }
 
-    const data = await res.json();
+    const data = await res.json()
 
     if (!data || data.status === 'deleted') {
-      setMyReview(null);
-      return;
+      setMyReview(null)
+      return
     }
 
-    setMyReview(data);
+    setMyReview(data)
   } catch (err) {
-    console.error('[FETCH_MY_REVIEW]', err);
-    setMyReview(null);
+    console.error('[FETCH_MY_REVIEW]', err)
+    setMyReview(null)
+  } finally {
+    setMyReviewLoading(false)
   }
 };
 
@@ -220,42 +226,51 @@ const handleSoftDelete = async () => {
 <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[1fr_2fr] gap-10">
 
   {/* ---------- LEFT: MY REVIEW / FORM ---------- */}
-  <div className="space-y-6">
+<div className="space-y-6">
 
-    {/* USER HAS NO REVIEW */}
-{myReview === null && !showForm && (
-  <PublicReviewGate
-    myReview={null}
-    onEdit={() => setShowForm(true)}
-    onDelete={() => {}}
-  />
-)}
+  {/* MY REVIEW LOADING SKELETON */}
+  {myReviewLoading && !showForm && (
+    <div className="bg-white p-6 rounded-2xl border animate-pulse space-y-4">
+      <div className="h-4 w-32 bg-gray-200 rounded" />
+      <div className="h-10 w-40 bg-gray-200 rounded-full" />
+    </div>
+  )}
 
-{/* USER HAS REVIEW */}
-{myReview !== null && !showForm && (
-  <PublicReviewGate
-    myReview={myReview}
-    onEdit={() => {
-      if (myReview.status === 'pending') return;
-      setShowForm(true);
-    }}
-    onDelete={handleSoftDelete}
-  />
-)}
+  {/* USER HAS NO REVIEW */}
+  {!myReviewLoading && myReview === null && !showForm && (
+    <PublicReviewGate
+      myReview={null}
+      onEdit={() => setShowForm(true)}
+      onDelete={() => {}}
+    />
+  )}
 
-    {showForm && (
-      <ReviewForm
-        existingReview={myReview}
-        onSuccess={() => {
-          setShowForm(false);
-          fetchMyReview();
-          fetchReviews();
-          fetchStats();
-        }}
-        onCancel={() => setShowForm(false)}
-      />
-    )}
-  </div>
+  {/* USER HAS REVIEW */}
+  {!myReviewLoading && myReview !== null && !showForm && (
+    <PublicReviewGate
+      myReview={myReview}
+      onEdit={() => {
+        if (myReview.status === 'pending') return
+        setShowForm(true)
+      }}
+      onDelete={handleSoftDelete}
+    />
+  )}
+
+  {/* FORM */}
+  {showForm && (
+    <ReviewForm
+      existingReview={myReview}
+      onSuccess={() => {
+        setShowForm(false)
+        fetchMyReview()
+        fetchReviews()
+        fetchStats()
+      }}
+      onCancel={() => setShowForm(false)}
+    />
+  )}
+</div>
 
   {/* ---------- RIGHT: REVIEWS LIST ---------- */}
   <div className="space-y-6">
