@@ -5,7 +5,7 @@ interface StarRatingProps {
   size?: number;  // Icon size in px
 }
 
-export default function StarRating({ rating, size = 20 }: StarRatingProps) {
+export default function StarRatings({ rating, size = 20 }: StarRatingProps) {
   // Ensure rating is valid
   const safeRating = Math.max(0, Math.min(5, rating));
   
