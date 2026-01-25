@@ -1,7 +1,6 @@
 'use client'
 
 import { FaStar } from 'react-icons/fa'
-import { useAuth } from '@/lib/auth-context'
 
 interface PublicReviewGateProps {
   myReview: {
@@ -18,28 +17,7 @@ export default function PublicReviewGate({
   onEdit,
   onDelete,
 }: PublicReviewGateProps) {
-  const { user } = useAuth()
-
-  /* ================= NOT LOGGED IN ================= */
-
-  if (!user) {
-    return (
-      <div className="bg-white p-6 rounded-2xl border text-center space-y-4">
-        <p className="font-semibold text-gray-800">
-          Want to share your experience?
-        </p>
-
-        <a
-          href="/login"
-          className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-gray-900 text-white font-bold"
-        >
-          Login to write a review
-        </a>
-      </div>
-    )
-  }
-
-  /* ================= USER HAS NO REVIEW ================= */
+  /* ================= NO REVIEW ================= */
 
   if (!myReview) {
     return (
@@ -58,14 +36,9 @@ export default function PublicReviewGate({
     )
   }
 
-  /* ================= USER HAS REVIEW ================= */
+  /* ================= HAS REVIEW ================= */
 
   const isPending = myReview.status === 'pending'
-
-  const handleDelete = () => {
-    if (!confirm('Are you sure you want to delete your review?')) return
-    onDelete()
-  }
 
   return (
     <div className="bg-white p-6 rounded-2xl border space-y-5">
@@ -103,12 +76,12 @@ export default function PublicReviewGate({
         {myReview.comment}
       </p>
 
-      {/* ACTIONS — FIXED MOBILE LAYOUT */}
+      {/* ACTIONS */}
       <div className="pt-4 border-t grid grid-cols-2 gap-3">
         <button
           onClick={onEdit}
           disabled={isPending}
-          className={`h-12 rounded-full font-bold flex items-center justify-center ${
+          className={`h-12 rounded-full font-bold ${
             isPending
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'bg-gray-900 text-white'
@@ -118,17 +91,16 @@ export default function PublicReviewGate({
         </button>
 
         <button
-          onClick={handleDelete}
-          className="h-12 rounded-full border-2 border-red-300 text-red-600 font-bold flex items-center justify-center"
+          onClick={onDelete}
+          className="h-12 rounded-full border-2 border-red-300 text-red-600 font-bold"
         >
           Delete
         </button>
       </div>
 
-      {/* INFO */}
       {isPending && (
         <p className="text-xs text-gray-500">
-          Your review is under moderation. Editing will be available once it is approved.
+          Your review is under moderation. Editing will be available once approved.
         </p>
       )}
     </div>
