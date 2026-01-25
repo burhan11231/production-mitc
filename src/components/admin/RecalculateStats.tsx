@@ -9,7 +9,9 @@ export default function RecalculateStats() {
   const handleRecalculate = async () => {
   setLoading(true);
   try {
-    await fetch('/api/admin/reviews/recalculate', { method: 'POST' });
+    await fetch('/api/admin/reviews/recalculate', {
+  method: 'POST',
+});
     toast.success('Stats recalculated');
     window.location.reload();
   } catch {
