@@ -118,82 +118,83 @@ export default function ProfileSection() {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-      {/* ACTION BAR */}
-      <div className="px-6 py-3 border-b bg-gray-50 flex items-center justify-end gap-2">
-        <button
-          onClick={() => {
-            setShowSettings(v => !v)
-            setIsEditing(false)
-          }}
-          title="Account settings"
-          className={`p-2 rounded-lg hover:bg-gray-200 ${
-            showSettings ? 'text-blue-600' : 'text-gray-500'
-          }`}
-        >
-          <Cog6ToothIcon className="w-5 h-5" />
-        </button>
+      {/* HEADER */}
+      <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between gap-4">
+        {/* LEFT: IDENTITY */}
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="relative h-14 w-14 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-xl font-bold shrink-0">
+            {photoURL ? (
+              <Image
+                src={photoURL}
+                alt={name}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              name?.[0]
+            )}
 
-        {!isEditing && !showSettings && (
+            {isEditing && (
+              <label className="absolute inset-0 bg-black/50 flex items-center justify-center text-white cursor-pointer">
+                <CameraIcon className="w-5 h-5" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-900 truncate">
+              {name}
+            </p>
+            <p className="text-sm text-gray-500 truncate">
+              {user!.email}
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT: ACTIONS */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsEditing(true)}
-            title="Edit profile"
-            className="p-2 rounded-lg hover:bg-gray-200 text-gray-700"
+            onClick={() => {
+              setShowSettings(v => !v)
+              setIsEditing(false)
+            }}
+            title="Account settings"
+            className={`p-2 rounded-lg hover:bg-gray-200 ${
+              showSettings ? 'text-blue-600' : 'text-gray-500'
+            }`}
           >
-            <PencilSquareIcon className="w-5 h-5" />
+            <Cog6ToothIcon className="w-5 h-5" />
           </button>
-        )}
+
+          {!isEditing && !showSettings && (
+            <button
+              onClick={() => setIsEditing(true)}
+              title="Edit profile"
+              className="p-2 rounded-lg hover:bg-gray-200 text-gray-700"
+            >
+              <PencilSquareIcon className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* SETTINGS PANEL */}
+      {/* SETTINGS */}
       {showSettings && (
-        <div className="border-b bg-white p-6">
+        <div className="border-b p-6">
           <AccountSettings />
         </div>
       )}
 
-      {/* PROFILE CONTENT */}
+      {/* PROFILE FORM */}
       {!showSettings && (
         <div className="p-6 space-y-6">
-          {/* AVATAR + IDENTITY */}
-          <div className="flex items-center gap-6">
-            <div className="relative h-24 w-24 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-3xl font-bold">
-              {photoURL ? (
-                <Image
-                  src={photoURL}
-                  alt={name}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              ) : (
-                name?.[0]
-              )}
-
-              {isEditing && (
-                <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 text-white text-xs cursor-pointer">
-                  <CameraIcon className="w-5 h-5" />
-                  Change
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-
-            <div className="min-w-0">
-              <p className="text-lg font-semibold text-gray-900 truncate">
-                {name}
-              </p>
-              <p className="text-sm text-gray-500 truncate">
-                {user!.email}
-              </p>
-            </div>
-          </div>
-
-          {/* FIELDS */}
           <div className="grid gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
@@ -203,7 +204,7 @@ export default function ProfileSection() {
                 disabled={!isEditing}
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100 disabled:text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
@@ -216,12 +217,11 @@ export default function ProfileSection() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Add phone number"
-                className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100 disabled:text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
 
-          {/* ACTIONS */}
           {isEditing && (
             <div className="flex gap-3 pt-4 border-t">
               <button
