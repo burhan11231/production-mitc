@@ -50,7 +50,7 @@ export default function PublicReviewGate({
 
         <button
           onClick={onEdit}
-          className="h-12 px-6 rounded-full bg-gray-900 text-white font-bold"
+          className="h-12 px-6 rounded-full bg-gray-900 text-white font-bold flex items-center justify-center"
         >
           Write a review
         </button>
@@ -86,7 +86,7 @@ export default function PublicReviewGate({
 
       {/* STARS */}
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((i) => (
+        {[1, 2, 3, 4, 5].map(i => (
           <FaStar
             key={i}
             className={
@@ -108,7 +108,7 @@ export default function PublicReviewGate({
         <button
           onClick={onEdit}
           disabled={isPending}
-          className={`flex-1 h-12 rounded-full font-bold ${
+          className={`flex-1 h-12 rounded-full font-bold flex items-center justify-center ${
             isPending
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'bg-gray-900 text-white'
@@ -119,7 +119,7 @@ export default function PublicReviewGate({
 
         <button
           onClick={handleDelete}
-          className="flex-1 h-12 rounded-full border-2 border-red-300 text-red-600 font-bold"
+          className="flex-1 h-12 rounded-full border-2 border-red-300 text-red-600 font-bold flex items-center justify-center"
         >
           Delete review
         </button>
@@ -128,7 +128,7 @@ export default function PublicReviewGate({
       {/* INFO */}
       {isPending && (
         <p className="text-xs text-gray-500">
-          Your review is under moderation. Editing will be enabled after approval.
+          Your review is under moderation. Editing will be available once it is approved.
         </p>
       )}
     </div>
