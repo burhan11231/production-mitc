@@ -152,25 +152,25 @@ export default function ReviewForm({
         </p>
       </div>
 
-      {/* ACTIONS */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+      {/* ACTIONS — FIXED MOBILE LAYOUT */}
+      <div className="pt-4 border-t grid grid-cols-2 gap-3">
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 h-12 rounded-full bg-gray-900 text-white font-bold flex items-center justify-center disabled:opacity-50"
+          className="h-12 rounded-full bg-gray-900 text-white font-bold flex items-center justify-center disabled:opacity-50"
         >
           {saving
             ? 'Submitting…'
             : existingReview
-            ? 'Update review'
-            : 'Submit review'}
+            ? 'Update'
+            : 'Submit'}
         </button>
 
         <button
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="flex-1 h-12 rounded-full border-2 border-gray-300 text-gray-700 font-bold flex items-center justify-center disabled:opacity-50"
+          className="h-12 rounded-full border-2 border-gray-300 text-gray-700 font-bold flex items-center justify-center disabled:opacity-50"
         >
           Cancel
         </button>
