@@ -49,55 +49,61 @@ export default function ReviewForm({
   /* ---------------- SUBMIT ---------------- */
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    // ✅ REQUIRED GUARD (fixes Netlify build)
-    if (!user) {
-      toast.error('You must be logged in to submit a review')
-      return
-    }
-
-    if (!hasChanges) {
-      toast.error('No changes made')
-      return
-    }
-
-    try {
-      setSaving(true)
-
-      const ref = doc(db, 'reviews', user.uid)
-
-      if (existingReview) {
-        await updateDoc(ref, {
-          rating,
-          comment,
-          status: 'pending',
-          updatedAt: serverTimestamp(),
-        })
-
-        toast.success('Review updated and sent for approval')
-      } else {
-        await setDoc(ref, {
-          userId: user.uid,
-          userName: user.name || 'User',
-          rating,
-          comment,
-          status: 'pending',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        })
-
-        toast.success('Review submitted for approval')
-      }
-
-      onSuccess()
-    } catch (err) {
-      console.error('[REVIEW_SUBMIT_ERROR]', err)
-      toast.error('Failed to submit review')
-    } finally {
-      setSaving(false)
-    }
+  if (!user) {
+    toast.error('Login required')
+    return
   }
+
+  if (rating < 1 || rating > 5) {
+    toast.error('Please select a rating')
+    return
+  }
+
+  if (comment.trim().length < 10) {
+    toast.error('Review must be at least 10 characters')
+    return
+  }
+
+  if (existingReview && !hasChanges) {
+    toast.error('No changes made')
+    return
+  }
+
+  try {
+    setSaving(true)
+
+    const ref = doc(db, 'reviews', user.uid)
+
+    const payload = {
+      userId: user.uid,
+      userName: user.name || 'User',
+      rating,
+      comment,
+      status: 'pending',
+      updatedAt: serverTimestamp(),
+    }
+
+    if (existingReview) {
+      await updateDoc(ref, payload)
+      toast.success('Review updated and sent for approval')
+    } else {
+      await setDoc(ref, {
+        ...payload,
+        createdAt: serverTimestamp(),
+      })
+      toast.success('Review submitted for approval')
+    }
+
+    onSuccess()
+  } catch (err) {
+    console.error('[REVIEW_SUBMIT_ERROR]', err)
+    toast.error('Failed to submit review')
+  } finally {
+    setSaving(false)
+  }
+}
 
   /* ---------------- UI ---------------- */
 
