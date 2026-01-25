@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { auth } from '@/lib/firebase'
+import { auth, db } from '@/lib/firebase'
+import { deleteDoc, doc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import ReviewForm from '@/components/ReviewForm'
 import StarRatings from '@/components/StarRatings'
@@ -10,6 +11,7 @@ export default function ReviewSection() {
   const [review, setReview] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const loadReview = async () => {
     try {
@@ -21,12 +23,10 @@ export default function ReviewSection() {
         cache: 'no-store',
       })
 
-      if (!res.ok) throw new Error('Failed')
-
-      const data = await res.json()
-      setReview(data)
+      if (!res.ok) throw new Error()
+      setReview(await res.json())
     } catch {
-      toast.error('Failed to load review')
+      toast.error('Unable to load your review')
     } finally {
       setLoading(false)
     }
@@ -36,30 +36,37 @@ export default function ReviewSection() {
     loadReview()
   }, [])
 
+  const deleteReview = async () => {
+    if (!confirm('Are you sure you want to delete your review?')) return
+
+    try {
+      setDeleting(true)
+      await deleteDoc(doc(db, 'reviews', auth.currentUser!.uid))
+      toast.success('Review deleted')
+      setReview(null)
+    } catch {
+      toast.error('Failed to delete review')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const statusBadge = (status: string) => {
+    if (status === 'approved')
+      return <span className="text-xs font-semibold text-emerald-600">Approved</span>
+    if (status === 'pending')
+      return <span className="text-xs font-semibold text-amber-600">Pending approval</span>
+    return null
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
       <div className="p-6 space-y-6">
-        {/* ================= LOADING SKELETON ================= */}
-        {loading && (
-          <>
-            {/* Stars */}
-            <div className="flex items-center gap-2">
-              <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
-            </div>
 
-            {/* Text lines */}
-            <div className="space-y-2">
-              <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
-              <div className="h-4 w-11/12 bg-gray-200 rounded animate-pulse" />
-              <div className="h-4 w-9/12 bg-gray-200 rounded animate-pulse" />
-            </div>
+        {/* LOADING */}
+        {loading && <div className="h-24 bg-gray-100 animate-pulse rounded-xl" />}
 
-            {/* Button */}
-            <div className="h-12 w-full bg-gray-200 rounded-xl animate-pulse" />
-          </>
-        )}
-
-        {/* ================= EDIT MODE ================= */}
+        {/* EDIT MODE */}
         {!loading && editing && (
           <ReviewForm
             existingReview={review}
@@ -71,51 +78,49 @@ export default function ReviewSection() {
           />
         )}
 
-        {/* ================= VIEW MODE ================= */}
+        {/* VIEW MODE */}
         {!loading && !editing && review && (
           <>
-            {/* Rating */}
-            <div className="flex items-center gap-3">
-              <StarRatings rating={review.rating} size={22} />
-              <span className="text-sm font-semibold text-gray-700">
-                {review.rating.toFixed(1)} / 5
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <StarRatings rating={review.rating} size={22} />
+                <span className="font-semibold text-gray-700">
+                  {review.rating.toFixed(1)} / 5
+                </span>
+              </div>
+              {statusBadge(review.status)}
             </div>
 
-            {/* Review text */}
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">
               {review.comment}
             </p>
 
-            {/* Meta */}
-            {review.updatedAt && (
-              <p className="text-xs text-gray-400">
-                Updated on{' '}
-                {new Date(review.updatedAt).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </p>
-            )}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <button
+                onClick={() => setEditing(true)}
+                className="flex-1 h-12 rounded-full bg-gray-900 text-white font-bold"
+              >
+                Edit review
+              </button>
 
-            {/* Action */}
-            <button
-              onClick={() => setEditing(true)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors"
-            >
-              Edit review
-            </button>
+              <button
+                onClick={deleteReview}
+                disabled={deleting}
+                className="flex-1 h-12 rounded-full border-2 border-red-300 text-red-600 font-bold disabled:opacity-50"
+              >
+                Delete review
+              </button>
+            </div>
           </>
         )}
 
-        {/* ================= NO REVIEW ================= */}
+        {/* NO REVIEW */}
         {!loading && !editing && !review && (
           <button
             onClick={() => setEditing(true)}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-colors"
+            className="w-full h-12 rounded-full bg-gray-900 text-white font-bold"
           >
-            Write your review
+            Write a review
           </button>
         )}
       </div>
