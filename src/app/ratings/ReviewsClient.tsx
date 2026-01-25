@@ -197,17 +197,20 @@ export default function ReviewsClient({
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl font-bold">Customer Reviews</h1>
 
-          {stats && (
-            <div className="mt-4 flex items-center gap-4">
-              <StarRating rating={stats.averageRating} size={26} />
-              <span className="text-lg font-semibold">
-                {stats.averageRating.toFixed(1)} / 5
-              </span>
-              <span className="text-gray-500">
-                ({stats.totalReviews} reviews)
-              </span>
-            </div>
-          )}
+          {stats && stats.totalReviews > 0 && (
+  <div className="mt-4 flex items-center gap-4">
+    <StarRating rating={stats.averageRating} size={26} />
+
+    <span className="text-lg font-semibold">
+      {stats.averageRating.toFixed(1)} / 5
+    </span>
+
+    <span className="text-gray-500">
+      ({stats.totalReviews} published review
+      {stats.totalReviews !== 1 ? 's' : ''})
+    </span>
+  </div>
+)}
         </div>
       </div>
 
