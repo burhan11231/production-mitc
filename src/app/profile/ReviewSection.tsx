@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { deleteDoc, doc } from 'firebase/firestore'
 
 import { auth, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/auth-context'
@@ -37,13 +37,7 @@ export default function ReviewSection() {
       }
 
       const data = await res.json()
-
-      if (!data || data.status === 'deleted') {
-        setMyReview(null)
-        return
-      }
-
-      setMyReview(data)
+      setMyReview(data || null)
     } catch {
       toast.error('Failed to load your review')
       setMyReview(null)
@@ -56,22 +50,21 @@ export default function ReviewSection() {
     fetchMyReview()
   }, [user])
 
-  /* ---------------- DELETE (SOFT) ---------------- */
+  /* ---------------- HARD DELETE ---------------- */
 
   const handleDelete = async () => {
     if (!user || !myReview) return
-    if (!confirm('Delete your review?')) return
+
+    if (!confirm('Are you sure you want to permanently delete your review?')) {
+      return
+    }
 
     try {
-      await updateDoc(doc(db, 'reviews', user.uid), {
-        status: 'deleted',
-        updatedAt: serverTimestamp(),
-      })
-
-      toast.success('Review deleted')
+      await deleteDoc(doc(db, 'reviews', user.uid))
+      toast.success('Review deleted permanently')
       setMyReview(null)
     } catch {
-      toast.error('Delete failed')
+      toast.error('Failed to delete review')
     }
   }
 
@@ -79,12 +72,10 @@ export default function ReviewSection() {
 
   return (
     <div className="bg-white rounded-2xl border shadow-sm p-6">
-      {/* LOADING */}
       {loading && (
         <div className="h-24 bg-gray-100 animate-pulse rounded-xl" />
       )}
 
-      {/* VIEW MODE */}
       {!loading && !showForm && (
         <PublicReviewGate
           myReview={myReview}
@@ -96,7 +87,6 @@ export default function ReviewSection() {
         />
       )}
 
-      {/* FORM */}
       {showForm && (
         <ReviewForm
           existingReview={myReview}
