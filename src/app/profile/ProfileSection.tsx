@@ -14,31 +14,31 @@ import {
   PencilSquareIcon,
   Cog6ToothIcon,
   CameraIcon,
-  CheckIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/outline'
 
 const NAME_UPDATE_COOLDOWN_DAYS = 14
+const DAY_MS = 24 * 60 * 60 * 1000
 
 export default function ProfileSection() {
   const { user } = useAuth()
+  if (!user) return null
 
   const [isEditing, setIsEditing] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [saving, setSaving] = useState(false)
   const [isImageProcessing, setIsImageProcessing] = useState(false)
 
-  const [name, setName] = useState(user!.name)
-  const [phone, setPhone] = useState(user!.phone || '')
-  const [photoURL, setPhotoURL] = useState(user!.photoURL || '')
+  const [name, setName] = useState(user.name)
+  const [phone, setPhone] = useState(user.phone || '')
+  const [photoURL, setPhotoURL] = useState(user.photoURL || '')
 
   /* ---------------- ORIGINAL SNAPSHOT ---------------- */
 
   const original = useMemo(
     () => ({
-      name: user!.name,
-      phone: user!.phone || '',
-      photoURL: user!.photoURL || '',
+      name: user.name,
+      phone: user.phone || '',
+      photoURL: user.photoURL || '',
     }),
     [user]
   )
@@ -53,14 +53,24 @@ export default function ProfileSection() {
 
   /* ---------------- NAME COOLDOWN ---------------- */
 
-  const lastNameUpdatedAt = user!.lastNameUpdatedAt
-    ? new Date(user!.lastNameUpdatedAt.seconds * 1000)
+  const lastNameUpdatedAt = user.lastNameUpdatedAt
+    ? new Date(user.lastNameUpdatedAt.seconds * 1000)
     : null
 
-  const canUpdateName = !lastNameUpdatedAt
-    ? true
-    : Date.now() - lastNameUpdatedAt.getTime() >
-      NAME_UPDATE_COOLDOWN_DAYS * 24 * 60 * 60 * 1000
+  const cooldownMs = NAME_UPDATE_COOLDOWN_DAYS * DAY_MS
+
+  const canUpdateName =
+    !lastNameUpdatedAt ||
+    Date.now() - lastNameUpdatedAt.getTime() > cooldownMs
+
+  const remainingNameCooldownDays = useMemo(() => {
+    if (!lastNameUpdatedAt) return 0
+
+    const elapsedMs = Date.now() - lastNameUpdatedAt.getTime()
+    const remainingMs = cooldownMs - elapsedMs
+
+    return Math.max(0, Math.ceil(remainingMs / DAY_MS))
+  }, [lastNameUpdatedAt, cooldownMs])
 
   /* ---------------- UNSAVED CHANGES GUARD ---------------- */
 
@@ -121,20 +131,19 @@ export default function ProfileSection() {
 
     setSaving(true)
     try {
-      const updatePayload: any = {
+      const payload: any = {
         phone,
         photoURL,
         updatedAt: serverTimestamp(),
       }
 
       if (name !== original.name && canUpdateName) {
-        updatePayload.name = name
-        updatePayload.lastNameUpdatedAt = serverTimestamp()
+        payload.name = name
+        payload.lastNameUpdatedAt = serverTimestamp()
       }
 
-      await updateDoc(doc(db, 'users', user!.uid), updatePayload)
+      await updateDoc(doc(db, 'users', user.uid), payload)
 
-      // Non-blocking auth update
       updateProfile(auth.currentUser!, {
         displayName: name,
         photoURL,
@@ -162,34 +171,45 @@ export default function ProfileSection() {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
       {/* HEADER */}
-      <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
+      <div className="px-6 py-4 border-b bg-gray-50 flex justify-between">
         <div className="flex items-center gap-4">
           <div className="relative h-14 w-14 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-xl font-bold">
             {photoURL ? (
-              <Image src={photoURL} alt="" fill className="object-cover" unoptimized />
+              <Image
+                src={photoURL}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized
+              />
             ) : (
-              user!.email?.[0]
+              user.email?.[0]
             )}
 
             {isEditing && (
               <label className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer">
                 <CameraIcon className="w-5 h-5" />
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
               </label>
             )}
           </div>
 
-          <p className="text-sm text-gray-600 truncate">{user!.email}</p>
+          <p className="text-sm text-gray-600 truncate">{user.email}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex gap-2">
           <button
             onClick={() => {
               if (!confirmDiscard()) return
               setShowSettings(v => !v)
               setIsEditing(false)
             }}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+            className="p-2 rounded-full hover:bg-gray-100"
           >
             <Cog6ToothIcon className="w-5 h-5" />
           </button>
@@ -197,7 +217,7 @@ export default function ProfileSection() {
           {!isEditing && !showSettings && (
             <button
               onClick={() => setIsEditing(true)}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+              className="p-2 rounded-full hover:bg-gray-100"
             >
               <PencilSquareIcon className="w-5 h-5" />
             </button>
@@ -213,27 +233,32 @@ export default function ProfileSection() {
 
       {!showSettings && (
         <div className="p-6 space-y-6">
+          {/* NAME */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+            <label className="text-xs font-medium text-gray-500">
               Full name
             </label>
+
             <input
               disabled={!isEditing || !canUpdateName}
               value={name}
               onChange={e => setName(e.target.value)}
               className="w-full px-4 py-3 border rounded-lg disabled:bg-gray-100"
             />
-            {!canUpdateName && (
-              <p className="text-xs text-red-500 mt-1">
-                Name can be updated once every 14 days
+
+            {!canUpdateName && isEditing && (
+              <p className="text-xs text-amber-600 mt-1">
+                You’ve recently updated your name. Editing is disabled for now
+                and will automatically unlock after{' '}
+                {remainingNameCooldownDays} day
+                {remainingNameCooldownDays !== 1 ? 's' : ''}.
               </p>
             )}
           </div>
 
+          {/* PHONE */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
-              Phone
-            </label>
+            <label className="text-xs font-medium text-gray-500">Phone</label>
             <input
               disabled={!isEditing}
               value={phone}
@@ -242,6 +267,7 @@ export default function ProfileSection() {
             />
           </div>
 
+          {/* ACTIONS */}
           {isEditing && (
             <div className="flex gap-3 pt-6 border-t">
               <button
