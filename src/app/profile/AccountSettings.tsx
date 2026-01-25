@@ -13,11 +13,13 @@ import {
   updatePassword,
   deleteUser,
 } from 'firebase/auth'
-import { deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
+import { deleteDoc, doc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export default function AccountSettings() {
   const { user, logout } = useAuth()
+  const router = useRouter()
 
   const [loading, setLoading] = useState(false)
 
@@ -27,30 +29,12 @@ export default function AccountSettings() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  /* ---------------- SESSIONS ---------------- */
-  const [sessionsOpen, setSessionsOpen] = useState(false)
-
   /* ---------------- DELETE ---------------- */
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   const hasPassword = user?.providers.includes('password')
   const hasGoogle = user?.providers.includes('google.com')
-
-  /* ================= PROVIDERS ================= */
-
-  const connectGoogle = async () => {
-    try {
-      setLoading(true)
-      await linkWithPopup(auth.currentUser!, new GoogleAuthProvider())
-      toast.success('Google account connected')
-      window.location.reload()
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to connect Google')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   /* ================= PASSWORD ================= */
 
@@ -61,7 +45,7 @@ export default function AccountSettings() {
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('New passwords do not match')
+      toast.error('Passwords do not match')
       return
     }
 
@@ -72,6 +56,7 @@ export default function AccountSettings() {
         user!.email,
         currentPassword
       )
+
       await reauthenticateWithCredential(auth.currentUser!, cred)
       await updatePassword(auth.currentUser!, newPassword)
 
@@ -96,39 +81,44 @@ export default function AccountSettings() {
     }
   }
 
-  /* ================= SESSIONS ================= */
-
-  const signOutThisDevice = async () => {
-    await logout()
-  }
-
   /* ================= DELETE ================= */
 
   const permanentlyDeleteAccount = async () => {
     if (!deleteConfirm) {
-      toast.error('Please confirm the agreement first')
+      toast.error('Please confirm before deleting your account')
       return
     }
 
     try {
       setLoading(true)
 
+      // Re-authentication
       if (hasGoogle) {
         await reauthenticateWithPopup(
           auth.currentUser!,
           new GoogleAuthProvider()
         )
       } else {
-        const pwd = prompt('Enter your password to confirm')
-        if (!pwd) return
+        const pwd = prompt('Enter your password to confirm deletion')
+        if (!pwd) {
+          setLoading(false)
+          return
+        }
+
         const cred = EmailAuthProvider.credential(user!.email, pwd)
         await reauthenticateWithCredential(auth.currentUser!, cred)
       }
 
+      // Delete Firestore user document
       await deleteDoc(doc(db, 'users', user!.uid))
+
+      // Delete Firebase Auth user
       await deleteUser(auth.currentUser!)
 
+      // Logout & redirect
+      await logout()
       toast.success('Account permanently deleted')
+      router.replace('/')
     } catch (e: any) {
       toast.error(e.message || 'Account deletion failed')
     } finally {
@@ -139,8 +129,7 @@ export default function AccountSettings() {
   /* ================= UI ================= */
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 space-y-8">
-
+    <div className="space-y-10">
       {/* PASSWORD */}
       {hasPassword && (
         <section className="space-y-3">
@@ -158,34 +147,35 @@ export default function AccountSettings() {
                 placeholder="Current password"
                 value={currentPassword}
                 onChange={e => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-3 border rounded-lg"
               />
               <input
                 type="password"
                 placeholder="New password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-3 border rounded-lg"
               />
               <input
                 type="password"
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-3 border rounded-lg"
               />
 
               <div className="flex gap-3">
                 <button
                   onClick={updateUserPassword}
                   disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
+                  className="flex-1 h-11 rounded-full bg-gray-900 text-white font-bold"
                 >
                   Update password
                 </button>
+
                 <button
                   onClick={sendReset}
-                  className="flex-1 bg-gray-100 py-2 rounded-lg"
+                  className="flex-1 h-11 rounded-full border font-semibold"
                 >
                   Forgot password
                 </button>
@@ -195,48 +185,8 @@ export default function AccountSettings() {
         </section>
       )}
 
-      {/* CONNECT GOOGLE */}
-      {!hasGoogle && (
-        <button
-          onClick={connectGoogle}
-          disabled={loading}
-          className="w-full border py-2 rounded-lg font-semibold"
-        >
-          Connect Google account
-        </button>
-      )}
-
-      {/* SESSIONS */}
-      <section className="space-y-3">
-        <button
-          onClick={() => setSessionsOpen(v => !v)}
-          className="w-full text-left font-semibold text-gray-800"
-        >
-          Sessions & devices
-        </button>
-
-        {sessionsOpen && (
-          <div className="space-y-3 pt-3 text-sm text-gray-600">
-            <p>
-              Current device:
-              <br />
-              <span className="font-medium text-gray-800">
-                {navigator.userAgent}
-              </span>
-            </p>
-
-            <button
-              onClick={signOutThisDevice}
-              className="w-full border py-2 rounded-lg"
-            >
-              Sign out this device
-            </button>
-          </div>
-        )}
-      </section>
-
       {/* DELETE */}
-      <section className="border-t pt-6 space-y-4">
+      <section className="border-t pt-8 space-y-4">
         <button
           onClick={() => setDeleteOpen(v => !v)}
           className="w-full text-left font-semibold text-red-700"
@@ -251,10 +201,8 @@ export default function AccountSettings() {
             </p>
 
             <p className="text-red-700">
-              Deleting your account will permanently remove:
-              <br />• Your profile
-              <br />• Authentication access
-              <br />• All personal data
+              Deleting your account will permanently remove all your data and
+              access.
             </p>
 
             <label className="flex items-center gap-2">
@@ -269,14 +217,15 @@ export default function AccountSettings() {
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteOpen(false)}
-                className="flex-1 bg-gray-200 py-2 rounded-lg"
+                className="flex-1 h-11 rounded-full bg-gray-200 font-semibold"
               >
                 Cancel
               </button>
+
               <button
                 onClick={permanentlyDeleteAccount}
                 disabled={loading}
-                className="flex-1 bg-red-600 text-white py-2 rounded-lg"
+                className="flex-1 h-11 rounded-full bg-red-600 text-white font-bold disabled:opacity-50"
               >
                 Delete account
               </button>
