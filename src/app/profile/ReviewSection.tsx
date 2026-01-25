@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { auth } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 import ReviewForm from '@/components/ReviewForm'
+import StarRating from '@/components/StarRating'
 
 export default function ReviewSection() {
   const [review, setReview] = useState<any>(null)
@@ -19,6 +20,8 @@ export default function ReviewSection() {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
       })
+
+      if (!res.ok) throw new Error('Failed')
 
       const data = await res.json()
       setReview(data)
@@ -36,36 +39,56 @@ export default function ReviewSection() {
   if (loading) return null
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
-      <h2 className="text-2xl font-bold mb-4">My Review</h2>
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+      <div className="p-6 space-y-6">
+        {editing ? (
+          <ReviewForm
+            existingReview={review}
+            onSuccess={() => {
+              setEditing(false)
+              loadReview()
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        ) : review ? (
+          <>
+            {/* Rating */}
+            <div className="flex items-center gap-3">
+              <StarRating rating={review.rating} size={22} />
+              <span className="text-sm font-semibold text-gray-700">
+                {review.rating.toFixed(1)} / 5
+              </span>
+            </div>
 
-      {editing ? (
-        <ReviewForm
-          existingReview={review}
-          onSuccess={() => {
-            setEditing(false)
-            loadReview()
-          }}
-          onCancel={() => setEditing(false)}
-        />
-      ) : review ? (
-        <>
-          <p className="text-gray-700 mb-4">{review.comment}</p>
+            {/* Review Text */}
+            <p className="text-gray-700 leading-relaxed">
+              {review.comment}
+            </p>
+
+            {/* Meta */}
+            {review.updatedAt && (
+              <p className="text-xs text-gray-400">
+                Last updated {new Date(review.updatedAt).toLocaleDateString()}
+              </p>
+            )}
+
+            {/* Action */}
+            <button
+              onClick={() => setEditing(true)}
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors"
+            >
+              Edit review
+            </button>
+          </>
+        ) : (
           <button
             onClick={() => setEditing(true)}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-colors"
           >
-            Edit Review
+            Write your review
           </button>
-        </>
-      ) : (
-        <button
-          onClick={() => setEditing(true)}
-          className="w-full bg-emerald-600 text-white py-3 rounded-xl"
-        >
-          Write Review
-        </button>
-      )}
+        )}
+      </div>
     </div>
   )
 }
