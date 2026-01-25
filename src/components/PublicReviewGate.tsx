@@ -50,7 +50,7 @@ export default function PublicReviewGate({
 
         <button
           onClick={onEdit}
-          className="h-12 px-6 rounded-full bg-gray-900 text-white font-bold flex items-center justify-center"
+          className="h-12 px-6 rounded-full bg-gray-900 text-white font-bold inline-flex items-center justify-center"
         >
           Write a review
         </button>
@@ -86,7 +86,7 @@ export default function PublicReviewGate({
 
       {/* STARS */}
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map(i => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <FaStar
             key={i}
             className={
@@ -103,25 +103,25 @@ export default function PublicReviewGate({
         {myReview.comment}
       </p>
 
-      {/* ACTIONS */}
-      <div className="pt-4 border-t flex flex-col sm:flex-row gap-3">
+      {/* ACTIONS — FIXED MOBILE LAYOUT */}
+      <div className="pt-4 border-t grid grid-cols-2 gap-3">
         <button
           onClick={onEdit}
           disabled={isPending}
-          className={`flex-1 h-12 rounded-full font-bold flex items-center justify-center ${
+          className={`h-12 rounded-full font-bold flex items-center justify-center ${
             isPending
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'bg-gray-900 text-white'
           }`}
         >
-          Edit review
+          Edit
         </button>
 
         <button
           onClick={handleDelete}
-          className="flex-1 h-12 rounded-full border-2 border-red-300 text-red-600 font-bold flex items-center justify-center"
+          className="h-12 rounded-full border-2 border-red-300 text-red-600 font-bold flex items-center justify-center"
         >
-          Delete review
+          Delete
         </button>
       </div>
 
