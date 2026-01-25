@@ -1,60 +1,50 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { auth, db } from '@/lib/firebase'
 import {
   EmailAuthProvider,
   GoogleAuthProvider,
   linkWithPopup,
-  reauthenticateWithPopup,
   reauthenticateWithCredential,
+  reauthenticateWithPopup,
   sendPasswordResetEmail,
   updatePassword,
   deleteUser,
 } from 'firebase/auth'
-import { deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
-
-import {
-  ShieldCheckIcon,
-  KeyIcon,
-  ArrowRightOnRectangleIcon,
-  TrashIcon,
-  LinkIcon,
-  EnvelopeIcon,
-  ClockIcon,
-} from '@heroicons/react/24/outline'
 
 export default function AccountSettings() {
   const { user, logout } = useAuth()
 
   const [loading, setLoading] = useState(false)
+
+  /* ---------------- PASSWORD ---------------- */
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  /* ---------------- SESSIONS ---------------- */
+  const [sessionsOpen, setSessionsOpen] = useState(false)
+
+  /* ---------------- DELETE ---------------- */
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   const hasPassword = user?.providers.includes('password')
   const hasGoogle = user?.providers.includes('google.com')
 
-  /* ----------------------------------
-     DERIVED
-  ---------------------------------- */
-
-  const passwordStrength = useMemo(() => {
-    if (newPassword.length < 6) return 'Weak'
-    if (!/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) return 'Medium'
-    return 'Strong'
-  }, [newPassword])
-
-  /* ----------------------------------
-     PROVIDERS
-  ---------------------------------- */
+  /* ================= PROVIDERS ================= */
 
   const connectGoogle = async () => {
     try {
       setLoading(true)
       await linkWithPopup(auth.currentUser!, new GoogleAuthProvider())
       toast.success('Google account connected')
+      window.location.reload()
     } catch (e: any) {
       toast.error(e.message || 'Failed to connect Google')
     } finally {
@@ -62,28 +52,36 @@ export default function AccountSettings() {
     }
   }
 
-  /* ----------------------------------
-     PASSWORD
-  ---------------------------------- */
+  /* ================= PASSWORD ================= */
 
-  const handlePasswordChange = async () => {
+  const updateUserPassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('All password fields are required')
+      return
+    }
+
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match')
+      toast.error('New passwords do not match')
       return
     }
 
     try {
       setLoading(true)
+
+      const cred = EmailAuthProvider.credential(
+        user!.email,
+        currentPassword
+      )
+      await reauthenticateWithCredential(auth.currentUser!, cred)
       await updatePassword(auth.currentUser!, newPassword)
-      toast.success('Password updated')
+
+      toast.success('Password updated successfully')
+      setPasswordOpen(false)
+      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (e: any) {
-      if (e.code === 'auth/requires-recent-login') {
-        toast.error('Please re-login to change password')
-      } else {
-        toast.error(e.message || 'Password update failed')
-      }
+      toast.error(e.message || 'Password update failed')
     } finally {
       setLoading(false)
     }
@@ -98,65 +96,39 @@ export default function AccountSettings() {
     }
   }
 
-  /* ----------------------------------
-     SECURITY
-  ---------------------------------- */
+  /* ================= SESSIONS ================= */
 
-  const signOutAll = async () => {
-    try {
-      setLoading(true)
-      await fetch('/api/auth/revoke', { method: 'POST' }) // Admin SDK
-      await logout()
-    } catch {
-      toast.error('Failed to sign out all sessions')
-    } finally {
-      setLoading(false)
-    }
+  const signOutThisDevice = async () => {
+    await logout()
   }
 
-  /* ----------------------------------
-     DEACTIVATE
-  ---------------------------------- */
+  /* ================= DELETE ================= */
 
-  const deactivateAccount = async () => {
-    try {
-      setLoading(true)
-      await updateDoc(doc(db, 'users', user!.uid), {
-        isDisabled: true,
-        updatedAt: serverTimestamp(),
-      })
-      await logout()
-    } catch {
-      toast.error('Failed to deactivate account')
-    } finally {
-      setLoading(false)
+  const permanentlyDeleteAccount = async () => {
+    if (!deleteConfirm) {
+      toast.error('Please confirm the agreement first')
+      return
     }
-  }
-
-  /* ----------------------------------
-     DELETE
-  ---------------------------------- */
-
-  const deleteAccount = async () => {
-    if (!confirm('This will permanently delete your account. Continue?')) return
 
     try {
       setLoading(true)
 
-      // Re-auth
       if (hasGoogle) {
-        await reauthenticateWithPopup(auth.currentUser!, new GoogleAuthProvider())
+        await reauthenticateWithPopup(
+          auth.currentUser!,
+          new GoogleAuthProvider()
+        )
       } else {
-        const password = prompt('Enter your password to confirm deletion')
-        if (!password) return
-        const cred = EmailAuthProvider.credential(user!.email, password)
+        const pwd = prompt('Enter your password to confirm')
+        if (!pwd) return
+        const cred = EmailAuthProvider.credential(user!.email, pwd)
         await reauthenticateWithCredential(auth.currentUser!, cred)
       }
 
       await deleteDoc(doc(db, 'users', user!.uid))
       await deleteUser(auth.currentUser!)
 
-      toast.success('Account deleted')
+      toast.success('Account permanently deleted')
     } catch (e: any) {
       toast.error(e.message || 'Account deletion failed')
     } finally {
@@ -164,127 +136,153 @@ export default function AccountSettings() {
     }
   }
 
-  /* ----------------------------------
-     UI
-  ---------------------------------- */
+  /* ================= UI ================= */
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 space-y-8">
 
-      {/* ACCOUNT OVERVIEW */}
-      <section className="space-y-3">
-        <div className="flex items-center gap-2 text-gray-700 font-semibold">
-          <ShieldCheckIcon className="w-5 h-5" />
-          Account overview
-        </div>
-
-        <div className="text-sm text-gray-600 space-y-1">
-          <p className="flex items-center gap-2">
-            <EnvelopeIcon className="w-4 h-4" />
-            {user!.email}
-          </p>
-          <p className="flex items-center gap-2">
-            <LinkIcon className="w-4 h-4" />
-            Providers: {user!.providers.join(', ')}
-          </p>
-          <p className="flex items-center gap-2">
-            <ClockIcon className="w-4 h-4" />
-            Last login: {new Date(auth.currentUser!.metadata.lastSignInTime!).toLocaleString()}
-          </p>
-        </div>
-      </section>
-
       {/* PASSWORD */}
       {hasPassword && (
         <section className="space-y-3">
-          <div className="flex items-center gap-2 font-semibold text-gray-700">
-            <KeyIcon className="w-5 h-5" />
-            Password
-          </div>
+          <button
+            onClick={() => setPasswordOpen(v => !v)}
+            className="w-full text-left font-semibold text-gray-800"
+          >
+            Update password
+          </button>
 
-          <input
-            type="password"
-            placeholder="New password"
-            value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+          {passwordOpen && (
+            <div className="space-y-3 pt-3">
+              <input
+                type="password"
+                placeholder="Current password"
+                value={currentPassword}
+                onChange={e => setCurrentPassword(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
 
-          <input
-            type="password"
-            placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-
-          <p className="text-xs text-gray-500">
-            Strength: <span className="font-semibold">{passwordStrength}</span>
-          </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handlePasswordChange}
-              disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
-            >
-              Update password
-            </button>
-
-            <button
-              onClick={sendReset}
-              className="flex-1 bg-gray-100 py-2 rounded-lg"
-            >
-              Forgot password
-            </button>
-          </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={updateUserPassword}
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
+                >
+                  Update password
+                </button>
+                <button
+                  onClick={sendReset}
+                  className="flex-1 bg-gray-100 py-2 rounded-lg"
+                >
+                  Forgot password
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       )}
 
-      {/* CONNECTED ACCOUNTS */}
+      {/* CONNECT GOOGLE */}
       {!hasGoogle && (
         <button
           onClick={connectGoogle}
+          disabled={loading}
           className="w-full border py-2 rounded-lg font-semibold"
         >
-          Connect Google
+          Connect Google account
         </button>
       )}
 
-      {/* SECURITY */}
-      <section className="space-y-2">
+      {/* SESSIONS */}
+      <section className="space-y-3">
         <button
-          onClick={logout}
-          className="w-full flex items-center justify-center gap-2 border py-2 rounded-lg"
+          onClick={() => setSessionsOpen(v => !v)}
+          className="w-full text-left font-semibold text-gray-800"
         >
-          <ArrowRightOnRectangleIcon className="w-5 h-5" />
-          Sign out
+          Sessions & devices
         </button>
 
-        <button
-          onClick={signOutAll}
-          className="w-full border py-2 rounded-lg"
-        >
-          Sign out all devices
-        </button>
+        {sessionsOpen && (
+          <div className="space-y-3 pt-3 text-sm text-gray-600">
+            <p>
+              Current device:
+              <br />
+              <span className="font-medium text-gray-800">
+                {navigator.userAgent}
+              </span>
+            </p>
+
+            <button
+              onClick={signOutThisDevice}
+              className="w-full border py-2 rounded-lg"
+            >
+              Sign out this device
+            </button>
+          </div>
+        )}
       </section>
 
-      {/* DANGER */}
-      <section className="border-t pt-6 space-y-3">
+      {/* DELETE */}
+      <section className="border-t pt-6 space-y-4">
         <button
-          onClick={deactivateAccount}
-          className="w-full bg-yellow-100 text-yellow-800 py-2 rounded-lg"
+          onClick={() => setDeleteOpen(v => !v)}
+          className="w-full text-left font-semibold text-red-700"
         >
-          Deactivate account
-        </button>
-
-        <button
-          onClick={deleteAccount}
-          className="w-full bg-red-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"
-        >
-          <TrashIcon className="w-5 h-5" />
           Delete account permanently
         </button>
+
+        {deleteOpen && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-4 text-sm">
+            <p className="text-red-800 font-semibold">
+              This action is irreversible.
+            </p>
+
+            <p className="text-red-700">
+              Deleting your account will permanently remove:
+              <br />• Your profile
+              <br />• Authentication access
+              <br />• All personal data
+            </p>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.checked)}
+              />
+              <span>I understand and agree</span>
+            </label>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteOpen(false)}
+                className="flex-1 bg-gray-200 py-2 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={permanentlyDeleteAccount}
+                disabled={loading}
+                className="flex-1 bg-red-600 text-white py-2 rounded-lg"
+              >
+                Delete account
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )
