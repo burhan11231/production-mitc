@@ -206,7 +206,7 @@ export default function ReviewsClient({
     </span>
 
     <span className="text-gray-500">
-      ({stats.totalReviews} published review
+      ({stats.totalReviews} review
       {stats.totalReviews !== 1 ? 's' : ''})
     </span>
   </div>
