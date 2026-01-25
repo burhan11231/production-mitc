@@ -8,8 +8,6 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth-context';
 import { auth } from '@/lib/firebase';
 
-import RecalculateStats from '@/components/admin/RecalculateStats';
-
 /* ---------------- TYPES ---------------- */
 
 type FilterMode = 'all' | 'published' | 'pending';
@@ -155,31 +153,27 @@ export default function AdminReviewsPage() {
           </Link>
 
           <div className="mt-6 flex flex-wrap gap-3 items-center">
-            {(['all', 'published', 'pending'] as FilterMode[]).map(mode => (
-              <button
-                key={mode}
-                onClick={() => setFilter(mode)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  filter === mode
-                    ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white border-gray-200'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
+  {(['all', 'published', 'pending'] as FilterMode[]).map(mode => (
+    <button
+      key={mode}
+      onClick={() => setFilter(mode)}
+      className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
+        filter === mode
+          ? 'bg-gray-900 text-white border-gray-900'
+          : 'bg-white border-gray-200'
+      }`}
+    >
+      {mode}
+    </button>
+  ))}
 
-            <button
-              onClick={fetchReviews}
-              className="px-4 py-2 rounded-lg border bg-white text-sm"
-            >
-              Refresh
-            </button>
-
-            <div className="ml-auto">
-              <RecalculateStats />
-            </div>
-          </div>
+  <button
+    onClick={fetchReviews}
+    className="px-4 py-2 rounded-lg border bg-white text-sm"
+  >
+    Refresh
+  </button>
+</div>
         </div>
       </div>
 
