@@ -2,15 +2,25 @@
 
 import { FaStar } from 'react-icons/fa'
 
+/* ---------------- TYPES ---------------- */
+
+interface FirestoreTimestamp {
+  seconds: number
+  nanoseconds?: number
+}
+
 interface PublicReviewGateProps {
   myReview: {
     rating: number
     comment: string
     status: 'pending' | 'published'
+    publishedAt?: FirestoreTimestamp | null
   } | null
   onEdit: () => void
   onDelete: () => void
 }
+
+/* ---------------- COMPONENT ---------------- */
 
 export default function PublicReviewGate({
   myReview,
@@ -40,6 +50,18 @@ export default function PublicReviewGate({
 
   const isPending = myReview.status === 'pending'
 
+  const publishedDate =
+    !isPending && myReview.publishedAt
+      ? new Date(myReview.publishedAt.seconds * 1000).toLocaleDateString(
+          undefined,
+          {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }
+        )
+      : null
+
   return (
     <div className="bg-white p-6 rounded-2xl border space-y-5">
       {/* HEADER */}
@@ -56,6 +78,13 @@ export default function PublicReviewGate({
           {isPending ? 'Pending approval' : 'Published'}
         </span>
       </div>
+
+      {/* PUBLISHED DATE */}
+      {publishedDate && (
+        <p className="text-xs text-gray-500">
+          Published on {publishedDate}
+        </p>
+      )}
 
       {/* STARS */}
       <div className="flex gap-1">
@@ -98,6 +127,7 @@ export default function PublicReviewGate({
         </button>
       </div>
 
+      {/* INFO */}
       {isPending && (
         <p className="text-xs text-gray-500">
           Your review is under moderation. Editing will be available once approved.
