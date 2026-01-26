@@ -51,16 +51,18 @@ export default function PublicReviewGate({
   const isPending = myReview.status === 'pending'
 
   const publishedDate =
-    !isPending && myReview.publishedAt
-      ? new Date(myReview.publishedAt.seconds * 1000).toLocaleDateString(
-          undefined,
-          {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          }
-        )
-      : null
+  myReview.status === 'published' &&
+  myReview.publishedAt &&
+  typeof myReview.publishedAt.seconds === 'number'
+    ? new Date(myReview.publishedAt.seconds * 1000).toLocaleDateString(
+        undefined,
+        {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }
+      )
+    : null
 
   return (
     <div className="bg-white p-6 rounded-2xl border space-y-5">
