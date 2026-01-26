@@ -4,19 +4,20 @@ import { FaStar } from 'react-icons/fa'
 
 /* ---------------- TYPES ---------------- */
 
-interface FirestoreTimestamp {
-  seconds: number
-  nanoseconds?: number
-}
+type AnyTimestamp =
+  | { seconds: number }
+  | { _seconds: number }
+  | string
+  | Date
+  | null
+  | undefined
 
 interface PublicReviewGateProps {
   myReview: {
     rating: number
     comment: string
     status: 'pending' | 'published'
-    publishedAt?: FirestoreTimestamp | null
-    moderatedAt?: FirestoreTimestamp | null
-    createdAt?: FirestoreTimestamp | null
+    publishedAt?: AnyTimestamp
   } | null
   onEdit: () => void
   onDelete: () => void
@@ -24,10 +25,24 @@ interface PublicReviewGateProps {
 
 /* ---------------- HELPERS ---------------- */
 
-const formatDate = (ts?: FirestoreTimestamp | null) => {
-  if (!ts || typeof ts.seconds !== 'number') return null
+function parseFirestoreDate(value: AnyTimestamp): string | null {
+  if (!value) return null
 
-  return new Date(ts.seconds * 1000).toLocaleDateString(undefined, {
+  let date: Date | null = null
+
+  if (typeof value === 'string') {
+    date = new Date(value)
+  } else if (value instanceof Date) {
+    date = value
+  } else if ('seconds' in value) {
+    date = new Date(value.seconds * 1000)
+  } else if ('_seconds' in value) {
+    date = new Date(value._seconds * 1000)
+  }
+
+  if (!date || isNaN(date.getTime())) return null
+
+  return date.toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -41,8 +56,6 @@ export default function PublicReviewGate({
   onEdit,
   onDelete,
 }: PublicReviewGateProps) {
-  /* ================= NO REVIEW ================= */
-
   if (!myReview) {
     return (
       <div className="bg-white p-6 rounded-2xl border text-center space-y-4">
@@ -52,7 +65,7 @@ export default function PublicReviewGate({
 
         <button
           onClick={onEdit}
-          className="h-12 px-6 rounded-full bg-gray-900 text-white font-bold inline-flex items-center justify-center"
+          className="h-12 px-6 rounded-full bg-gray-900 text-white font-bold"
         >
           Write a review
         </button>
@@ -60,23 +73,11 @@ export default function PublicReviewGate({
     )
   }
 
-  /* ================= HAS REVIEW ================= */
-
   const isPending = myReview.status === 'pending'
 
-  /**
-   * Date priority:
-   * 1. publishedAt (new system)
-   * 2. moderatedAt (legacy)
-   * 3. createdAt (last fallback)
-   */
   const publishedDate =
     myReview.status === 'published'
-      ? formatDate(
-          myReview.publishedAt ??
-            myReview.moderatedAt ??
-            myReview.createdAt
-        )
+      ? parseFirestoreDate(myReview.publishedAt)
       : null
 
   return (
@@ -96,7 +97,7 @@ export default function PublicReviewGate({
         </span>
       </div>
 
-      {/* PUBLISHED DATE */}
+      {/* DATE */}
       {publishedDate && (
         <p className="text-xs text-gray-500">
           Published on {publishedDate}
@@ -105,7 +106,7 @@ export default function PublicReviewGate({
 
       {/* STARS */}
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((i) => (
+        {[1, 2, 3, 4, 5].map(i => (
           <FaStar
             key={i}
             className={
@@ -118,7 +119,7 @@ export default function PublicReviewGate({
       </div>
 
       {/* COMMENT */}
-      <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+      <p className="text-gray-700 whitespace-pre-line">
         {myReview.comment}
       </p>
 
@@ -129,7 +130,7 @@ export default function PublicReviewGate({
           disabled={isPending}
           className={`h-12 rounded-full font-bold ${
             isPending
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'bg-gray-100 text-gray-400'
               : 'bg-gray-900 text-white'
           }`}
         >
@@ -144,10 +145,9 @@ export default function PublicReviewGate({
         </button>
       </div>
 
-      {/* INFO */}
       {isPending && (
         <p className="text-xs text-gray-500">
-          Your review is under moderation. Editing will be available once approved.
+          Your review is under moderation.
         </p>
       )}
     </div>
