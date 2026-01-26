@@ -83,19 +83,18 @@ export default function ReviewForm({
     try {
       setSaving(true)
 
+      // 🔒 reviewId === user.uid (your enforced design)
       const ref = doc(db, 'reviews', user.uid)
 
       /* ---------------- BASE PAYLOAD ---------------- */
-      const basePayload = {
+      const payload = {
         userId: user.uid,
-        userName: user.name || 'User',
         rating,
         comment,
         status: 'pending',
         updatedAt: serverTimestamp(),
 
-        // 🔑 CRITICAL FIX
-        // Clear publish metadata on user edit
+        // 🔑 Reset moderation metadata on user edit
         publishedAt: null,
         moderatedAt: null,
         moderatedBy: null,
@@ -103,12 +102,12 @@ export default function ReviewForm({
 
       if (existingReview) {
         /* ---------- UPDATE EXISTING REVIEW ---------- */
-        await updateDoc(ref, basePayload)
+        await updateDoc(ref, payload)
         toast.success('Review updated and sent for approval')
       } else {
         /* ---------- CREATE NEW REVIEW ---------- */
         await setDoc(ref, {
-          ...basePayload,
+          ...payload,
           createdAt: serverTimestamp(),
         })
         toast.success('Review submitted for approval')
