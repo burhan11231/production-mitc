@@ -83,39 +83,34 @@ export default function PublicReviewGate({
   return (
     <div className="bg-white p-6 rounded-2xl border space-y-5">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <p className="font-bold text-gray-900">Your Review</p>
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <p className="font-bold text-gray-900">Your Review</p>
 
-        <span
-          className={`text-xs px-3 py-1 rounded-full font-semibold ${
-            isPending
-              ? 'bg-amber-100 text-amber-800'
-              : 'bg-emerald-100 text-emerald-800'
-          }`}
-        >
-          {isPending ? 'Pending approval' : 'Published'}
-        </span>
-      </div>
+          {/* STARS — moved closer to heading */}
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map(i => (
+              <FaStar
+                key={i}
+                className={
+                  i <= myReview.rating
+                    ? 'text-yellow-400'
+                    : 'text-gray-200'
+                }
+              />
+            ))}
+          </div>
+        </div>
 
-      {/* DATE */}
-      {publishedDate && (
-        <p className="text-xs text-gray-500">
-          Published on {publishedDate}
-        </p>
-      )}
-
-      {/* STARS */}
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map(i => (
-          <FaStar
-            key={i}
-            className={
-              i <= myReview.rating
-                ? 'text-yellow-400'
-                : 'text-gray-200'
-            }
-          />
-        ))}
+        {/* DATE — replaces published badge */}
+        {publishedDate && (
+          <p className="text-xs text-gray-500 text-right">
+            Published on<br />
+            <span className="font-medium text-gray-700">
+              {publishedDate}
+            </span>
+          </p>
+        )}
       </div>
 
       {/* COMMENT */}
@@ -123,7 +118,7 @@ export default function PublicReviewGate({
         {myReview.comment}
       </p>
 
-      {/* ACTIONS */}
+      {/* ACTIONS — unchanged */}
       <div className="pt-4 border-t grid grid-cols-2 gap-3">
         <button
           onClick={onEdit}
