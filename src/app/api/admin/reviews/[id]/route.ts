@@ -19,10 +19,11 @@ export async function PATCH(req: NextRequest, context: any) {
       .collection('reviews')
       .doc(context.params.id)
       .update({
-        status,
-        moderatedAt: new Date(),
-        moderatedBy: admin.uid,
-      });
+  status,
+  moderatedAt: new Date(),
+  moderatedBy: admin.uid,
+  publishedAt: status === 'published' ? new Date() : null,
+});
 
     return NextResponse.json({ success: true });
   } catch (err) {
