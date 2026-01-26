@@ -22,7 +22,7 @@ interface Review {
   userName?: string
   rating: number
   comment: string
-  createdAt?: any
+  publishedAt?: any
 }
 
 interface ReviewStats {
@@ -31,11 +31,30 @@ interface ReviewStats {
   starCounts: Record<string, number>
 }
 
-/* ---------------- PROPS ---------------- */
-
 interface ReviewsClientProps {
   initialPage: number
   initialRating: number | null
+}
+
+/* ---------------- DATE HELPER ---------------- */
+
+function formatReviewDate(value: any): string | null {
+  if (!value) return null
+
+  let date: Date | null = null
+
+  if (value instanceof Date) date = value
+  else if (typeof value === 'string') date = new Date(value)
+  else if (value.seconds) date = new Date(value.seconds * 1000)
+  else if (value._seconds) date = new Date(value._seconds * 1000)
+
+  if (!date || isNaN(date.getTime())) return null
+
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -94,9 +113,7 @@ export default function ReviewsClient({
       const res = await fetch('/api/reviews/stats', { cache: 'no-store' })
       if (!res.ok) return
       setStats(await res.json())
-    } catch {
-      /* silent */
-    }
+    } catch {}
   }
 
   /* ---------------- FETCH MY REVIEW ---------------- */
@@ -123,10 +140,8 @@ export default function ReviewsClient({
         return
       }
 
-      const data = await res.json()
-      setMyReview(data || null)
-    } catch (err) {
-      console.error('[FETCH_MY_REVIEW]', err)
+      setMyReview(await res.json())
+    } catch {
       setMyReview(null)
     } finally {
       setMyReviewLoading(false)
@@ -144,15 +159,17 @@ export default function ReviewsClient({
     fetchMyReview()
   }, [user])
 
-  /* ---------------- HARD DELETE ---------------- */
+  /* ---------------- DELETE MY REVIEW ---------------- */
 
   const handleDeleteReview = async () => {
     if (!user || !myReview) return
 
-    const confirmed = confirm(
-      'Are you sure you want to permanently delete your review? This action cannot be undone.'
+    if (
+      !confirm(
+        'Are you sure you want to permanently delete your review? This action cannot be undone.'
+      )
     )
-    if (!confirmed) return
+      return
 
     try {
       await deleteDoc(doc(db, 'reviews', user.uid))
@@ -181,7 +198,7 @@ export default function ReviewsClient({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ---------- SEO STRUCTURED DATA ---------- */}
+      {/* SEO */}
       {stats && page === 1 && !ratingFilter && (
         <>
           <AggregateRatingSchema
@@ -192,31 +209,29 @@ export default function ReviewsClient({
         </>
       )}
 
-      {/* ---------- HEADER ---------- */}
+      {/* HEADER */}
       <div className="bg-white border-b py-10">
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl font-bold">Customer Reviews</h1>
 
           {stats && stats.totalReviews > 0 && (
-  <div className="mt-4 flex items-center gap-4">
-    <StarRating rating={stats.averageRating} size={26} />
-
-    <span className="text-lg font-semibold">
-      {stats.averageRating.toFixed(1)} / 5
-    </span>
-
-    <span className="text-gray-500">
-      ({stats.totalReviews} review
-      {stats.totalReviews !== 1 ? 's' : ''})
-    </span>
-  </div>
-)}
+            <div className="mt-4 flex items-center gap-4">
+              <StarRating rating={stats.averageRating} size={26} />
+              <span className="text-lg font-semibold">
+                {stats.averageRating.toFixed(1)} / 5
+              </span>
+              <span className="text-gray-500">
+                ({stats.totalReviews} review
+                {stats.totalReviews !== 1 ? 's' : ''})
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ---------- CONTENT ---------- */}
+      {/* CONTENT */}
       <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-[1fr_2fr] gap-10">
-        {/* ---------- LEFT: MY REVIEW / FORM ---------- */}
+        {/* LEFT */}
         <div className="space-y-6">
           {myReviewLoading && !showForm && (
             <div className="bg-white p-6 rounded-2xl border animate-pulse space-y-4">
@@ -250,7 +265,7 @@ export default function ReviewsClient({
           )}
         </div>
 
-        {/* ---------- RIGHT: REVIEWS LIST ---------- */}
+        {/* RIGHT – PUBLIC LIST */}
         <div className="space-y-6">
           {/* FILTERS */}
           <div className="flex gap-2 flex-wrap">
@@ -285,15 +300,26 @@ export default function ReviewsClient({
             <p className="text-center py-10">Loading…</p>
           ) : reviews.length ? (
             reviews.map((r) => (
-              <div key={r.id} className="bg-white p-6 rounded-2xl border">
-                <div className="flex items-center gap-3">
-                  <p className="font-bold">
-                    {r.userName || 'Verified Customer'}
-                  </p>
-                  <StarRating rating={r.rating} size={18} />
+              <div
+                key={r.id}
+                className="bg-white p-6 rounded-2xl border space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="font-bold text-gray-900">
+                      {r.userName || 'Verified Customer'}
+                    </p>
+                    <StarRating rating={r.rating} size={18} />
+                  </div>
+
+                  {formatReviewDate(r.publishedAt) && (
+                    <p className="text-xs text-gray-500">
+                      {formatReviewDate(r.publishedAt)}
+                    </p>
+                  )}
                 </div>
 
-                <p className="text-gray-700 mt-3 whitespace-pre-line">
+                <p className="text-gray-700 whitespace-pre-line">
                   {r.comment}
                 </p>
               </div>
