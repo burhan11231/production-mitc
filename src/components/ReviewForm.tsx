@@ -3,9 +3,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FaStar } from 'react-icons/fa'
 import { db } from '@/lib/firebase'
-import { doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+} from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/lib/auth-context'
+
+/* ---------------- TYPES ---------------- */
 
 interface ReviewFormProps {
   existingReview?: {
@@ -15,6 +22,8 @@ interface ReviewFormProps {
   onSuccess: () => void
   onCancel: () => void
 }
+
+/* ---------------- COMPONENT ---------------- */
 
 export default function ReviewForm({
   existingReview,
@@ -76,21 +85,30 @@ export default function ReviewForm({
 
       const ref = doc(db, 'reviews', user.uid)
 
-      const payload = {
+      /* ---------------- BASE PAYLOAD ---------------- */
+      const basePayload = {
         userId: user.uid,
         userName: user.name || 'User',
         rating,
         comment,
         status: 'pending',
         updatedAt: serverTimestamp(),
+
+        // 🔑 CRITICAL FIX
+        // Clear publish metadata on user edit
+        publishedAt: null,
+        moderatedAt: null,
+        moderatedBy: null,
       }
 
       if (existingReview) {
-        await updateDoc(ref, payload)
+        /* ---------- UPDATE EXISTING REVIEW ---------- */
+        await updateDoc(ref, basePayload)
         toast.success('Review updated and sent for approval')
       } else {
+        /* ---------- CREATE NEW REVIEW ---------- */
         await setDoc(ref, {
-          ...payload,
+          ...basePayload,
           createdAt: serverTimestamp(),
         })
         toast.success('Review submitted for approval')
@@ -126,7 +144,9 @@ export default function ReviewForm({
             >
               <FaStar
                 size={30}
-                className={s <= rating ? 'text-yellow-400' : 'text-gray-200'}
+                className={
+                  s <= rating ? 'text-yellow-400' : 'text-gray-200'
+                }
               />
             </button>
           ))}
@@ -152,7 +172,7 @@ export default function ReviewForm({
         </p>
       </div>
 
-      {/* ACTIONS — FIXED MOBILE LAYOUT */}
+      {/* ACTIONS */}
       <div className="pt-4 border-t grid grid-cols-2 gap-3">
         <button
           type="submit"
