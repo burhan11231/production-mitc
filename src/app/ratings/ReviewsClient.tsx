@@ -19,7 +19,7 @@ import ReviewSchema from './ReviewSchema'
 
 interface Review {
   id: string
-  userName?: string
+  displayName?: string
   rating: number
   comment: string
   publishedAt?: any
@@ -307,7 +307,7 @@ export default function ReviewsClient({
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <p className="font-bold text-gray-900">
-                      {r.userName || 'Verified Customer'}
+  {r.displayName || 'Verified Customer'}
                     </p>
                     <StarRating rating={r.rating} size={18} />
                   </div>
