@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { auth, db } from '@/lib/firebase'
 import {
   EmailAuthProvider,
   GoogleAuthProvider,
-  linkWithPopup,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
   sendPasswordResetEmail,
@@ -29,16 +28,22 @@ export default function AccountSettings() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
+  const hasPassword = user?.providers.includes('password')
+  const hasGoogle = user?.providers.includes('google.com')
+
   /* ---------------- DELETE ---------------- */
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-
-  const hasPassword = user?.providers.includes('password')
-  const hasGoogle = user?.providers.includes('google.com')
+  const [countdown, setCountdown] = useState<number | null>(null)
 
   /* ================= PASSWORD ================= */
 
   const updateUserPassword = async () => {
+    if (!hasPassword) {
+      await sendReset()
+      return
+    }
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('All password fields are required')
       return
@@ -83,93 +88,108 @@ export default function AccountSettings() {
 
   /* ================= DELETE ================= */
 
-  const permanentlyDeleteAccount = async () => {
+  const startDeleteCountdown = () => {
     if (!deleteConfirm) {
       toast.error('Please confirm before deleting your account')
       return
     }
+    setCountdown(5)
+  }
 
+  useEffect(() => {
+    if (countdown === null) return
+    if (countdown === 0) {
+      permanentlyDeleteAccount()
+      return
+    }
+
+    const t = setTimeout(() => {
+      setCountdown(c => (c === null ? null : c - 1))
+    }, 1000)
+
+    return () => clearTimeout(t)
+  }, [countdown])
+
+  const cancelDelete = () => {
+    setCountdown(null)
+  }
+
+  const permanentlyDeleteAccount = async () => {
     try {
       setLoading(true)
 
-      // Re-authentication
       if (hasGoogle) {
         await reauthenticateWithPopup(
           auth.currentUser!,
           new GoogleAuthProvider()
         )
-      } else {
+      } else if (hasPassword) {
         const pwd = prompt('Enter your password to confirm deletion')
         if (!pwd) {
           setLoading(false)
+          setCountdown(null)
           return
         }
-
         const cred = EmailAuthProvider.credential(user!.email, pwd)
         await reauthenticateWithCredential(auth.currentUser!, cred)
       }
 
-      // Delete Firestore user document
       await deleteDoc(doc(db, 'users', user!.uid))
-
-      // Delete Firebase Auth user
       await deleteUser(auth.currentUser!)
 
-      // Logout & redirect
       await logout()
-      toast.success('Account permanently deleted')
       router.replace('/')
     } catch (e: any) {
       toast.error(e.message || 'Account deletion failed')
     } finally {
       setLoading(false)
+      setCountdown(null)
     }
   }
 
   /* ================= UI ================= */
 
   return (
-  <div className="space-y-8">
-    {/* SECURITY */}
-    {hasPassword && (
+    <div className="space-y-8">
+      {/* PASSWORD */}
       <section className="space-y-3">
         <button
           onClick={() => setPasswordOpen(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-gray-50"
+          className="w-full flex justify-between px-4 py-3 rounded-lg border"
         >
-          <span className="font-semibold text-gray-900">
-            Update password
-          </span>
-          <span className="text-sm text-gray-500">
-            {passwordOpen ? 'Hide' : 'Edit'}
-          </span>
+          <span className="font-semibold">Update password</span>
+          <span className="text-sm">{passwordOpen ? 'Hide' : 'Edit'}</span>
         </button>
 
         {passwordOpen && (
           <div className="space-y-3 pt-3">
-            <input
-              type="password"
-              placeholder="Current password"
-              value={currentPassword}
-              onChange={e => setCurrentPassword(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg"
-            />
+            {hasPassword && (
+              <>
+                <input
+                  type="password"
+                  placeholder="Current password"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg"
+                />
 
-            <input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg"
-            />
+                <input
+                  type="password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg"
+                />
 
-            <input
-              type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg"
-            />
+                <input
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg"
+                />
+              </>
+            )}
 
             <div className="flex gap-3 pt-2">
               <button
@@ -177,73 +197,70 @@ export default function AccountSettings() {
                 disabled={loading}
                 className="flex-1 h-11 rounded-full bg-gray-900 text-white font-bold"
               >
-                Update password
+                {hasPassword ? 'Update password' : 'Send password setup email'}
               </button>
 
               <button
                 onClick={sendReset}
                 className="flex-1 h-11 rounded-full border font-semibold"
               >
-                Forgot password
+                Send reset link
               </button>
             </div>
           </div>
         )}
       </section>
-    )}
 
-    {/* DANGER ZONE */}
-    <section className="border-t pt-6 space-y-3">
-      <button
-        onClick={() => setDeleteOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-red-200 text-red-700 hover:bg-red-50"
-      >
-        <span className="font-semibold">
-          Delete account permanently
-        </span>
-        <span className="text-sm">
-          {deleteOpen ? 'Hide' : 'Open'}
-        </span>
-      </button>
+      {/* DELETE */}
+      <section className="border-t pt-6 space-y-3">
+        <button
+          onClick={() => setDeleteOpen(v => !v)}
+          className="w-full flex justify-between px-4 py-3 rounded-lg border border-red-200 text-red-700"
+        >
+          <span className="font-semibold">Delete account permanently</span>
+          <span className="text-sm">{deleteOpen ? 'Hide' : 'Open'}</span>
+        </button>
 
-      {deleteOpen && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-4 text-sm">
-          <p className="text-red-800 font-semibold">
-            This action is irreversible.
-          </p>
+        {deleteOpen && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-4 text-sm">
+            <p className="font-semibold text-red-800">
+              This action is irreversible.
+            </p>
 
-          <p className="text-red-700">
-            Deleting your account will permanently remove all your data and access.
-          </p>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.checked)}
+              />
+              <span>I understand and agree</span>
+            </label>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={deleteConfirm}
-              onChange={e => setDeleteConfirm(e.target.checked)}
-            />
-            <span>I understand and agree</span>
-          </label>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={() => setDeleteOpen(false)}
-              className="flex-1 h-11 rounded-full bg-gray-200 font-semibold"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={permanentlyDeleteAccount}
-              disabled={loading}
-              className="flex-1 h-11 rounded-full bg-red-600 text-white font-bold disabled:opacity-50"
-            >
-              Delete account
-            </button>
+            {countdown !== null ? (
+              <div className="text-center space-y-3">
+                <p className="font-semibold text-red-700">
+                  Deleting account in {countdown}s
+                </p>
+                <button
+                  onClick={cancelDelete}
+                  className="h-10 px-6 rounded-full border"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  onClick={startDeleteCountdown}
+                  className="flex-1 h-11 rounded-full bg-red-600 text-white font-bold"
+                >
+                  Delete account
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-    </section>
-  </div>
-)
+        )}
+      </section>
+    </div>
+  )
 }
