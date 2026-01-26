@@ -12,9 +12,9 @@ export async function GET(req: Request) {
     const rating = Number(searchParams.get('rating') || 0);
 
     let query = getAdminDb()
-      .collection('reviews')
-      .where('status', '==', 'published')
-      .orderBy('createdAt', 'desc');
+  .collection('reviews')
+  .where('status', '==', 'published')
+  .orderBy('publishedAt', 'desc');
 
     if (rating >= 1 && rating <= 5) {
       query = query.where('rating', '==', rating);
