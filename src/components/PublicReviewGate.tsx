@@ -15,9 +15,23 @@ interface PublicReviewGateProps {
     comment: string
     status: 'pending' | 'published'
     publishedAt?: FirestoreTimestamp | null
+    moderatedAt?: FirestoreTimestamp | null
+    createdAt?: FirestoreTimestamp | null
   } | null
   onEdit: () => void
   onDelete: () => void
+}
+
+/* ---------------- HELPERS ---------------- */
+
+const formatDate = (ts?: FirestoreTimestamp | null) => {
+  if (!ts || typeof ts.seconds !== 'number') return null
+
+  return new Date(ts.seconds * 1000).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -50,19 +64,20 @@ export default function PublicReviewGate({
 
   const isPending = myReview.status === 'pending'
 
+  /**
+   * Date priority:
+   * 1. publishedAt (new system)
+   * 2. moderatedAt (legacy)
+   * 3. createdAt (last fallback)
+   */
   const publishedDate =
-  myReview.status === 'published' &&
-  myReview.publishedAt &&
-  typeof myReview.publishedAt.seconds === 'number'
-    ? new Date(myReview.publishedAt.seconds * 1000).toLocaleDateString(
-        undefined,
-        {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }
-      )
-    : null
+    myReview.status === 'published'
+      ? formatDate(
+          myReview.publishedAt ??
+            myReview.moderatedAt ??
+            myReview.createdAt
+        )
+      : null
 
   return (
     <div className="bg-white p-6 rounded-2xl border space-y-5">
