@@ -13,12 +13,15 @@ import { auth } from '@/lib/firebase';
 type FilterMode = 'all' | 'published' | 'pending';
 
 interface Review {
-  id: string;
-  userName?: string;
-  rating: number;
-  comment: string;
-  status: 'pending' | 'published';
-  createdAt?: any;
+  id: string
+  userName?: string
+  rating: number
+  comment: string
+  status: 'pending' | 'published'
+  createdAt?: any
+  publishedAt?: {
+    seconds: number
+  } | null
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -105,10 +108,19 @@ export default function AdminReviewsPage() {
   ) => {
     // optimistic update
     setReviews(prev =>
-      prev.map(r =>
-        r.id === id ? { ...r, status: nextStatus } : r
-      )
-    );
+  prev.map(r =>
+    r.id === id
+      ? {
+          ...r,
+          status: nextStatus,
+          publishedAt:
+            nextStatus === 'published'
+              ? { seconds: Math.floor(Date.now() / 1000) }
+              : null,
+        }
+      : r
+  )
+);
 
     try {
       const token = await getToken();
@@ -195,6 +207,13 @@ export default function AdminReviewsPage() {
                 <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">
                   {r.comment}
                 </p>
+{r.status === 'published' && r.publishedAt?.seconds && (
+  <p className="text-xs text-gray-500 mt-1">
+    Published on{' '}
+    {new Date(r.publishedAt.seconds * 1000).toLocaleDateString()}
+  </p>
+)}
+
 
                 <div className="mt-4 flex gap-3 flex-wrap">
                   <button
