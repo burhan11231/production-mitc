@@ -226,10 +226,10 @@ export default function ProfileSection() {
       </div>
 
       {showSettings && (
-        <div className="border-b p-6">
-          <AccountSettings />
-        </div>
-      )}
+  <div className="p-6">
+    <AccountSettings />
+  </div>
+)}
 
       {!showSettings && (
         <div className="p-6 space-y-6">
