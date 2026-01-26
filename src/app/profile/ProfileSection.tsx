@@ -9,6 +9,7 @@ import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { compressImage, validateImageFile } from '@/lib/image-utils'
 import AccountSettings from './AccountSettings'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 import {
   PencilSquareIcon,
@@ -203,26 +204,43 @@ export default function ProfileSection() {
         </div>
 
         <div className="flex gap-2">
-          <button
-            onClick={() => {
-              if (!confirmDiscard()) return
-              setShowSettings(v => !v)
-              setIsEditing(false)
-            }}
-            className="p-2 rounded-full hover:bg-gray-100"
-          >
-            <Cog6ToothIcon className="w-5 h-5" />
-          </button>
+  {/* SETTINGS TOGGLE */}
+  {!showSettings ? (
+    <button
+      onClick={() => {
+        if (!confirmDiscard()) return
+        setShowSettings(true)
+        setIsEditing(false)
+      }}
+      className="p-2 rounded-full hover:bg-gray-100"
+      aria-label="Open settings"
+    >
+      <Cog6ToothIcon className="w-5 h-5" />
+    </button>
+  ) : (
+    <button
+      onClick={() => {
+        if (!confirmDiscard()) return
+        setShowSettings(false)
+      }}
+      className="p-2 rounded-full hover:bg-gray-100"
+      aria-label="Close settings"
+    >
+      <XMarkIcon className="w-5 h-5" />
+    </button>
+  )}
 
-          {!isEditing && !showSettings && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 rounded-full hover:bg-gray-100"
-            >
-              <PencilSquareIcon className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+  {/* EDIT PROFILE (only when not in settings) */}
+  {!isEditing && !showSettings && (
+    <button
+      onClick={() => setIsEditing(true)}
+      className="p-2 rounded-full hover:bg-gray-100"
+      aria-label="Edit profile"
+    >
+      <PencilSquareIcon className="w-5 h-5" />
+    </button>
+  )}
+</div>
       </div>
 
       {showSettings && (
