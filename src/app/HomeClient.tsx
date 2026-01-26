@@ -269,10 +269,10 @@ export default function HomeClient() {
                 Laptops
               </div>
               <div className="lg:col-span-4 space-y-7 sm:space-y-9">
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Dell Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">HP Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Acer Laptops</div>
-                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Lenovo ThinkPad</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Dell</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">HP</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Acer</div>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">Lenovo</div>
               </div>
             </div>
             <div className="grid lg:grid-cols-5 gap-12 items-start border-t border-gray-200 pt-20">
