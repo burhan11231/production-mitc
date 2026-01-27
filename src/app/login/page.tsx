@@ -131,7 +131,7 @@ export default function LoginPage() {
 
   /* ================= ACTIVATE ACCOUNT ================= */
 
-  const activateAccount = async () => {
+const activateAccount = async () => {
   if (!pendingUser) return
 
   try {
@@ -163,6 +163,12 @@ export default function LoginPage() {
     setPendingUser(null)
     setLoading(false)
   }
+}
+
+const cancelActivation = async () => {
+  setShowDeactivated(false)
+  setPendingUser(null)
+  await signOut(auth)
 }
 
   /* ================= UI ================= */
