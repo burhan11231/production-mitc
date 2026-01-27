@@ -132,31 +132,38 @@ export default function LoginPage() {
   /* ================= ACTIVATE ACCOUNT ================= */
 
   const activateAccount = async () => {
-    if (!pendingUser) return
+  if (!pendingUser) return
 
-    try {
-      await updateDoc(doc(db, 'users', pendingUser.uid), {
-        isDisabled: false,
-        updatedAt: serverTimestamp(),
-      })
+  try {
+    setLoading(true)
 
-      toast.success('Account activated successfully')
-      clearFailures()
-      router.push('/')
-    } catch {
-      toast.error('Failed to activate account')
-      await signOut(auth)
-    } finally {
-      setShowDeactivated(false)
-      setPendingUser(null)
-    }
-  }
+    const token = await pendingUser.getIdToken()
+    if (!token) throw new Error('Unauthorized')
 
-  const cancelActivation = async () => {
+    const res = await fetch('/api/account/activate', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!res.ok) throw new Error('Activation failed')
+
+    toast.success('Account activated successfully')
+    clearFailures()
+
+    // force clean login
+    await signOut(auth)
+    router.replace('/login')
+  } catch (e: any) {
+    toast.error(e.message || 'Failed to activate account')
+    await signOut(auth)
+  } finally {
     setShowDeactivated(false)
     setPendingUser(null)
-    await signOut(auth)
+    setLoading(false)
   }
+}
 
   /* ================= UI ================= */
 
