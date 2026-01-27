@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { auth, db } from '@/lib/firebase'
+import { auth } from '@/lib/firebase'
 import {
   EmailAuthProvider,
-  GoogleAuthProvider,
   reauthenticateWithCredential,
-  reauthenticateWithPopup,
   sendPasswordResetEmail,
   updatePassword,
-  deleteUser,
 } from 'firebase/auth'
-import { deleteDoc, doc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
@@ -29,7 +25,6 @@ export default function AccountSettings() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const hasPassword = user?.providers.includes('password')
-  const hasGoogle = user?.providers.includes('google.com')
 
   /* ---------------- DELETE ---------------- */
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -39,10 +34,7 @@ export default function AccountSettings() {
   /* ================= PASSWORD ================= */
 
   const updateUserPassword = async () => {
-    if (!hasPassword) {
-      await sendReset()
-      return
-    }
+    if (!hasPassword) return sendReset()
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('All password fields are required')
@@ -65,7 +57,7 @@ export default function AccountSettings() {
       await reauthenticateWithCredential(auth.currentUser!, cred)
       await updatePassword(auth.currentUser!, newPassword)
 
-      toast.success('Password updated successfully')
+      toast.success('Password updated')
       setPasswordOpen(false)
       setCurrentPassword('')
       setNewPassword('')
@@ -118,24 +110,29 @@ export default function AccountSettings() {
     try {
       setLoading(true)
 
-      if (hasGoogle) {
-        await reauthenticateWithPopup(
-          auth.currentUser!,
-          new GoogleAuthProvider()
-        )
-      } else if (hasPassword) {
+      // 🔐 Re-auth (password users only)
+      if (hasPassword) {
         const pwd = prompt('Enter your password to confirm deletion')
         if (!pwd) {
-          setLoading(false)
           setCountdown(null)
           return
         }
+
         const cred = EmailAuthProvider.credential(user!.email, pwd)
         await reauthenticateWithCredential(auth.currentUser!, cred)
       }
 
-      await deleteDoc(doc(db, 'users', user!.uid))
-      await deleteUser(auth.currentUser!)
+      // 🔥 SERVER-SIDE HARD DELETE
+      const token = await auth.currentUser!.getIdToken()
+
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) throw new Error('Delete failed')
 
       await logout()
       router.replace('/')
@@ -197,14 +194,7 @@ export default function AccountSettings() {
                 disabled={loading}
                 className="flex-1 h-11 rounded-full bg-gray-900 text-white font-bold"
               >
-                {hasPassword ? 'Update password' : 'Send password setup email'}
-              </button>
-
-              <button
-                onClick={sendReset}
-                className="flex-1 h-11 rounded-full border font-semibold"
-              >
-                Send reset link
+                {hasPassword ? 'Update password' : 'Send reset link'}
               </button>
             </div>
           </div>
@@ -224,7 +214,7 @@ export default function AccountSettings() {
         {deleteOpen && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-4 text-sm">
             <p className="font-semibold text-red-800">
-              This action is irreversible.
+              This action is irreversible. All your data will be deleted.
             </p>
 
             <label className="flex items-center gap-2">
@@ -249,14 +239,12 @@ export default function AccountSettings() {
                 </button>
               </div>
             ) : (
-              <div className="flex gap-3">
-                <button
-                  onClick={startDeleteCountdown}
-                  className="flex-1 h-11 rounded-full bg-red-600 text-white font-bold"
-                >
-                  Delete account
-                </button>
-              </div>
+              <button
+                onClick={startDeleteCountdown}
+                className="w-full h-11 rounded-full bg-red-600 text-white font-bold"
+              >
+                Delete account
+              </button>
             )}
           </div>
         )}
