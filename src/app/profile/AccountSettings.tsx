@@ -85,27 +85,35 @@ export default function AccountSettings() {
   /* ================= DEACTIVATE ================= */
 
   const deactivateAccount = async () => {
-    if (!confirmDeactivate) {
-      toast.error('Please confirm before deactivating')
-      return
-    }
-
-    try {
-      setLoading(true)
-      await updateDoc(doc(db, 'users', user!.uid), {
-        isDisabled: true,
-        updatedAt: serverTimestamp(),
-      })
-
-      toast.success('Account deactivated')
-      await logout()
-      router.replace('/login')
-    } catch {
-      toast.error('Failed to deactivate account')
-    } finally {
-      setLoading(false)
-    }
+  if (!confirmDeactivate) {
+    toast.error('Please confirm before deactivating')
+    return
   }
+
+  try {
+    setLoading(true)
+
+    const token = await auth.currentUser?.getIdToken()
+    if (!token) throw new Error('Unauthorized')
+
+    const res = await fetch('/api/account/deactivate', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!res.ok) throw new Error('Deactivate failed')
+
+    toast.success('Account deactivated')
+    await logout()
+    router.replace('/login')
+  } catch (e: any) {
+    toast.error(e.message || 'Failed to deactivate account')
+  } finally {
+    setLoading(false)
+  }
+}
 
   /* ================= DELETE ================= */
 
