@@ -5,23 +5,11 @@ import { useAuth } from '@/lib/auth-context'
 import { auth, db } from '@/lib/firebase'
 import {
   EmailAuthProvider,
-  GoogleAuthProvider,
   reauthenticateWithCredential,
-  reauthenticateWithPopup,
   sendPasswordResetEmail,
   updatePassword,
-  deleteUser,
 } from 'firebase/auth'
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-  where,
-  updateDoc,
-  serverTimestamp,
-} from 'firebase/firestore'
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
@@ -38,7 +26,6 @@ export default function AccountSettings() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const hasPassword = user?.providers.includes('password')
-  const hasGoogle = user?.providers.includes('google.com')
 
   /* ================= ACCOUNT ACTIONS ================= */
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -53,31 +40,41 @@ export default function AccountSettings() {
   /* ================= PASSWORD LOGIC ================= */
 
   const updateUserPassword = async () => {
-    if (hasPassword) {
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        toast.error('All password fields are required')
-        return
-      }
-
-      if (newPassword !== confirmPassword) {
-        toast.error('Passwords do not match')
-        return
-      }
-
-      try {
-        setLoading(true)
-        const cred = EmailAuthProvider.credential(user!.email, currentPassword)
-        await reauthenticateWithCredential(auth.currentUser!, cred)
-        await updatePassword(auth.currentUser!, newPassword)
-        toast.success('Password updated')
-        setPasswordOpen(false)
-      } catch (e: any) {
-        toast.error(e.message || 'Password update failed')
-      } finally {
-        setLoading(false)
-      }
-    } else {
+    if (!hasPassword) {
       await sendResetLink()
+      return
+    }
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('All password fields are required')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const cred = EmailAuthProvider.credential(
+        user!.email,
+        currentPassword
+      )
+
+      await reauthenticateWithCredential(auth.currentUser!, cred)
+      await updatePassword(auth.currentUser!, newPassword)
+
+      toast.success('Password updated successfully')
+      setPasswordOpen(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (e: any) {
+      toast.error(e.message || 'Password update failed')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -94,16 +91,18 @@ export default function AccountSettings() {
 
   const deactivateAccount = async () => {
     if (!confirmDeactivate) {
-      toast.error('Please confirm to deactivate')
+      toast.error('Please confirm before deactivating')
       return
     }
 
     try {
       setLoading(true)
+
       await updateDoc(doc(db, 'users', user!.uid), {
         isDisabled: true,
         updatedAt: serverTimestamp(),
       })
+
       toast.success('Account deactivated')
       await logout()
       router.replace('/login')
@@ -131,7 +130,10 @@ export default function AccountSettings() {
       return
     }
 
-    const t = setTimeout(() => setCountdown(c => (c! - 1)), 1000)
+    const t = setTimeout(() => {
+      setCountdown(c => (c === null ? null : c - 1))
+    }, 1000)
+
     return () => clearTimeout(t)
   }, [countdown])
 
@@ -139,30 +141,20 @@ export default function AccountSettings() {
     try {
       setLoading(true)
 
-      /* --- REAUTH --- */
-      if (hasGoogle) {
-        await reauthenticateWithPopup(auth.currentUser!, new GoogleAuthProvider())
-      } else if (hasPassword) {
-        const pwd = prompt('Enter your password to confirm deletion')
-        if (!pwd) throw new Error('Password required')
-        const cred = EmailAuthProvider.credential(user!.email, pwd)
-        await reauthenticateWithCredential(auth.currentUser!, cred)
-      }
+      const token = await auth.currentUser?.getIdToken()
+      if (!token) throw new Error('Unauthorized')
 
-      /* --- DELETE REVIEWS --- */
-      const reviewsSnap = await getDocs(
-        query(collection(db, 'reviews'), where('userId', '==', user!.uid))
-      )
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-      await Promise.all(reviewsSnap.docs.map(d => deleteDoc(d.ref)))
+      if (!res.ok) throw new Error('Delete failed')
 
-      /* --- DELETE USER DOC --- */
-      await deleteDoc(doc(db, 'users', user!.uid))
-
-      /* --- DELETE AUTH --- */
-      await deleteUser(auth.currentUser!)
-
-      toast.success('Account and data deleted')
+      toast.success('Account and all data deleted')
+      await logout()
       router.replace('/')
     } catch (e: any) {
       toast.error(e.message || 'Account deletion failed')
@@ -189,7 +181,7 @@ export default function AccountSettings() {
 
         {passwordOpen && (
           <div className="p-4 space-y-3 border-t bg-gray-50">
-            {hasPassword && (
+            {hasPassword ? (
               <>
                 <input
                   type="password"
@@ -214,25 +206,32 @@ export default function AccountSettings() {
                   onChange={e => setConfirmPassword(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={updateUserPassword}
+                    disabled={loading}
+                    className="flex-1 h-10 bg-gray-900 text-white rounded-full font-semibold"
+                  >
+                    Update password
+                  </button>
+
+                  <button
+                    onClick={sendResetLink}
+                    className="flex-1 h-10 border rounded-full font-semibold"
+                  >
+                    Send reset link
+                  </button>
+                </div>
               </>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={updateUserPassword}
-                disabled={loading}
-                className="flex-1 h-10 bg-gray-900 text-white rounded-full font-semibold"
-              >
-                {hasPassword ? 'Update password' : 'Send reset link'}
-              </button>
-
+            ) : (
               <button
                 onClick={sendResetLink}
-                className="flex-1 h-10 border rounded-full font-semibold"
+                className="w-full h-10 bg-gray-900 text-white rounded-full font-semibold"
               >
                 Send reset link
               </button>
-            </div>
+            )}
           </div>
         )}
       </section>
