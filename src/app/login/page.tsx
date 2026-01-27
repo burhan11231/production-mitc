@@ -149,7 +149,7 @@ const activateAccount = async () => {
 
     if (!res.ok) throw new Error('Activation failed')
 
-    toast.success('Account activated successfully')
+    toast.success('Account activated successfully. For security reasons, please log in again')
     clearFailures()
 
     // force clean login
