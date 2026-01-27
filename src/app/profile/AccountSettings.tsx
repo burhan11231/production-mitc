@@ -57,16 +57,11 @@ export default function AccountSettings() {
 
     try {
       setLoading(true)
-
-      const cred = EmailAuthProvider.credential(
-        user!.email,
-        currentPassword
-      )
-
+      const cred = EmailAuthProvider.credential(user!.email, currentPassword)
       await reauthenticateWithCredential(auth.currentUser!, cred)
       await updatePassword(auth.currentUser!, newPassword)
 
-      toast.success('Password updated successfully')
+      toast.success('Password updated')
       setPasswordOpen(false)
       setCurrentPassword('')
       setNewPassword('')
@@ -97,7 +92,6 @@ export default function AccountSettings() {
 
     try {
       setLoading(true)
-
       await updateDoc(doc(db, 'users', user!.uid), {
         isDisabled: true,
         updatedAt: serverTimestamp(),
@@ -123,6 +117,10 @@ export default function AccountSettings() {
     setCountdown(5)
   }
 
+  const cancelDelete = () => {
+    setCountdown(null)
+  }
+
   useEffect(() => {
     if (countdown === null) return
     if (countdown === 0) {
@@ -146,9 +144,7 @@ export default function AccountSettings() {
 
       const res = await fetch('/api/account/delete', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       if (!res.ok) throw new Error('Delete failed')
@@ -169,7 +165,7 @@ export default function AccountSettings() {
   return (
     <div className="space-y-6">
 
-      {/* PASSWORD PANEL */}
+      {/* PASSWORD */}
       <section className="border rounded-xl overflow-hidden">
         <button
           onClick={() => setPasswordOpen(v => !v)}
@@ -190,7 +186,6 @@ export default function AccountSettings() {
                   onChange={e => setCurrentPassword(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
-
                 <input
                   type="password"
                   placeholder="New password"
@@ -198,7 +193,6 @@ export default function AccountSettings() {
                   onChange={e => setNewPassword(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
-
                 <input
                   type="password"
                   placeholder="Confirm new password"
@@ -215,7 +209,6 @@ export default function AccountSettings() {
                   >
                     Update password
                   </button>
-
                   <button
                     onClick={sendResetLink}
                     className="flex-1 h-10 border rounded-full font-semibold"
@@ -250,82 +243,70 @@ export default function AccountSettings() {
           <div className="border-t bg-red-50">
 
             {/* DEACTIVATE */}
-            <div className="border-b">
-              <button
-                onClick={() => setDeactivateOpen(v => !v)}
-                className="w-full px-4 py-3 text-left font-semibold"
-              >
-                Deactivate account
-              </button>
+            <div className="border-b p-4 space-y-3 text-sm">
+              <p>
+                Deactivate account (can be reactivated anytime by logging in).
+              </p>
 
-              {deactivateOpen && (
-                <div className="p-4 space-y-3 text-sm">
-                  <p>
-                    Your account will be disabled. No data is deleted.
-                    You can recover anytime by signing in again.
-                  </p>
+              <label className="flex gap-2">
+                <input
+                  type="checkbox"
+                  checked={confirmDeactivate}
+                  onChange={e => setConfirmDeactivate(e.target.checked)}
+                />
+                I understand
+              </label>
 
-                  <label className="flex gap-2">
-                    <input
-                      type="checkbox"
-                      checked={confirmDeactivate}
-                      onChange={e => setConfirmDeactivate(e.target.checked)}
-                    />
-                    I understand
-                  </label>
-
-                  <button
-                    onClick={deactivateAccount}
-                    className="h-10 px-6 rounded-full bg-yellow-600 text-white font-semibold"
-                  >
-                    Deactivate account
-                  </button>
-                </div>
-              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={deactivateAccount}
+                  className="h-10 px-6 rounded-full bg-yellow-600 text-white font-semibold"
+                >
+                  Deactivate
+                </button>
+                <button
+                  onClick={() => setConfirmDeactivate(false)}
+                  className="h-10 px-6 rounded-full border"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
 
             {/* DELETE */}
-            <div>
-              <button
-                onClick={() => setDeleteOpen(v => !v)}
-                className="w-full px-4 py-3 text-left font-semibold text-red-700"
-              >
-                Delete account & data
-              </button>
+            <div className="p-4 space-y-4 text-sm">
+              <p className="font-semibold">
+                Permanently delete account and all data.
+              </p>
 
-              {deleteOpen && (
-                <div className="p-4 space-y-4 text-sm">
-                  <p className="font-semibold">
-                    This will permanently delete:
+              <label className="flex gap-2">
+                <input
+                  type="checkbox"
+                  checked={confirmDelete}
+                  onChange={e => setConfirmDelete(e.target.checked)}
+                />
+                I understand this cannot be undone
+              </label>
+
+              {countdown !== null ? (
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-red-700">
+                    Deleting in {countdown}s…
                   </p>
-                  <ul className="list-disc ml-5">
-                    <li>Your account</li>
-                    <li>Your profile</li>
-                    <li>Your reviews</li>
-                  </ul>
-
-                  <label className="flex gap-2">
-                    <input
-                      type="checkbox"
-                      checked={confirmDelete}
-                      onChange={e => setConfirmDelete(e.target.checked)}
-                    />
-                    I understand this cannot be undone
-                  </label>
-
-                  {countdown !== null ? (
-                    <p className="font-semibold text-center">
-                      Deleting in {countdown}s…
-                    </p>
-                  ) : (
-                    <button
-                      onClick={startDeleteCountdown}
-                      className="h-10 px-6 rounded-full bg-red-600 text-white font-bold"
-                    >
-                      Delete permanently
-                    </button>
-                  )}
+                  <button
+                    onClick={cancelDelete}
+                    className="h-9 px-4 rounded-full border"
+                  >
+                    Cancel
+                  </button>
                 </div>
+              ) : (
+                <button
+                  onClick={startDeleteCountdown}
+                  className="h-10 px-6 rounded-full bg-red-600 text-white font-bold"
+                >
+                  Delete permanently
+                </button>
               )}
             </div>
           </div>
