@@ -253,7 +253,7 @@ export default function AccountSettings() {
             {/* DEACTIVATE */}
             <div className="border-b p-4 space-y-3 text-sm">
               <p>
-                Deactivate account (can be reactivated anytime by logging in).
+                Deactivate account (Restored when you log in)
               </p>
 
               <label className="flex gap-2">
