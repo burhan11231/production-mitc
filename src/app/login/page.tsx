@@ -8,9 +8,10 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
+  User,
 } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
 import { Laptop } from 'lucide-react'
@@ -28,9 +29,9 @@ export default function LoginPage() {
 
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
 
-  // 🔴 Deactivated modal
+  // 🔐 Deactivated account state
+  const [pendingUser, setPendingUser] = useState<User | null>(null)
   const [showDeactivated, setShowDeactivated] = useState(false)
-  const [deactivatedUid, setDeactivatedUid] = useState<string | null>(null)
 
   const currentYear = new Date().getFullYear()
 
@@ -70,24 +71,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password)
-
-      const snap = await getDoc(doc(db, 'users', cred.user.uid))
-
-      if (!snap.exists()) {
-        await signOut(auth)
-        toast.error('User does not exist. Please create an account.')
-        return
-      }
-
-      if (snap.data().isDisabled) {
-        setDeactivatedUid(cred.user.uid)
-        setShowDeactivated(true)
-        await signOut(auth)
-        return
-      }
-
-      clearFailures()
-      router.push('/')
+      await postAuthCheck(cred.user)
     } catch (e: any) {
       recordFailure()
 
@@ -98,6 +82,7 @@ export default function LoginPage() {
       } else {
         toast.error('Login failed')
       }
+      await signOut(auth)
     } finally {
       setLoading(false)
     }
@@ -108,51 +93,69 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
-      const provider = new GoogleAuthProvider()
-      const { user } = await signInWithPopup(auth, provider)
-
-      const snap = await getDoc(doc(db, 'users', user.uid))
-
-      if (!snap.exists()) {
-        await signOut(auth)
-        toast.error('User does not exist. Please create an account.')
-        return
-      }
-
-      if (snap.data().isDisabled) {
-        setDeactivatedUid(user.uid)
-        setShowDeactivated(true)
-        await signOut(auth)
-        return
-      }
-
-      router.push('/')
+      const { user } = await signInWithPopup(auth, new GoogleAuthProvider())
+      await postAuthCheck(user)
     } catch (e: any) {
       if (e.code === 'auth/popup-closed-by-user') {
         toast('Google login cancelled')
       } else {
         toast.error('Google login failed')
       }
+      await signOut(auth)
     } finally {
       setLoading(false)
     }
   }
 
+  /* ================= POST AUTH CHECK ================= */
+
+  const postAuthCheck = async (user: User) => {
+    const ref = doc(db, 'users', user.uid)
+    const snap = await getDoc(ref)
+
+    if (!snap.exists()) {
+      await signOut(auth)
+      toast.error('User does not exist. Please create an account.')
+      return
+    }
+
+    if (snap.data().isDisabled === true) {
+      setPendingUser(user)
+      setShowDeactivated(true)
+      return
+    }
+
+    clearFailures()
+    router.push('/')
+  }
+
   /* ================= ACTIVATE ACCOUNT ================= */
 
   const activateAccount = async () => {
-    if (!deactivatedUid) return
+    if (!pendingUser) return
 
     try {
-      await updateDoc(doc(db, 'users', deactivatedUid), {
+      await updateDoc(doc(db, 'users', pendingUser.uid), {
         isDisabled: false,
+        updatedAt: serverTimestamp(),
       })
 
-      toast.success('Account activated. Please login again.')
-      setShowDeactivated(false)
+      toast.success('Account activated successfully')
+      clearFailures()
+      router.push('/')
     } catch {
       toast.error('Failed to activate account')
+      await signOut(auth)
+    } finally {
+      setShowDeactivated(false)
+      setPendingUser(null)
     }
+  }
+
+  const cancelActivation = async () => {
+    setShowDeactivated(false)
+    setPendingUser(null)
+    await signOut(auth)
   }
 
   /* ================= UI ================= */
@@ -220,7 +223,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* DEACTIVATED MODAL */}
+      {/* 🔐 DEACTIVATED MODAL */}
       {showDeactivated && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full space-y-4">
@@ -234,7 +237,7 @@ export default function LoginPage() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setShowDeactivated(false)}
+                onClick={cancelActivation}
                 className="flex-1 h-10 rounded-full border font-semibold"
               >
                 Cancel
