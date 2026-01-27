@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       updatedAt: new Date(),
     })
 
-    // Optional: revoke tokens so user must re-login cleanly
+    // Optional: revoke old refresh tokens for clean session
     await adminAuth.revokeRefreshTokens(uid)
 
     return NextResponse.json({ success: true })
