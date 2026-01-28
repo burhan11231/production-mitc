@@ -4,242 +4,206 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
+  createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile,
   signOut,
-  User,
 } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import { FcGoogle } from 'react-icons/fc'
 
-const MAX_ATTEMPTS = 5
-const LOCK_TIME_MS = 5 * 60 * 1000
+interface SignupForm {
+  name: string
+  email: string
+  phone: string
+  password: string
+  confirmPassword: string
+}
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter()
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const [lockedUntil, setLockedUntil] = useState<number | null>(null)
+  const [form, setForm] = useState<SignupForm>({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+  })
 
-  // 🔐 Deactivated account flow (same modal)
-  const [pendingUser, setPendingUser] = useState<User | null>(null)
-
-  const keyFail = `login_fail_${email}`
-  const keyLock = `login_lock_${email}`
-  const isLocked = Boolean(lockedUntil && Date.now() < lockedUntil)
-
+  /* 🔒 LOCK BACKGROUND SCROLL */
   useEffect(() => {
-    if (!email) return
-    const lock = localStorage.getItem(keyLock)
-    if (lock) setLockedUntil(Number(lock))
-  }, [email])
-
-  const recordFailure = () => {
-    const count = Number(localStorage.getItem(keyFail) || 0) + 1
-    localStorage.setItem(keyFail, String(count))
-    if (count >= MAX_ATTEMPTS) {
-      const until = Date.now() + LOCK_TIME_MS
-      localStorage.setItem(keyLock, String(until))
-      setLockedUntil(until)
-      toast.error('Too many failed attempts. Locked for 5 minutes.')
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
     }
+  }, [])
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm(p => ({ ...p, [e.target.name]: e.target.value }))
   }
 
-  const clearFailures = () => {
-    localStorage.removeItem(keyFail)
-    localStorage.removeItem(keyLock)
-    setLockedUntil(null)
-  }
+  /* ================= EMAIL SIGNUP ================= */
 
-  /* ================= LOGIN ================= */
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isLocked) return toast.error('Account temporarily locked')
+
+    if (form.password !== form.confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    if (form.password.length < 6) {
+      toast.error('Password must be at least 6 characters')
+      return
+    }
 
     setLoading(true)
+
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password)
-      await postAuthCheck(cred.user)
-    } catch (e: any) {
-      recordFailure()
-      toast.error(
-        e.code === 'auth/wrong-password'
-          ? 'Incorrect password'
-          : 'Login failed'
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
       )
-      await signOut(auth)
+
+      const user = cred.user
+      const ref = doc(db, 'users', user.uid)
+      const snap = await getDoc(ref)
+
+      if (snap.exists()) {
+        await signOut(auth)
+        toast.error('User already registered. Please login.')
+        return
+      }
+
+      await updateProfile(user, { displayName: form.name })
+
+      await setDoc(ref, {
+        uid: user.uid,
+        name: form.name,
+        email: form.email,
+        phone: form.phone || '',
+        role: 'user',
+        photoURL: '',
+        isDisabled: false,
+        createdAt: serverTimestamp(),
+      })
+
+      toast.success('Account created successfully')
+      router.push('/profile')
+    } catch (e: any) {
+      toast.error('Signup failed. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleLogin = async () => {
+  /* ================= GOOGLE SIGNUP ================= */
+
+  const handleGoogleSignup = async () => {
     setLoading(true)
     try {
       const { user } = await signInWithPopup(auth, new GoogleAuthProvider())
-      await postAuthCheck(user)
-    } catch {
-      toast.error('Google login failed')
-      await signOut(auth)
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  const postAuthCheck = async (user: User) => {
-    const snap = await getDoc(doc(db, 'users', user.uid))
+      const ref = doc(db, 'users', user.uid)
+      const snap = await getDoc(ref)
 
-    if (!snap.exists()) {
-      await signOut(auth)
-      toast.error('Account does not exist')
-      return
-    }
+      if (snap.exists()) {
+        await signOut(auth)
+        toast.error('User already registered. Please login.')
+        return
+      }
 
-    if (snap.data().isDisabled === true) {
-      setPendingUser(user)
-      return
-    }
-
-    clearFailures()
-    router.push('/')
-  }
-
-  /* ================= ACTIVATE ACCOUNT ================= */
-
-  const activateAccount = async () => {
-    if (!pendingUser) return
-
-    try {
-      setLoading(true)
-
-      const token = await pendingUser.getIdToken()
-      const res = await fetch('/api/account/activate', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+      await setDoc(ref, {
+        uid: user.uid,
+        name: user.displayName || 'Google User',
+        email: user.email,
+        phone: '',
+        role: 'user',
+        photoURL: user.photoURL || '',
+        isDisabled: false,
+        createdAt: serverTimestamp(),
       })
 
-      if (!res.ok) throw new Error()
-
-      toast.success(
-        'Account activated. Please sign in again for security reasons.'
-      )
-
-      await signOut(auth)
-      setPendingUser(null)
+      toast.success('Account created successfully')
+      router.push('/profile')
     } catch {
-      toast.error('Failed to activate account')
-      await signOut(auth)
+      toast.error('Google signup failed')
     } finally {
       setLoading(false)
     }
-  }
-
-  const cancelActivation = async () => {
-    setPendingUser(null)
-    await signOut(auth)
   }
 
   /* ================= UI ================= */
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm overflow-y-auto">
 
-      <div className="w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+      {/* MODAL WRAPPER */}
+      <div className="min-h-full flex justify-center px-4 py-10">
 
-        {/* HEADER */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {pendingUser ? 'Account deactivated' : 'Welcome back'}
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            {pendingUser
-              ? 'Would you like to reactivate your account?'
-              : 'Log in to your MITC account'}
-          </p>
-        </div>
+        {/* MODAL */}
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8 my-auto">
 
-        {/* 🔐 ACTIVATION UI (same modal) */}
-        {pendingUser ? (
-          <div className="space-y-4">
-            <button
-              onClick={activateAccount}
-              disabled={loading}
-              className="w-full h-11 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-50"
-            >
-              {loading ? 'Activating…' : 'Activate account'}
-            </button>
-
-            <button
-              onClick={cancelActivation}
-              className="w-full h-11 rounded-lg border font-semibold"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* FORM */}
-            <form onSubmit={handleLogin} className="space-y-4">
-              <input
-                type="email"
-                placeholder="Email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="input-field"
-              />
-
-              <input
-                type="password"
-                placeholder="Password"
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                disabled={isLocked}
-                className="input-field"
-              />
-
-              <button
-                disabled={loading || isLocked}
-                className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold disabled:opacity-50"
-              >
-                {loading ? 'Signing in…' : 'Sign in'}
-              </button>
-            </form>
-
-            {/* DIVIDER */}
-            <div className="my-6 flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">OR</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            {/* GOOGLE */}
-            <button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full h-11 border rounded-lg font-semibold flex items-center justify-center gap-3 hover:bg-gray-50 transition"
-            >
-              <FcGoogle size={22} />
-              Continue with Google
-            </button>
-
-            {/* SIGNUP LINK */}
-            <p className="mt-6 text-sm text-gray-600 text-center">
-              Don’t have an account?{' '}
-              <Link href="/signup" className="font-semibold text-blue-600">
-                Create one
-              </Link>
+          {/* HEADER */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome to Mateen IT Corp
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Create your account to connect with MITC
             </p>
-          </>
-        )}
+          </div>
+
+          {/* FORM */}
+          <form onSubmit={handleSignup} className="space-y-4">
+            <input name="name" placeholder="Full name" required onChange={onChange} className="input-field" />
+            <input name="email" type="email" placeholder="Email" required onChange={onChange} className="input-field" />
+            <input name="phone" placeholder="Phone (optional)" onChange={onChange} className="input-field" />
+            <input name="password" type="password" placeholder="Password" required onChange={onChange} className="input-field" />
+            <input name="confirmPassword" type="password" placeholder="Confirm password" required onChange={onChange} className="input-field" />
+
+            <button disabled={loading} className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold">
+              {loading ? 'Creating…' : 'Create account'}
+            </button>
+          </form>
+
+          {/* DIVIDER */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400">OR</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          {/* GOOGLE */}
+          <button
+            onClick={handleGoogleSignup}
+            className="w-full h-11 border rounded-lg font-semibold flex items-center justify-center gap-3"
+          >
+            <FcGoogle size={22} />
+            Continue with Google
+          </button>
+
+          {/* LEGAL */}
+          <p className="mt-6 text-xs text-gray-500 text-center">
+            By creating the account, you agree to our{' '}
+            <Link href="/terms" className="text-blue-600">Terms</Link> and{' '}
+            <Link href="/privacy" className="text-blue-600">Privacy Policy</Link>.
+          </p>
+
+          <p className="mt-4 text-sm text-gray-600 text-center">
+            Already have an account?{' '}
+            <Link href="/login" className="font-semibold text-blue-600">
+              Sign in
+            </Link>
+          </p>
+
+        </div>
       </div>
     </div>
   )
