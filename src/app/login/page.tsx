@@ -165,16 +165,16 @@ export default function LoginPage() {
         {/* MODAL */}
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8 my-auto">
 
-          {/* HEADER */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {pendingUser ? 'Account deactivated' : 'Welcome back'}
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              {pendingUser
-                ? 'Would you like to reactivate your account?'
-                : 'Log in to your MITC account'}
-            </p>
+          {/* HEADER */}      
+          <div className="text-center mb-6">      
+            <h1 className="text-2xl font-bold text-gray-900">      
+              {pendingUser ? 'Restore account access' : 'Welcome back'}      
+            </h1>      
+            <p className="text-sm text-gray-600 mt-1">      
+              {pendingUser      
+                ? 'Your account access is paused. Activate it and log in again.'      
+                : 'Log in to your MITC account'}      
+            </p>      
           </div>
 
           {/* 🔐 ACTIVATION FLOW (same modal) */}
