@@ -10,6 +10,7 @@ import { useSalespersons } from '@/hooks/useSalespersons'
 import SalespersonModal from '@/components/SalespersonModal'  
 import TeamModal from '@/components/TeamModal'  
 import { Salesperson } from '@/lib/firestore-models'  
+import toast from 'react-hot-toast'
   
 const navItems = [    
   { href: '/services', label: 'Services' },  
@@ -304,14 +305,20 @@ export default function Header() {
           </button>
 
           <button
-            onClick={async () => {
-              setLogoutOpen(false)
-              await logout()
-            }}
-            className="flex-1 h-11 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition"
-          >
-            Log out
-          </button>
+  onClick={async () => {
+    setLogoutOpen(false)
+    try {
+      await logout()
+      toast.success('Logged out successfully')
+    } catch (err) {
+      console.error('Logout failed:', err)
+      toast.error('Failed to log out')
+    }
+  }}
+  className="flex-1 h-11 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+>
+  Log out
+</button>
         </div>
 
       </DialogPanel>
