@@ -122,27 +122,41 @@ const currentWord = heroWords[currentWordIndex];
             </span>  
           </div>  
   
-          <h1 className="mt-8 text-2xl sm:text-3xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">  
-            Commercial-grade laptops, <span className="text-white/70">built for</span>{' '}  
-            <span
-  className={`
-    text-[#0071e3]
-    inline-flex items-center
-    border-r-4 border-[#0071e3]
-    pr-2
-    transition-opacity duration-300 ease-out
-    ${isFading ? 'opacity-0' : 'opacity-100'}
-  `}
+          <h1
+  className="
+    mt-8
+    font-bold tracking-tight text-white leading-tight
+    text-[1.7rem]        /* mobile +20% */
+    sm:text-[2.2rem]
+    lg:text-[3.85rem]    /* desktop +40% */
+    xl:text-[4.8rem]
+  "
 >
-  {currentWord}
-
-  {/* Caret blink */}
+  Commercial-grade laptops,{' '}
+  <span className="text-white/70">built for</span>{' '}
   <span
-    aria-hidden
-    className="ml-[2px] w-[2px] h-[1em] bg-[#0071e3] animate-caret-blink"
-  />
-</span>  
-          </h1>  
+    className={`
+      text-[#0071e3]
+      inline-flex items-center
+      transition-opacity duration-300 ease-out
+      ${isFading ? 'opacity-0' : 'opacity-100'}
+    `}
+  >
+    {currentWord}
+
+    {/* single blinking caret */}
+    <span
+      aria-hidden
+      className="
+        ml-[3px]
+        w-[2px]
+        h-[1em]
+        bg-[#0071e3]
+        animate-caret-blink
+      "
+    />
+  </span>
+</h1>  
   
           <div className="mt-4">  
             <div className="group rounded-[2rem] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] transition-all hover:border-white/20">  
