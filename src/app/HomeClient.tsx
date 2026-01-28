@@ -78,14 +78,17 @@ export default function HomeClient() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 const [animate, setAnimate] = useState(true);
 
+const currentWord = heroWords[currentWordIndex];
+
 useEffect(() => {
   const interval = setInterval(() => {
     setAnimate(false);
+
     setTimeout(() => {
       setCurrentWordIndex(prev => (prev + 1) % heroWords.length);
       setAnimate(true);
-    }, 250); // exit duration
-  }, 3000); // total cycle
+    }, 250);
+  }, 3000);
 
   return () => clearInterval(interval);
 }, []);
