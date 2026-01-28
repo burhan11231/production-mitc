@@ -41,7 +41,7 @@ const IconLogout = () => (
 )  
   
 export default function Header() {  
-  const { user, isLoading } = useAuth()  
+  const { user, isLoading, logout } = useAuth()  
   const { settings } = useSettingsRTDB()  
   const { salespersons } = useSalespersons()  
   
@@ -50,7 +50,7 @@ export default function Header() {
   const [teamOpen, setTeamOpen] = useState(false)  
   const [selectedPerson, setSelectedPerson] = useState<Salesperson | null>(null)  
   const [personOpen, setPersonOpen] = useState(false)  
-  
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const isAdmin = user?.role === 'admin'  
   const showCallButton = !isLoading && !isAdmin  
   
@@ -184,13 +184,18 @@ export default function Header() {
                         </MenuItem>  
                       )}  
   
-                      <MenuItem>  
-                        {({ active }) => (  
-                          <Link href="/auth/logout" className={`${active ? 'bg-red-50 text-red-700' : 'text-red-600'} flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition`}>  
-                            <IconLogout /> Logout  
-                          </Link>  
-                        )}  
-                      </MenuItem>  
+                      <MenuItem>
+  {({ active }) => (
+    <button
+      onClick={() => setLogoutOpen(true)}
+      className={`${active ? 'bg-red-50 text-red-700' : 'text-red-600'}
+        flex w-full items-center gap-2 rounded-xl px-3 py-2.5
+        text-sm font-bold transition`}
+    >
+      <IconLogout /> Logout
+    </button>
+  )}
+</MenuItem>  
                     </>  
                   ) : (  
                     <div className="grid grid-cols-1 gap-1">  
@@ -266,7 +271,54 @@ export default function Header() {
             </div>  
           </div>  
         </Dialog>  
-      </Transition>  
+      </Transition>
+
+
+
+
+<Transition show={logoutOpen} as={Fragment}>
+  <Dialog
+    open={logoutOpen}
+    onClose={() => setLogoutOpen(false)}
+    className="relative z-[70]"
+  >
+    <DialogBackdrop className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+
+    <div className="fixed inset-0 flex items-center justify-center px-4">
+      <DialogPanel className="w-full max-w-sm rounded-2xl bg-white shadow-2xl p-6">
+
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
+          Sign out
+        </h3>
+
+        <p className="text-sm text-gray-600 mb-6">
+          Are you sure you want to log out of your account?
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setLogoutOpen(false)}
+            className="flex-1 h-11 rounded-lg border font-semibold"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={async () => {
+              setLogoutOpen(false)
+              await logout()
+            }}
+            className="flex-1 h-11 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+          >
+            Log out
+          </button>
+        </div>
+
+      </DialogPanel>
+    </div>
+  </Dialog>
+</Transition>
+
   
       {/* TEAM MODAL */}  
       <TeamModal  
