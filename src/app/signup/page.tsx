@@ -37,8 +37,6 @@ export default function SignupPage() {
     confirmPassword: '',
   })
 
-  const currentYear = new Date().getFullYear()
-
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(p => ({ ...p, [e.target.name]: e.target.value }))
   }
@@ -69,14 +67,12 @@ export default function SignupPage() {
 
       const user = cred.user
 
-      // 🔍 Check Firestore existence
       const ref = doc(db, 'users', user.uid)
       const snap = await getDoc(ref)
 
       if (snap.exists()) {
-        const data = snap.data()
-
         await signOut(auth)
+        const data = snap.data()
 
         if (data.isDisabled) {
           toast.error(
@@ -260,21 +256,27 @@ export default function SignupPage() {
             Continue with Google
           </button>
 
-          <p className="mt-8 text-sm text-gray-600">
+          {/* ✅ LEGAL CONSENT */}
+          <p className="mt-8 text-xs text-gray-500 leading-relaxed">
+            By creating the account, you indicate that you have read,
+            understood, and agree to our{' '}
+            <Link href="/terms" className="text-blue-600 font-medium">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-blue-600 font-medium">
+              Privacy Policy
+            </Link>.
+          </p>
+
+          <p className="mt-4 text-sm text-gray-600">
             Already have an account?{' '}
             <Link href="/login" className="font-semibold text-blue-600">
               Sign in
             </Link>
           </p>
-        </div>
-      </div>
 
-      {/* FOOTER */}
-      <div
-        className="absolute left-0 right-0 text-center text-xs text-gray-400"
-        style={{ bottom: 'calc(12px + env(safe-area-inset-bottom))' }}
-      >
-        © MITC {currentYear}
+        </div>
       </div>
     </div>
   )
