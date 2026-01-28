@@ -11,10 +11,8 @@ import {
   User,
 } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
-
-import { Laptop } from 'lucide-react'
 import { FcGoogle } from 'react-icons/fc'
 
 const MAX_ATTEMPTS = 5
@@ -29,11 +27,16 @@ export default function LoginPage() {
 
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
 
-  // 🔐 Deactivated account state
+  // 🔐 Deactivated account flow (same modal)
   const [pendingUser, setPendingUser] = useState<User | null>(null)
-  const [showDeactivated, setShowDeactivated] = useState(false)
 
- 
+  /* 🔒 LOCK BACKGROUND SCROLL */
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
 
   const keyFail = `login_fail_${email}`
   const keyLock = `login_lock_${email}`
@@ -62,7 +65,7 @@ export default function LoginPage() {
     setLockedUntil(null)
   }
 
-  /* ================= EMAIL LOGIN ================= */
+  /* ================= LOGIN ================= */
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,54 +77,41 @@ export default function LoginPage() {
       await postAuthCheck(cred.user)
     } catch (e: any) {
       recordFailure()
-
-      if (e.code === 'auth/user-not-found') {
-        toast.error('User does not exist. Please create an account.')
-      } else if (e.code === 'auth/wrong-password') {
-        toast.error('Incorrect password')
-      } else {
-        toast.error('Login failed')
-      }
+      toast.error(
+        e.code === 'auth/wrong-password'
+          ? 'Incorrect password'
+          : 'Login failed'
+      )
       await signOut(auth)
     } finally {
       setLoading(false)
     }
   }
-
-  /* ================= GOOGLE LOGIN ================= */
 
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
       const { user } = await signInWithPopup(auth, new GoogleAuthProvider())
       await postAuthCheck(user)
-    } catch (e: any) {
-      if (e.code === 'auth/popup-closed-by-user') {
-        toast('Google login cancelled')
-      } else {
-        toast.error('Google login failed')
-      }
+    } catch {
+      toast.error('Google login failed')
       await signOut(auth)
     } finally {
       setLoading(false)
     }
   }
 
-  /* ================= POST AUTH CHECK ================= */
-
   const postAuthCheck = async (user: User) => {
-    const ref = doc(db, 'users', user.uid)
-    const snap = await getDoc(ref)
+    const snap = await getDoc(doc(db, 'users', user.uid))
 
     if (!snap.exists()) {
       await signOut(auth)
-      toast.error('User does not exist. Please create an account.')
+      toast.error('Account does not exist')
       return
     }
 
     if (snap.data().isDisabled === true) {
       setPendingUser(user)
-      setShowDeactivated(true)
       return
     }
 
@@ -131,143 +121,139 @@ export default function LoginPage() {
 
   /* ================= ACTIVATE ACCOUNT ================= */
 
-const activateAccount = async () => {
-  if (!pendingUser) return
+  const activateAccount = async () => {
+    if (!pendingUser) return
 
-  try {
-    setLoading(true)
+    try {
+      setLoading(true)
 
-    const token = await pendingUser.getIdToken()
-    if (!token) throw new Error('Unauthorized')
+      const token = await pendingUser.getIdToken()
+      const res = await fetch('/api/account/activate', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
-    const res = await fetch('/api/account/activate', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+      if (!res.ok) throw new Error()
 
-    if (!res.ok) throw new Error('Activation failed')
+      toast.success(
+        'Account activated. Please sign in again for security reasons.'
+      )
 
-    toast.success('Account activated successfully. For security reasons, please log in again')
-    clearFailures()
-
-    // force clean login
-    await signOut(auth)
-    router.replace('/login')
-  } catch (e: any) {
-    toast.error(e.message || 'Failed to activate account')
-    await signOut(auth)
-  } finally {
-    setShowDeactivated(false)
-    setPendingUser(null)
-    setLoading(false)
+      await signOut(auth)
+      setPendingUser(null)
+    } catch {
+      toast.error('Failed to activate account')
+      await signOut(auth)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
-const cancelActivation = async () => {
-  setShowDeactivated(false)
-  setPendingUser(null)
-  await signOut(auth)
-}
+  const cancelActivation = async () => {
+    setPendingUser(null)
+    await signOut(auth)
+  }
 
   /* ================= UI ================= */
 
   return (
-    <div className="relative flex bg-sky-50/60 min-h-[calc(100vh-64px)]">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm overflow-y-auto">
 
-      {/* LEFT */}
-      <div className="hidden lg:flex w-1/2 items-center justify-center">
-        <Laptop size={260} strokeWidth={1} className="text-sky-700 opacity-90" />
-      </div>
+      {/* MODAL WRAPPER */}
+      <div className="min-h-full flex justify-center px-4 py-10">
 
-      {/* RIGHT */}
-      <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10">
-        <div className="max-w-md mx-auto">
+        {/* MODAL */}
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8 my-auto">
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Welcome back</h1>
-          <p className="text-gray-600 mb-8">Log in to your account</p>
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            <input
-              type="email"
-              placeholder="Email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="input-field"
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              disabled={isLocked}
-              className="input-field"
-            />
-
-            <button
-              disabled={loading || isLocked}
-              className="w-full py-3 rounded-lg bg-gray-900 text-white font-semibold disabled:opacity-50"
-            >
-              {loading ? 'Signing in…' : 'Sign in'}
-            </button>
-          </form>
-
-          <div className="my-8 text-center text-sm text-gray-400">OR</div>
-
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full py-3 border rounded-lg font-semibold flex items-center justify-center gap-3"
-          >
-            <FcGoogle size={22} />
-            Continue with Google
-          </button>
-
-          <p className="mt-8 text-sm text-gray-600">
-            Don’t have an account?{' '}
-            <Link href="/signup" className="font-semibold text-blue-600">
-              Create one
-            </Link>
-          </p>
-        </div>
-      </div>
-
-      {/* 🔐 DEACTIVATED MODAL */}
-      {showDeactivated && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">
-              Account deactivated
-            </h3>
-            <p className="text-sm text-gray-600">
-              Your account is currently deactivated.  
-              Would you like to activate it now?
+          {/* HEADER */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {pendingUser ? 'Account deactivated' : 'Welcome back'}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              {pendingUser
+                ? 'Would you like to reactivate your account?'
+                : 'Log in to your MITC account'}
             </p>
+          </div>
 
-            <div className="flex gap-3">
+          {/* 🔐 ACTIVATION FLOW (same modal) */}
+          {pendingUser ? (
+            <div className="space-y-4">
+              <button
+                onClick={activateAccount}
+                disabled={loading}
+                className="w-full h-11 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-50"
+              >
+                {loading ? 'Activating…' : 'Activate account'}
+              </button>
+
               <button
                 onClick={cancelActivation}
-                className="flex-1 h-10 rounded-full border font-semibold"
+                className="w-full h-11 rounded-lg border font-semibold"
               >
                 Cancel
               </button>
-
-              <button
-                onClick={activateAccount}
-                className="flex-1 h-10 rounded-full bg-blue-600 text-white font-semibold"
-              >
-                Activate
-              </button>
             </div>
-          </div>
-        </div>
-      )}
+          ) : (
+            <>
+              {/* FORM */}
+              <form onSubmit={handleLogin} className="space-y-4">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="input-field"
+                />
 
-      
+                <input
+                  type="password"
+                  placeholder="Password"
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  disabled={isLocked}
+                  className="input-field"
+                />
+
+                <button
+                  disabled={loading || isLocked}
+                  className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold disabled:opacity-50"
+                >
+                  {loading ? 'Signing in…' : 'Sign in'}
+                </button>
+              </form>
+
+              {/* DIVIDER */}
+              <div className="my-6 flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">OR</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {/* GOOGLE */}
+              <button
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full h-11 border rounded-lg font-semibold flex items-center justify-center gap-3 hover:bg-gray-50 transition"
+              >
+                <FcGoogle size={22} />
+                Continue with Google
+              </button>
+
+              {/* SIGNUP LINK */}
+              <p className="mt-6 text-sm text-gray-600 text-center">
+                Don’t have an account?{' '}
+                <Link href="/signup" className="font-semibold text-blue-600">
+                  Create one
+                </Link>
+              </p>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
