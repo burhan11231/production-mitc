@@ -123,37 +123,21 @@ const currentWord = heroWords[currentWordIndex];
           </div>  
   
           <h1
-  className="
-    mt-8
-    font-bold tracking-tight text-white leading-tight
-    text-[1.7rem]        /* mobile +20% */
-    sm:text-[2.2rem]
-    lg:text-[3.85rem]    /* desktop +40% */
-    xl:text-[4.8rem]
-  "
+  className="mt-8 font-bold tracking-tight text-white leading-tight text-[1.7rem] sm:text-[2.2rem] lg:text-[3.85rem] xl:text-[4.8rem]"
 >
   Commercial-grade laptops,{' '}
   <span className="text-white/70">built for</span>{' '}
   <span
-    className={`
-      text-[#0071e3]
-      inline-flex items-center
-      transition-opacity duration-300 ease-out
-      ${isFading ? 'opacity-0' : 'opacity-100'}
-    `}
+    className={`text-[#0071e3] inline-flex items-center transition-opacity duration-300 ease-out ${
+      isFading ? 'opacity-0' : 'opacity-100'
+    }`}
   >
     {currentWord}
 
     {/* single blinking caret */}
     <span
       aria-hidden
-      className="
-        ml-[3px]
-        w-[2px]
-        h-[1em]
-        bg-[#0071e3]
-        animate-caret-blink
-      "
+      className="ml-[3px] w-[2px] h-[1em] bg-[#0071e3] animate-caret-blink"
     />
   </span>
 </h1>  
