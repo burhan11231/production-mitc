@@ -142,7 +142,7 @@ const currentWord = heroWords[currentWordIndex];
   </span>
 </h1>  
   
-          <div className="mt-4">  
+          <div className="mt-6">  
             <div className="group rounded-[2rem] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] transition-all hover:border-white/20">  
               <div className="grid lg:grid-cols-5 items-stretch">  
                 <div className="lg:col-span-3 p-8 lg:p-12 flex flex-col justify-center">  
