@@ -76,14 +76,19 @@ const whyChooseUs = [
 export default function HomeClient() {
   /* -------- HERO WORD ROTATION -------- */
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const currentWord = heroWords[currentWordIndex];
+const [animate, setAnimate] = useState(true);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
+useEffect(() => {
+  const interval = setInterval(() => {
+    setAnimate(false);
+    setTimeout(() => {
       setCurrentWordIndex(prev => (prev + 1) % heroWords.length);
-    }, 1800);
-    return () => clearInterval(interval);
-  }, []);
+      setAnimate(true);
+    }, 250); // exit duration
+  }, 3000); // total cycle
+
+  return () => clearInterval(interval);
+}, []);
 
   
 
@@ -116,9 +121,20 @@ export default function HomeClient() {
 
           <h1 className="mt-8 text-2xl sm:text-3xl lg:text-[2.75rem] xl:text-5xl font-bold tracking-tight text-white leading-tight">
             Commercial-grade laptops, <span className="text-white/70">built for</span>{' '}
-            <span className="text-[#0071e3] inline-flex border-r-4 border-[#0071e3] pr-2">
-              {currentWord}
-            </span>
+            <span className="relative inline-block h-[1em] overflow-hidden align-bottom">
+  <span
+    key={currentWord}
+    className={`
+      block text-[#0071e3]
+      transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
+      ${animate
+        ? 'opacity-100 translate-y-0'
+        : 'opacity-0 -translate-y-2'}
+    `}
+  >
+    {currentWord}
+  </span>
+</span>
           </h1>
 
           <div className="mt-4">
