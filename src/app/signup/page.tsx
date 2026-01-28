@@ -170,114 +170,118 @@ export default function SignupPage() {
   /* ================= UI ================= */
 
   return (
-    <div className="relative flex bg-sky-50/60 min-h-[calc(100vh-64px)]">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
 
-      {/* LEFT */}
-      <div className="hidden lg:flex w-1/2 items-center justify-center">
-        <Laptop size={260} strokeWidth={1} className="text-sky-700 opacity-90" />
+    {/* MODAL */}
+    <div className="w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+
+      {/* HEADER */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome to Mateen IT Corp
+        </h1>
+        <p className="text-sm text-gray-600 mt-1">
+          Create your account to connect with MITC
+        </p>
       </div>
 
-      {/* RIGHT */}
-      <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10">
-        <div className="max-w-md mx-auto">
+      {/* FORM */}
+      <form onSubmit={handleSignup} className="space-y-4">
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Welcome to Mateen IT Corp
-          </h1>
-          <p className="text-gray-600 mb-8">
-            Create your account to connect and communicate with MITC.
-          </p>
+        <input
+          name="name"
+          placeholder="Full name"
+          value={form.name}
+          onChange={onChange}
+          required
+          className="input-field"
+        />
 
-          <form onSubmit={handleSignup} className="space-y-4">
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={onChange}
+          required
+          className="input-field"
+        />
 
-            <input
-              name="name"
-              placeholder="Full name"
-              value={form.name}
-              onChange={onChange}
-              required
-              className="input-field"
-            />
+        <input
+          name="phone"
+          placeholder="Phone (optional)"
+          value={form.phone}
+          onChange={onChange}
+          className="input-field"
+        />
 
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={onChange}
-              required
-              className="input-field"
-            />
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={onChange}
+          required
+          className="input-field"
+        />
 
-            <input
-              name="phone"
-              placeholder="Phone (optional)"
-              value={form.phone}
-              onChange={onChange}
-              className="input-field"
-            />
+        <input
+          name="confirmPassword"
+          type="password"
+          placeholder="Confirm password"
+          value={form.confirmPassword}
+          onChange={onChange}
+          required
+          className="input-field"
+        />
 
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={onChange}
-              required
-              className="input-field"
-            />
+        <button
+          disabled={loading}
+          className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold disabled:opacity-50"
+        >
+          {loading ? 'Creating…' : 'Create account'}
+        </button>
+      </form>
 
-            <input
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm password"
-              value={form.confirmPassword}
-              onChange={onChange}
-              required
-              className="input-field"
-            />
-
-            <button
-              disabled={loading}
-              className="w-full py-3 rounded-lg bg-gray-900 text-white font-semibold disabled:opacity-50"
-            >
-              {loading ? 'Creating…' : 'Create account'}
-            </button>
-          </form>
-
-          <div className="my-8 text-center text-sm text-gray-400">OR</div>
-
-          <button
-            onClick={handleGoogleSignup}
-            disabled={loading}
-            className="w-full py-3 border rounded-lg font-semibold flex items-center justify-center gap-3"
-          >
-            <FcGoogle size={22} />
-            Continue with Google
-          </button>
-
-          {/* ✅ LEGAL CONSENT */}
-          <p className="mt-8 text-xs text-gray-500 leading-relaxed">
-            By creating the account, you indicate that you have read,
-            understood, and agree to our{' '}
-            <Link href="/terms" className="text-blue-600 font-medium">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-blue-600 font-medium">
-              Privacy Policy
-            </Link>.
-          </p>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-blue-600">
-              Sign in
-            </Link>
-          </p>
-
-        </div>
+      {/* DIVIDER */}
+      <div className="my-6 flex items-center gap-3">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-xs text-gray-400">OR</span>
+        <div className="flex-1 h-px bg-gray-200" />
       </div>
+
+      {/* GOOGLE */}
+      <button
+        onClick={handleGoogleSignup}
+        disabled={loading}
+        className="w-full h-11 border rounded-lg font-semibold flex items-center justify-center gap-3 hover:bg-gray-50 transition"
+      >
+        <FcGoogle size={22} />
+        Continue with Google
+      </button>
+
+      {/* LEGAL */}
+      <p className="mt-6 text-xs text-gray-500 leading-relaxed text-center">
+        By creating the account, you indicate that you have read,
+        understood, and agree to our{' '}
+        <Link href="/terms" className="text-blue-600 font-medium">
+          Terms of Service
+        </Link>{' '}
+        and{' '}
+        <Link href="/privacy" className="text-blue-600 font-medium">
+          Privacy Policy
+        </Link>.
+      </p>
+
+      {/* LOGIN LINK */}
+      <p className="mt-4 text-sm text-gray-600 text-center">
+        Already have an account?{' '}
+        <Link href="/login" className="font-semibold text-blue-600">
+          Sign in
+        </Link>
+      </p>
+
     </div>
-  )
+  </div>
+)
 }
