@@ -33,7 +33,7 @@ export default function LoginPage() {
   const [pendingUser, setPendingUser] = useState<User | null>(null)
   const [showDeactivated, setShowDeactivated] = useState(false)
 
-  const currentYear = new Date().getFullYear()
+ 
 
   const keyFail = `login_fail_${email}`
   const keyLock = `login_lock_${email}`
@@ -185,8 +185,8 @@ const cancelActivation = async () => {
       <div className="w-full lg:w-1/2 px-6 py-6 sm:py-10">
         <div className="max-w-md mx-auto">
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Sign in</h1>
-          <p className="text-gray-600 mb-8">Use your registered credentials</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Welcome back</h1>
+          <p className="text-gray-600 mb-8">Log in to your account</p>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <input
@@ -267,13 +267,7 @@ const cancelActivation = async () => {
         </div>
       )}
 
-      {/* FOOTER */}
-      <div
-        className="absolute left-0 right-0 text-center text-xs text-gray-400"
-        style={{ bottom: 'calc(12px + env(safe-area-inset-bottom))' }}
-      >
-        © MITC {currentYear}
-      </div>
+      
     </div>
   )
 }
