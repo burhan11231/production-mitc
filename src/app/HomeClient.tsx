@@ -157,8 +157,7 @@ const currentWord = heroWords[currentWordIndex];
                     <span className="text-white/40">Confident purchase.</span>  
                   </p>  
                   <p className="mt-6 text-white/50 text-base lg:text-lg leading-relaxed max-w-xl">  
-                    Based in Srinagar, MITC has served professionals, students, and businesses across Kashmir since 2013.   
-                    Specializing in commercial-grade laptops and precision repairs at our Gaw Kadal showroom.  
+                    Established in Srinagar in 2013, MITC provides dependable commercial-grade laptops and expert repair services, with all diagnostics and servicing handled in person at our showroom.  
                   </p>  
                 </div>  
                 <div className="lg:col-span-2 relative h-64 lg:h-auto overflow-hidden">  
@@ -195,9 +194,7 @@ const currentWord = heroWords[currentWordIndex];
                 <span className="block text-gray-400">built on trust.</span>  
               </h2>  
               <p className="text-lg text-gray-600 max-w-xl leading-relaxed">  
-                Founded in 2013, Mateen IT Corp is Srinagar's trusted destination for  
-                premium laptops and professional IT services. We focus on transparent  
-                guidance and service standards aligned with modern commercial hardware.  
+                Mateen IT Corp operates with a standards-first approach—prioritizing device integrity, accurate diagnostics, and long-term usability over quick sales. Every system is evaluated for performance, reliability, and upgrade potential before it reaches a customer.  
               </p>  
               <Link  
                 href="/about"  
