@@ -1,34 +1,44 @@
-import type { Metadata } from 'next';
-import HomeClient from './HomeClient';
+// app/page.tsx
+import type { Metadata } from 'next'
+import HomeClient from './HomeClient'
+
+const OG_IMAGE =
+  'https://res.cloudinary.com/dlesei0kn/image/upload/httpsmitc-business-platform.netlify.app_20260129_183716_0000_qewjln.png'
 
 export const metadata: Metadata = {
-  title: 'MITC – Laptop Sales & IT Services in Srinagar | Mateen IT Corp',
-  description:
-    "Commercial-grade laptops, transparent diagnostics, and professional IT services in Srinagar, Kashmir.",
+  title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
 
-  alternates: {
-    canonical: 'https://mitc-business-platform.netlify.app/',
-  },
+  description:
+    'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
 
   openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    siteName: 'MITC – Mateen IT Corp',
+
     title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
     description:
       'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
-    url: 'https://mitc-business-platform.netlify.app/', // ✅ THIS FIXES og:url WARNING
-    siteName: 'MITC – Mateen IT Corp',
-    locale: 'en_IN',
-    type: 'website',
+
     images: [
       {
-        url: 'https://res.cloudinary.com/dlesei0kn/image/upload/httpsmitc-business-platform.netlify.app_20260129_183716_0000_qewjln.png',
+        url: OG_IMAGE,
         width: 1200,
         height: 630,
         alt: 'MITC Srinagar Laptop Showroom',
       },
     ],
   },
-};
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
+    description:
+      'Expert guidance and in-store diagnostics, handled personally by our team.',
+    images: [OG_IMAGE],
+  },
+}
 
 export default function Home() {
-  return <HomeClient />;
+  return <HomeClient />
 }
