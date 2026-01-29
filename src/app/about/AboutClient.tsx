@@ -289,16 +289,15 @@ export default function AboutClient() {
             <div
   key={person.id}
   className="
-    group
-    rounded-2xl
-    border border-gray-200
-    bg-white
-    p-6
-    hover:shadow-xl
-    transition
-    opacity-0
-    animate-[fadeIn_0.4s_ease-out_forwards]
-  "
+  group
+  rounded-2xl
+  border border-gray-200
+  bg-white
+  p-6
+  hover:shadow-xl
+  transition
+  animate-fade-in
+"
 >
 
               {/* TOP ROW */}
