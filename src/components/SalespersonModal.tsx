@@ -112,13 +112,13 @@ export default function SalespersonModal({ isOpen, salesperson, onClose }: Props
               )}
 
               {/* Specializations */}
-              {(salesperson.specializations?.length ?? 0) > 0 && (
+              {salesperson.specializations.length > 0 && (
                 <section>
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
                     Areas of Expertise
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {salesperson.specializations!.map(spec => (
+                    {salesperson.specializations.map(spec => (
                       <span
                         key={spec}
                         className="px-3.5 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg border"
