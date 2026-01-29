@@ -7,9 +7,12 @@ const OG_IMAGE =
 
 export const metadata: Metadata = {
   title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
-
   description:
     'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
+
+  alternates: {
+    canonical: 'https://mitc-business-platform.netlify.app/',
+  },
 
   openGraph: {
     type: 'website',
@@ -28,14 +31,6 @@ export const metadata: Metadata = {
         alt: 'MITC Srinagar Laptop Showroom',
       },
     ],
-  },
-
-  twitter: {
-    card: 'summary_large_image',
-    title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
-    description:
-      'Expert guidance and in-store diagnostics, handled personally by our team.',
-    images: [OG_IMAGE],
   },
 }
 
