@@ -120,20 +120,3 @@ export interface Salesperson {
   specializations: string[]
 
 }
-
-/* ----------------------------------
-   OPTIONAL DEV DEFAULT
----------------------------------- */
-
-export const DEFAULT_SALESPERSONS: Salesperson[] = [
-  {
-    name: 'Salesperson 1',
-    role: 'Sales',
-    imageUrl: '',
-    email: '',
-    phone: '',
-    bio: '',
-    isActive: true,
-    order: 1,
-  },
-]
