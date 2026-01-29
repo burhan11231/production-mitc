@@ -23,16 +23,6 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
     },
   },
-
-  twitter: {
-    card: 'summary_large_image',
-    title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
-    description:
-      'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
-    images: [
-      'https://res.cloudinary.com/dlesei0kn/image/upload/httpsmitc-business-platform.netlify.app_20260129_183716_0000_qewjln.png',
-    ],
-  },
 }
 
 export default function RootLayout({
