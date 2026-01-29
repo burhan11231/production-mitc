@@ -12,7 +12,7 @@ import { compressImage, validateImageFile } from '@/lib/image-utils'
 
 interface FormData extends Omit<Salesperson, 'id' | 'createdAt' | 'updatedAt'> {}
 
-const ROLES = ['Sales', 'Support', 'Manager'] as const
+const ROLES = ['Sales', 'Support', 'Manager', 'Technician'] as const
 
 interface ConfirmDialogState {
   isOpen: boolean
@@ -67,6 +67,8 @@ export default function AdminTeamManager() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+
+  const [tagInput, setTagInput] = useState('')
 
   /* ================= DERIVED ================= */
 
@@ -253,6 +255,44 @@ export default function AdminTeamManager() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const addTag = () => {
+  const value = tagInput.trim()
+  if (!value) return
+
+  if (formData.specializations.length >= 10) {
+    toast.error('Maximum 10 specializations allowed')
+    return
+  }
+
+  // 🔒 NORMALIZED DUPLICATE CHECK (ADD HERE)
+  const normalized = value.toLowerCase()
+
+  if (
+    formData.specializations
+      .map(t => t.toLowerCase())
+      .includes(normalized)
+  ) {
+    toast.error('Tag already added')
+    return
+  }
+
+  setFormData(prev => ({
+    ...prev,
+    specializations: [...prev.specializations, value],
+  }))
+
+  setTagInput('')
+}
+
+
+const removeTag = (tag: string) => {
+  setFormData(prev => ({
+    ...prev,
+    specializations: prev.specializations.filter(t => t !== tag),
+  }))
+}
+
+
   /* ================= RENDER ================= */
 
   if (isLoading) {
@@ -364,6 +404,64 @@ export default function AdminTeamManager() {
                 placeholder="Short description..."
               />
             </div>
+
+
+{/* SPECIALIZATIONS / TAGS */}
+<div>
+  <label className="block text-sm font-medium mb-1.5 text-gray-700">
+    Specializations (max 10)
+  </label>
+
+  <div className="flex gap-2">
+    <input
+      value={tagInput}
+      onChange={e => setTagInput(e.target.value)}
+      onKeyDown={e => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          addTag()
+        }
+      }}
+      placeholder="e.g. Laptop Repair, MacBooks"
+      className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 outline-none"
+    />
+
+    <button
+      type="button"
+      onClick={addTag}
+      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+    >
+      Add
+    </button>
+  </div>
+
+  {/* Tags */}
+  {formData.specializations.length > 0 && (
+    <div className="flex flex-wrap gap-2 mt-3">
+      {formData.specializations.map(tag => (
+        <span
+          key={tag}
+          className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium"
+        >
+          {tag}
+          <button
+            type="button"
+            onClick={() => removeTag(tag)}
+            className="text-blue-700 hover:text-red-600"
+          >
+            &times;
+          </button>
+        </span>
+      ))}
+    </div>
+  )}
+
+  <p className="mt-1 text-xs text-gray-500">
+    Used to show expertise on public profile
+  </p>
+</div>
+
+            
 
             {/* IMAGE UPLOAD */}
             <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-300">
