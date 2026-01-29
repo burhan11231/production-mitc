@@ -21,6 +21,28 @@ export const FALLBACK_IMAGE =
 export const HERO_BG_IMAGE =
   'https://res.cloudinary.com/dlesei0kn/image/upload/AQMnry9yB4_29R_DPax5V1H2ceUilGvhceaQmiQctsDphQW7m3QahYtL79BgRsuXVsdthOQUvBi9_00UpP4O32Si_ptttc1.jpg'
 
+
+
+
+
+
+function TeamSkeletonCard() {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="h-14 w-14 rounded-full bg-gray-200" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="h-3 bg-gray-200 rounded w-1/2" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-3 bg-gray-200 rounded w-full" />
+        <div className="h-3 bg-gray-200 rounded w-5/6" />
+      </div>
+    </div>
+  )
+}
 /* ------------------------------------
    COMPONENT
 ------------------------------------ */
@@ -31,7 +53,8 @@ export default function AboutClient() {
   ------------------------------------ */
 
 
-  const { salespersons } = useSalespersons()
+  const { salespersons, isLoading } = useSalespersons()
+
   // Removed: stats / reviewStats
 
   /* ------------------------------------
@@ -57,6 +80,8 @@ export default function AboutClient() {
      RENDER
   ------------------------------------ */
 
+
+   
   return (
     <main className="bg-white overflow-x-hidden">
 
@@ -220,105 +245,125 @@ export default function AboutClient() {
       </section>
 
       {/* ================= TEAM ================= */}
-      {visibleTeam.length > 0 && (
-        // Added id="team" for scroll anchoring
-        <section id="team" className="py-28 lg:py-36 px-6 bg-white">
-          <div className="max-w-7xl mx-auto">
+<section id="team" className="py-28 lg:py-36 px-6 bg-white">
+  <div className="max-w-7xl mx-auto">
 
-            {/* SECTION HEADER */}
-            <div className="max-w-3xl mb-20">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-                The people behind MITC
-              </h2>
-              <p className="mt-5 text-lg text-gray-600">
-                Professionals who work directly with customers every day.
-              </p>
-            </div>
+    {/* SECTION HEADER */}
+    <div className="max-w-3xl mb-20">
+      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+        The people behind MITC
+      </h2>
+      <p className="mt-5 text-lg text-gray-600">
+        Professionals who work directly with customers every day.
+      </p>
+    </div>
 
-            {/* TEAM GRID */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {visibleTeam.map(person => {
-                const hasImage = !!person.imageUrl
+    {/* TEAM GRID */}
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
-                const initials = person.name
-                  .split(' ')
-                  .map(n => n[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()
+      {/* 🔹 Loading skeletons */}
+      {isLoading &&
+        Array.from({ length: 4 }).map((_, i) => (
+          <TeamSkeletonCard key={`skeleton-${i}`} />
+        ))}
 
-                const bioWords = person.bio?.split(' ') || []
-                const shortBio =
-                  bioWords.length > 15
-                    ? bioWords.slice(0, 15).join(' ') + '…'
-                    : person.bio
+      {/* 🔹 Real cards */}
+      {!isLoading &&
+        visibleTeam.map(person => {
+          const hasImage = !!person.imageUrl
 
-                return (
-                  <div
-                    key={person.id}
-                    className="group rounded-2xl border border-gray-200 bg-white p-6 hover:shadow-xl transition"
-                  >
-                    {/* TOP ROW */}
-                    <div className="flex items-center gap-4 mb-4">
-                      {/* AVATAR */}
-                      <div className="relative h-14 w-14 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-                        {hasImage ? (
-                          <Image
-                            src={person.imageUrl}
-                            alt={person.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-blue-600 text-white font-bold">
-                            {initials}
-                          </div>
-                        )}
-                      </div>
+          const initials = person.name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
 
-                      {/* NAME + ROLE */}
-                      <div className="min-w-0">
-                        <p className="font-bold text-gray-900 leading-tight truncate">
-                          {person.name}
-                        </p>
-                        <p className="text-sm font-semibold text-blue-600 truncate">
-                          {person.role}
-                        </p>
-                      </div>
+          const bioWords = person.bio?.split(' ') || []
+          const shortBio =
+            bioWords.length > 15
+              ? bioWords.slice(0, 15).join(' ') + '…'
+              : person.bio
+
+          return (
+            <div
+  key={person.id}
+  className="
+    group
+    rounded-2xl
+    border border-gray-200
+    bg-white
+    p-6
+    hover:shadow-xl
+    transition
+    opacity-0
+    animate-[fadeIn_0.4s_ease-out_forwards]
+  "
+>
+
+              {/* TOP ROW */}
+              <div className="flex items-center gap-4 mb-4">
+                {/* AVATAR */}
+                <div className="relative h-14 w-14 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                  {hasImage ? (
+                    <Image
+                      src={person.imageUrl}
+                      alt={person.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center bg-blue-600 text-white font-bold">
+                      {initials}
                     </div>
+                  )}
+                </div>
 
-                    {/* BIO */}
-                    <p className="text-sm text-gray-600 leading-relaxed mb-4 text-left">
-                      {shortBio}
-                    </p>
+                {/* NAME + ROLE */}
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 leading-tight truncate">
+                    {person.name}
+                  </p>
+                  <p className="text-sm font-semibold text-blue-600 truncate">
+                    {person.role}
+                  </p>
+                </div>
+              </div>
 
-                    {/* ACTION */}
-                    <button
-                      onClick={() => setSelected(person)}
-                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-                    >
-                      Learn more
-                      <span aria-hidden>→</span>
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
+              {/* BIO */}
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                {shortBio}
+              </p>
 
-            {/* LINK TO FULL TEAM PAGE */}
-            <div className="mt-12 flex justify-center">
-              <Link
-                href="/team"
-                className="text-lg font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-2 hover:gap-3 transition-all"
+              {/* ACTION */}
+              <button
+                onClick={() => setSelected(person)}
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
               >
-                Explore all team members
+                Learn more
                 <span aria-hidden>→</span>
-              </Link>
+              </button>
             </div>
+          )
+        })}
+    </div>
 
-          </div>
-        </section>
-      )}
+    {/* FOOTER LINK */}
+    {!isLoading && visibleTeam.length > 0 && (
+      <div className="mt-12 flex justify-center">
+        <Link
+          href="/team"
+          className="text-lg font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-2 hover:gap-3 transition-all"
+        >
+          Explore all team members
+          <span aria-hidden>→</span>
+        </Link>
+      </div>
+    )}
+  </div>
+</section>
+
+
 
       {/* ================= CTA ================= */}
 <section className="py-28 lg:py-36 bg-gray-950 text-white">
@@ -332,11 +377,11 @@ export default function AboutClient() {
     "
   >
     <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-      Visit MITC. Ask questions. Decide with confidence.
+      Talk to MITC. Get clarity. Choose with confidence.
     </h2>
 
     <p className="text-lg text-white/70 mb-10 max-w-2xl">
-      Explore laptops or visit our Srinagar showroom — no pressure.
+      Have questions or need guidance? Explore our services and reach out to the MITC team — we’re here to help, without pressure.
     </p>
 
     <div
