@@ -7,14 +7,14 @@ export const metadata: Metadata = {
     "Commercial-grade laptops, transparent diagnostics, and professional IT services in Srinagar, Kashmir.",
 
   alternates: {
-    canonical: 'https://mitck.netlify.app/',
+    canonical: 'https://mitc-business-platform.netlify.app/',
   },
 
   openGraph: {
     title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
     description:
       'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
-    url: 'https://mitck.netlify.app/', // ✅ THIS FIXES og:url WARNING
+    url: 'https://mitc-business-platform.netlify.app/', // ✅ THIS FIXES og:url WARNING
     siteName: 'MITC – Mateen IT Corp',
     locale: 'en_IN',
     type: 'website',
