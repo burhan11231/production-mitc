@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://mitck.netlify.app/',
+    url: 'https://mitc-business-platform.netlify.app/',
     siteName: 'MITC Srinagar',
     title: 'MITC – Trusted Laptop Showroom & IT Services in Srinagar | Mateen IT Corp',
     description:
