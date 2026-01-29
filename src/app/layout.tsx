@@ -19,7 +19,7 @@ export const metadata: Metadata = {
       'Professional laptop sales, repairs, and IT services in Srinagar. Visit our Gaw Kadal showroom.',
     images: [
       {
-        url: 'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+        url: 'https://res.cloudinary.com/dlesei0kn/image/upload/httpsmitc-business-platform.netlify.app_20260129_183716_0000_qewjln.png',
         width: 1200,
         height: 630,
         alt: 'MITC Srinagar Laptop Showroom – Gaw Kadal',
@@ -29,11 +29,11 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'MITC – Trusted Laptop Showroom & IT Services in Srinagar',
+    title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
     description:
-      'Laptop repairs, upgrades & professional IT services in Srinagar since 2013.',
+      'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
     images: [
-      'https://res.cloudinary.com/dlesei0kn/image/upload/IMG-20251103-WA0003_bgmgkj.jpg',
+      'https://res.cloudinary.com/dlesei0kn/image/upload/httpsmitc-business-platform.netlify.app_20260129_183716_0000_qewjln.png',
     ],
   },
 
