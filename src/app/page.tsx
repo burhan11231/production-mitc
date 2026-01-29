@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'MITC – Laptop Sales & IT Services in Srinagar',
+    title: 'MITC Srinagar – Expert Laptop Sales & Diagnostics',
     description:
-      'Buy, upgrade, and repair laptops with confidence at MITC Srinagar. Serving Kashmir since 2013.',
+      'Expert guidance and in-store diagnostics, handled personally by our team. Trusted laptop showroom in Srinagar.',
     url: 'https://mitck.netlify.app/', // ✅ THIS FIXES og:url WARNING
     siteName: 'MITC – Mateen IT Corp',
     locale: 'en_IN',
