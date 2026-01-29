@@ -118,7 +118,7 @@ const currentWord = heroWords[currentWordIndex];
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-2xl">  
             <span className="flex h-2 w-2 rounded-full bg-[#0071e3] shadow-[0_0_10px_#0071e3] animate-pulse" />  
             <span className="text-[10px] lg:text-[11px] font-bold text-white tracking-[0.15em] uppercase">  
-              Kashmir's Tech Authority Since 2013 - Srinagar Showroom  
+              Kashmir's Tech Authority - Since 2013  
             </span>  
           </div>  
   
