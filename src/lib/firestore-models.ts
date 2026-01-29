@@ -117,7 +117,8 @@ export interface Salesperson {
   bio: string
   isActive: boolean
   order: number
-  specializations?: string[]
+  specializations: string[]
+
 }
 
 /* ----------------------------------
