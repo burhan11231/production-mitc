@@ -109,7 +109,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 export interface Salesperson {
   id?: string
   name: string
-  role: 'Sales' | 'Support' | 'Manager'
+  role: 'Sales' | 'Support' | 'Manager' | 'Technician'
   imageUrl: string
   email: string
   phone: string
