@@ -1,125 +1,231 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import toast from 'react-hot-toast'
 import {
-  onAuthStateChanged,
-  signOut,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from 'firebase/auth'
-import {
-  doc,
-  getDoc,
-  Timestamp,
-} from 'firebase/firestore'
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from 'react'
-import { auth, db } from '@/lib/firebase'
+import { auth } from '@/lib/firebase'
+import { useAuth } from '@/lib/auth-context'
 
-/* ---------------- TYPES ---------------- */
+type Mode = 'email' | 'manual' | 'email-link'
 
-export interface AppUser {
-  uid: string
-  name: string
-  email: string
-  phone: string
-  role: 'user' | 'admin'
-  photoURL: string | null
-  providers: string[]
+export default function PasswordResetClient() {
+  const router = useRouter()
+  const params = useSearchParams()
+  const oobCode = params.get('oobCode')
+  const { user } = useAuth()
 
-  // Optional / future-safe
-  lastNameUpdatedAt?: Timestamp
-}
+  const [mode, setMode] = useState<Mode>('email')
+  const [loading, setLoading] = useState(false)
 
-interface AuthContextType {
-  user: AppUser | null
-  isLoading: boolean
-  logout: () => Promise<void>
-}
+  const [email, setEmail] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
-/* ---------------- CONTEXT ---------------- */
-
-const AuthContext = createContext<AuthContextType | null>(null)
-
-/* ---------------- PROVIDER ---------------- */
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
+  /* 🔒 Lock scroll */
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (authUser) => {
-      // 🔹 Logged out
-      if (!authUser) {
-        setUser(null)
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        const ref = doc(db, 'users', authUser.uid)
-        const snap = await getDoc(ref)
-
-        // 🔹 Firestore user missing → invalid account
-        if (!snap.exists()) {
-          console.warn('[AUTH] User doc missing, signing out')
-          await signOut(auth)
-          setUser(null)
-          return
-        }
-
-        const data = snap.data()
-
-        // 🔐 HARD BLOCK: deactivated account
-        if (data.isDisabled === true) {
-          console.warn('[AUTH] Account deactivated, signing out')
-          await signOut(auth)
-          setUser(null)
-          return
-        }
-
-        // ✅ Valid active user
-        setUser({
-          uid: authUser.uid,
-          name: data.name || authUser.displayName || 'User',
-          email: data.email || authUser.email || '',
-          phone: data.phone || '',
-          role: data.role === 'admin' ? 'admin' : 'user',
-          photoURL: data.photoURL || authUser.photoURL || null,
-          providers: authUser.providerData.map(p => p.providerId),
-          lastNameUpdatedAt: data.lastNameUpdatedAt,
-        })
-      } catch (err) {
-        console.error('[AUTH_LOAD_ERROR]', err)
-        await signOut(auth)
-        setUser(null)
-      } finally {
-        setIsLoading(false)
-      }
-    })
-
-    return () => unsub()
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
   }, [])
 
-  const logout = async () => {
-    await signOut(auth)
-    setUser(null)
+  useEffect(() => {
+    if (oobCode) setMode('email-link')
+  }, [oobCode])
+
+  const validateNewPassword = () => {
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters')
+      return false
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return false
+    }
+    return true
   }
 
+  /* ================= SEND RESET LINK ================= */
+  const sendResetLink = async () => {
+    if (!email) return toast.error('Enter your email')
+
+    try {
+      setLoading(true)
+      await sendPasswordResetEmail(auth, email, {
+        url: `${window.location.origin}/password-reset`,
+      })
+      toast.success('Reset link sent. Check your email.')
+    } catch (e: any) {
+      toast.error(
+        e.code === 'auth/user-not-found'
+          ? 'Email not found'
+          : 'Invalid email'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /* ================= EMAIL LINK RESET ================= */
+  const resetViaEmailLink = async () => {
+    if (!oobCode || !validateNewPassword()) return
+
+    try {
+      setLoading(true)
+      await confirmPasswordReset(auth, oobCode, newPassword)
+      toast.success('Password updated. Please sign in.')
+      router.push('/login')
+    } catch {
+      toast.error('Invalid or expired reset link')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /* ================= MANUAL RESET ================= */
+  const resetWithCurrentPassword = async () => {
+    if (!user) return toast.error('You must be logged in')
+    if (!validateNewPassword()) return
+
+    try {
+      setLoading(true)
+      const cred = EmailAuthProvider.credential(
+        user.email,
+        currentPassword
+      )
+      await reauthenticateWithCredential(auth.currentUser!, cred)
+      await updatePassword(auth.currentUser!, newPassword)
+      toast.success('Password updated successfully')
+      router.push('/profile')
+    } catch {
+      toast.error('Current password is incorrect')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /* ================= UI ================= */
   return (
-    <AuthContext.Provider value={{ user, isLoading, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm">
+      <div className="min-h-full flex justify-center px-4 py-10">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8 my-auto">
+
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Reset your password
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Securely update your account password
+            </p>
+          </div>
+
+          {/* ================= EMAIL STEP ================= */}
+          {mode === 'email' && (
+            <div className="space-y-4">
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="input-field"
+              />
+
+              <button
+                onClick={() => setMode('manual')}
+                className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold"
+              >
+                Continue with password
+              </button>
+
+              <button
+                onClick={sendResetLink}
+                disabled={loading}
+                className="w-full h-11 rounded-lg border font-semibold"
+              >
+                Send reset link
+              </button>
+            </div>
+          )}
+
+          {/* ================= MANUAL RESET ================= */}
+          {mode === 'manual' && (
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="Current password"
+                value={currentPassword}
+                onChange={e => setCurrentPassword(e.target.value)}
+                className="input-field"
+              />
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="input-field"
+              />
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="input-field"
+              />
+
+              <button
+                onClick={resetWithCurrentPassword}
+                disabled={loading}
+                className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold"
+              >
+                Update password
+              </button>
+            </div>
+          )}
+
+          {/* ================= EMAIL LINK RESET ================= */}
+          {mode === 'email-link' && (
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="input-field"
+              />
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="input-field"
+              />
+
+              <button
+                onClick={resetViaEmailLink}
+                disabled={loading}
+                className="w-full h-11 rounded-lg bg-gray-900 text-white font-semibold"
+              >
+                Update password
+              </button>
+            </div>
+          )}
+
+          <p className="mt-6 text-sm text-gray-600 text-center">
+            Remembered your password?{' '}
+            <Link href="/login" className="font-semibold text-blue-600">
+              Sign in
+            </Link>
+          </p>
+
+        </div>
+      </div>
+    </div>
   )
-}
-
-/* ---------------- HOOK ---------------- */
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used inside AuthProvider')
-  }
-  return ctx
 }
