@@ -227,15 +227,6 @@ export default function LoginPage() {
               </form>
 
 
-<p className="text-right text-sm">
-  <Link
-    href="/password-reset"
-    className="text-blue-600 font-semibold hover:underline"
-  >
-    Forgot password?
-  </Link>
-</p>
-
               {/* DIVIDER */}
               <div className="my-6 flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />
@@ -252,6 +243,16 @@ export default function LoginPage() {
                 <FcGoogle size={22} />
                 Continue with Google
               </button>
+
+<p className="mt-6 text-center text-sm">
+  <Link
+    href="/password-reset"
+    className="text-blue-600 font-semibold hover:underline"
+  >
+    Forgot password?
+  </Link>
+</p>
+
 
               {/* SIGNUP LINK */}
               <p className="mt-6 text-sm text-gray-600 text-center">
