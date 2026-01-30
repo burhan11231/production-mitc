@@ -94,7 +94,7 @@ export default function Header() {
   unoptimized
 />
 
-  <div className="flex flex-col justify-center leading-none">
+  <div className="flex flex-col justify-center leading-none [line-height:1]">
     <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
       {settings?.businessName || 'MITC'}
     </div>
