@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import PasswordResetClient from './password-reset-client'
 
-export default function PasswordResetPage() {
+export default function Page() {
   return (
     <Suspense fallback={null}>
       <PasswordResetClient />
