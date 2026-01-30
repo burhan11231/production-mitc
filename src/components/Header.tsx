@@ -84,16 +84,15 @@ export default function Header() {
             </svg>  
           </button>  
   
-          <Link
-  href="/"
-  className="flex items-center gap-2 lg:gap-3 group h-16 lg:h-20"
->
+          <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
   <Image
     src={settings.logoUrl || FALLBACK_LOGO}
     alt="Logo"
     width={40}
     height={40}
-    className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
+    className="rounded-lg lg:rounded-xl object-cover shadow-sm
+               group-hover:scale-105 transition-transform
+               translate-y-[1px]"
     unoptimized
   />
 
