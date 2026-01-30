@@ -84,17 +84,20 @@ export default function Header() {
             </svg>  
           </button>  
   
-          <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
+          <Link
+  href="/"
+  className="flex items-center gap-2 lg:gap-3 group h-16 lg:h-20"
+>
   <Image
-  src={settings.logoUrl || FALLBACK_LOGO}
-  alt="Logo"
-  width={40}
-  height={40}
-  className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
-  unoptimized
-/>
+    src={settings.logoUrl || FALLBACK_LOGO}
+    alt="Logo"
+    width={40}
+    height={40}
+    className="rounded-lg lg:rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform"
+    unoptimized
+  />
 
-  <div className="flex flex-col justify-center leading-none [line-height:1]">
+  <div className="flex flex-col justify-center leading-none">
     <div className="text-sm lg:text-xl font-bold tracking-tight text-gray-900">
       {settings?.businessName || 'MITC'}
     </div>
