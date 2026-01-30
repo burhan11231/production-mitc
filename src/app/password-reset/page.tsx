@@ -11,7 +11,7 @@ import {
   reauthenticateWithCredential,
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { useAuth } from '@/lib/AuthContext'
+import { useAuth } from '@/lib/auth-context'
 
 export default function PasswordResetPage() {
   const router = useRouter()
