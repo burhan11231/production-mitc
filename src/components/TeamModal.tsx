@@ -103,21 +103,26 @@ export default function TeamModal({
                           className="rounded-3xl border border-gray-200 bg-white p-4 hover:shadow-md transition"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="relative h-12 w-12 rounded-2xl overflow-hidden bg-gray-50">
-                              {p.imageUrl ? (
-                                <Image
-                                  src={p.imageUrl}
-                                  alt={p.name || 'Team member'}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
-                                />
-                              ) : (
-                                <div className="h-full w-full flex items-center justify-center text-xs font-bold text-gray-500">
-                                  {initials(p.name) || 'TM'}
-                                </div>
-                              )}
-                            </div>
+                            <div className="relative h-12 w-12 rounded-2xl overflow-hidden
+  bg-gradient-to-br from-blue-400 to-cyan-400
+  border border-white shadow-sm
+">
+  {p.imageUrl ? (
+    <Image
+      src={p.imageUrl}
+      alt={p.name || 'Team member'}
+      fill
+      className="object-cover"
+      unoptimized
+    />
+  ) : (
+    <div className="h-full w-full flex items-center justify-center
+      text-white font-bold text-sm
+    ">
+      {initials(p.name) || 'TM'}
+    </div>
+  )}
+</div>
 
                             <div className="flex-1 min-w-0">
                               <p className="font-bold text-gray-900 truncate">{p.name}</p>
